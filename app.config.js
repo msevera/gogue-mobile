@@ -64,6 +64,7 @@ export default {
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
+        "NSPhotoLibraryUsageDescription": "This app requires access to photo library",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
