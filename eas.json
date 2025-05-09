@@ -5,15 +5,12 @@
   },
   "build": {
     "development": {
-      "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "image": "latest"
-      },
+      "channel": "development",
+      "developmentClient": true,
       "ios": {
         "image": "latest"
       },
-      "channel": "development",
       "env": {
         "APP_VARIANT": "development",
         "GOOGLE_SERVICE_INFO_PLIST": "./GoogleService-Info.plist",
@@ -27,26 +24,25 @@
       }
     },
     "preview": {
+      "environment": "preview",
       "distribution": "internal",
-      "android": {
-        "image": "latest"
-      },
+      "channel": "preview",
       "ios": {
         "image": "latest"
       },
-      "channel": "preview",
       "env": {
         "APP_VARIANT": "preview"
       }
     },
     "staging": {
+      "environment": "preview",
       "channel": "staging",
       "autoIncrement": true,
-      "android": {
-        "image": "latest"
-      },
       "ios": {
         "image": "latest"
+      },
+      "env": {
+        "APP_VARIANT": "staging"
       }
     },
     "production": {

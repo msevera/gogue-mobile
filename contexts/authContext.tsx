@@ -17,7 +17,8 @@ import { NotificationWillDisplayEvent, OneSignal } from 'react-native-onesignal'
 
 GoogleSignin.configure();
 
-if (__DEV__) {
+
+if (__DEV__ && process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL) {
   console.log('connecting to emulator', process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL as string);
   connectAuthEmulator(getAuth(), process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL as string);    
 }
@@ -155,7 +156,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOut = async () => {
     try {
-      OneSignal.logout();
       const auth = getAuth();
       uidRef.current = null;
       if (auth.currentUser) {
@@ -204,7 +204,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
           const signInResult = await GoogleSignin.signIn();
           let idToken = signInResult.data?.idToken;
           if (!idToken) {
-            throw new Error('No ID token found');
+            console.log('signInResult.data', signInResult)
+            throw new Error('No ID token found 2');
           }
           const googleCredential = auth.GoogleAuthProvider.credential(idToken);
           await getAuth().signInWithCredential(googleCredential);

@@ -213,7 +213,7 @@ export default function Screen() {
           ) : (
             <View className='flex-1 justify-center items-center px-4'>
               <View className='flex-1 justify-center items-center'>
-                <Text className='text-gray-500 text-lg'>You don't have any lectures yet.</Text>
+                <Text className='text-gray-500 text-lg top-[-40]'>You don't have any lectures yet.</Text>
               </View>
             </View>
           )
