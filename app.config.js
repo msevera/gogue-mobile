@@ -1,5 +1,6 @@
 const IS_DEV = process.env.APP_VARIANT === 'development';
 const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
+const IS_STAGING = process.env.APP_VARIANT === 'staging';
 const id = 'ai.learnbud';
 
 export const getUniqueIdentifier = () => {
@@ -9,6 +10,10 @@ export const getUniqueIdentifier = () => {
 
   if (IS_PREVIEW) {
     return `${id}.preview`;
+  }
+
+  if (IS_STAGING) {
+    return `${id}.staging`
   }
 
   return id;
@@ -29,6 +34,10 @@ const getAppName = () => {
 
   if (IS_PREVIEW) {
     return 'Learnbud (Preview)';
+  }
+
+  if (IS_STAGING) {
+    return 'Learnbud (Preview)'
   }
 
   return 'Learnbud';
