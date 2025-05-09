@@ -24,6 +24,5 @@ google-services.json
 android/
 ios/
 .env
-apollo/__generated__
 scratch.ts
 scratch*.ts
