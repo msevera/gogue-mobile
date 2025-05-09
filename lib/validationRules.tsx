@@ -1,4 +1,3 @@
-import { isValidPhoneNumber } from 'libphonenumber-js'
 import { IntlShape } from 'react-intl'
 
 const getMessage = (intl: IntlShape, message?: string, id?: string, options?: any) => {
@@ -111,14 +110,4 @@ export const limitWordsFrom = (from: number, intl: IntlShape, message: string) =
       message: getMessage(intl, message, 'common.validation.limitWordsFrom', { value: from }),
     };
   },
-});
-
-export const phone = (intl: IntlShape, message?: string) => ({
-  key: 'passwordMatch',
-  test: (phone: { phoneWithCountryCode: string, phoneWithoutCountryCode: string }) => {    
-    return {
-      isValid: phone?.phoneWithoutCountryCode !== '' && isValidPhoneNumber(phone?.phoneWithCountryCode),
-      message: phone?.phoneWithoutCountryCode === '' ? intl.formatMessage({ id: 'common.validation.phoneRequired' }) : intl.formatMessage({ id: 'common.validation.phone' }),
-    }
-  }
 });

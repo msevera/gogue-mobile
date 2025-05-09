@@ -6,7 +6,6 @@ import {
   useState,
 } from 'react';
 import auth, { getAuth, FirebaseAuthTypes, connectAuthEmulator } from '@react-native-firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { SIGN_IN, SET_PROFILE } from '@/apollo/queries/user';
@@ -21,7 +20,6 @@ GoogleSignin.configure();
 if (__DEV__) {
   console.log('connecting to emulator', process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL as string);
   connectAuthEmulator(getAuth(), process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL as string);    
-  connectFirestoreEmulator(getFirestore(), process.env.EXPO_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_HOST as string, 8080);
 }
 
 export type NotificationCustomDataType = {
