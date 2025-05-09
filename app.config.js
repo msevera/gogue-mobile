@@ -62,6 +62,7 @@ export default {
       "bundleIdentifier": getUniqueIdentifier('ios'),
       "googleServicesFile": process.env.GOOGLE_SERVICE_INFO_PLIST ?? "./GoogleService-Info.plist",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
         "CFBundleURLTypes": [
           {
