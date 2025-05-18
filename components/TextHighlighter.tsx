@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
-import { View } from 'react-native';
+import React, { useMemo } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
 
@@ -16,52 +15,76 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   alignments,
   currentTime,
 }) => {
-
-  useEffect(() => {
-    if (alignments && text) {
-
-    }
-  }, [text, alignments])
-
   const renderText = useMemo(() => {
-    var currentOffset = 0;
-    return alignments.map((alignment, index) => {
-      const { word, sentence, paragraph, section, is_section_start, is_paragraph_start } = alignment as any;
+    if (!alignments?.length || !text) return null;
+
+    let result: JSX.Element[] = [];
+    let currentChunk: string = '';
+    let currentChunkHighlighted = false;
+    let lastEndOffset = 0;
+
+    alignments.forEach((alignment, index) => {
+      const { word, is_section_start, is_paragraph_start } = alignment as any;
       const { start_offset: wordStartOffset, start_time: wordStartTime, end_offset: wordEndOffset, end_time: wordEndTime } = word;
-      const { start_offset: sentenceStartOffset, start_time: sentenceStartTime, end_offset: sentenceEndOffset, end_time: sentenceEndTime } = sentence;
-      const { start_offset: paragraphStartOffset, start_time: paragraphStartTime, end_offset: paragraphEndOffset, end_time: paragraphEndTime } = paragraph;
-      const { start_offset: sectionStartOffset, start_time: sectionStartTime, end_offset: sectionEndOffset, end_time: sectionEndTime } = section;
-      const txt = text.slice(wordStartOffset, wordEndOffset);
       
-      const isWordHighlighted = currentTime >= wordStartTime && currentTime <= wordEndTime;
-      const isSentenceHighlighted = currentTime >= sentenceStartTime && currentTime <= sentenceEndTime;
-      const isParagraphHighlighted = currentTime >= paragraphStartTime && currentTime <= paragraphEndTime;
-      const isSectionHighlighted = currentTime >= sectionStartTime && currentTime <= sectionEndTime;
-      return <Text>
-        {
-          index > 0 && (
-            <>
-              {
-                is_section_start ? (
-                  <Text>
-                    {'\n\n'}
-                  </Text>
-                ) : is_paragraph_start ? (
-                  <Text>
-                    {'\n'}
-                  </Text>
-                ) : ' '
-              }
-            </>
-          )
+      // Add separator if needed
+      if (index > 0) {
+        if (is_section_start) {
+          if (currentChunk) {
+            result.push(
+              <Text key={`chunk-${lastEndOffset}`} className={cn(currentChunkHighlighted && 'bg-blue-500')}>
+                {currentChunk}
+              </Text>
+            );
+            currentChunk = '';
+          }
+          result.push(<Text key={`section-${wordStartOffset}`}>{'\n\n'}</Text>);
+        } else if (is_paragraph_start) {
+          if (currentChunk) {
+            result.push(
+              <Text key={`chunk-${lastEndOffset}`} className={cn(currentChunkHighlighted && 'bg-blue-500')}>
+                {currentChunk}
+              </Text>
+            );
+            currentChunk = '';
+          }
+          result.push(<Text key={`para-${wordStartOffset}`}>{'\n'}</Text>);
+        } else if (currentChunk) {
+          currentChunk += ' ';
         }
-        <Text className={cn(isWordHighlighted && 'bg-blue-500')}>{txt}</Text>
-      </Text>
-    })
-  }, [text, alignments])
+      }
 
+      const isWordHighlighted = currentTime >= wordStartTime && currentTime <= wordEndTime;
+      const wordText = text.slice(wordStartOffset, wordEndOffset);
 
-  console.log('renderText', currentTime)
+      // If the highlight state changes, flush the current chunk
+      if (currentChunk && currentChunkHighlighted !== isWordHighlighted) {
+        result.push(
+          <Text key={`chunk-${lastEndOffset}`} className={cn(currentChunkHighlighted && 'bg-blue-500')}>
+            {currentChunk}
+          </Text>
+        );
+        currentChunk = wordText;
+        currentChunkHighlighted = isWordHighlighted;
+      } else {
+        currentChunk += wordText;
+        currentChunkHighlighted = isWordHighlighted;
+      }
+
+      lastEndOffset = wordEndOffset;
+    });
+
+    // Add the last chunk if there is one
+    if (currentChunk) {
+      result.push(
+        <Text key={`chunk-${lastEndOffset}`} className={cn(currentChunkHighlighted && 'bg-blue-500')}>
+          {currentChunk}
+        </Text>
+      );
+    }
+
+    return result;
+  }, [text, alignments, currentTime]);
 
   return <Text>{renderText}</Text>;
 };
