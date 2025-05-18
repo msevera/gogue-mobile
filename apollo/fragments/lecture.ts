@@ -15,6 +15,10 @@ export const LECTURE_SHORT_FRAGMENT = gql`
       title
       hasContent
     }
+    audioPaths {
+      stream
+      wav
+    }
   }
 `;
 
@@ -24,6 +28,9 @@ export const LECTURE_FULL_FRAGMENT = gql`
     sections {
       title
       content
+    }
+    aligners {
+      mfa
     }
   }
   ${LECTURE_SHORT_FRAGMENT}

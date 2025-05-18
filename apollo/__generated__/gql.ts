@@ -14,8 +14,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n  }\n": typeof types.LectureShortFragmentDoc,
-    "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n  }\n  \n": typeof types.LectureFullFragmentDoc,
+    "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n    audioPaths {\n      stream\n      wav\n    }\n  }\n": typeof types.LectureShortFragmentDoc,
+    "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n  }\n  \n": typeof types.LectureFullFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    content \n    lecture {\n      id\n      title\n      emoji\n    }\n  }\n": typeof types.NoteFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n": typeof types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": typeof types.UserFragmentDoc,
@@ -33,8 +33,8 @@ type Documents = {
     "\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      ...User\n    }\n  }\n  \n": typeof types.GetUserDocument,
 };
 const documents: Documents = {
-    "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n  }\n": types.LectureShortFragmentDoc,
-    "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n  }\n  \n": types.LectureFullFragmentDoc,
+    "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n    audioPaths {\n      stream\n      wav\n    }\n  }\n": types.LectureShortFragmentDoc,
+    "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n  }\n  \n": types.LectureFullFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    content \n    lecture {\n      id\n      title\n      emoji\n    }\n  }\n": types.NoteFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n": types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": types.UserFragmentDoc,
@@ -69,11 +69,11 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n  }\n"): (typeof documents)["\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n  }\n"];
+export function gql(source: "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n    audioPaths {\n      stream\n      wav\n    }\n  }\n"): (typeof documents)["\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    checkpoint\n    creationEvent {\n      name\n    }\n    sections {     \n      title\n      hasContent\n    }\n    audioPaths {\n      stream\n      wav\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n  }\n  \n"): (typeof documents)["\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n  }\n  \n"];
+export function gql(source: "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n  }\n  \n"): (typeof documents)["\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n  }\n  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

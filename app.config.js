@@ -122,6 +122,12 @@ export default {
       ],
       "@config-plugins/react-native-webrtc",
       "@daily-co/config-plugin-rn-daily-js",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": `Allow ${getAppName()} to access your microphone.`
+        }
+      ]
       // [
       //   "expo-build-properties",
       //   {
