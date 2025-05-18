@@ -55,7 +55,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
             </>
           )
         }
-        <Text className={cn(isSentenceHighlighted && 'bg-blue-500')}>{txt}</Text>
+        <Text className={cn(isWordHighlighted && 'bg-blue-500')}>{txt}</Text>
       </Text>
     })
   }, [text, alignments])
