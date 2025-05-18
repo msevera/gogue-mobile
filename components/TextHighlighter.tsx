@@ -36,7 +36,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   const getHighlightClasses = (state: HighlightState): string => {
     return cn(
       // state.section && 'bg-purple-500',
-      state.paragraph && 'bg-yellow-500',
+      // state.paragraph && 'bg-yellow-500',
       state.sentence && 'bg-green-500',
       state.word && 'bg-blue-500'
     );
@@ -45,7 +45,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   const getTimingInfo = (alignment: any): TimingInfo => {
     const { word, sentence, paragraph, section } = alignment;
     const { start_time: wordStartTime, end_time: wordEndTime } = word;
-    
+
     return {
       wordStartTime,
       wordEndTime,
@@ -67,13 +67,14 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     };
   };
 
-  const renderChunk = (chunk: string, state: HighlightState, key: string): JSX.Element => {
+  const renderChunk = (chunk: string, state: HighlightState, key: string, offsetElement?: string): JSX.Element => {
     return (
-      <Text 
+      <Text
         key={key}
         className={getHighlightClasses(state)}
       >
         {chunk}
+        {/* {offsetElement} */}
       </Text>
     );
   };
@@ -94,7 +95,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     alignments.forEach((alignment, index) => {
       const { word, is_section_start, is_paragraph_start } = alignment as any;
       const { start_offset: wordStartOffset, end_offset: wordEndOffset } = word;
-      
+
       // Add separator if needed
       if (index > 0) {
         if (is_section_start) {
