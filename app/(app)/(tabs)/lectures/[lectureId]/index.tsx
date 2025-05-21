@@ -35,7 +35,7 @@ export default function Screen() {
   useEffect(() => {
     if (lectureData) {
       setContent(lectureData.sections.map(section => `${section.content}`).join('\n'));
-      const alignments = JSON.parse(lectureData.aligners?.mfa as string);      
+      const alignments = JSON.parse(lectureData.aligners?.mfa as string);
       setAlignments(alignments);
     }
   }, [lectureData]);
@@ -49,7 +49,7 @@ export default function Screen() {
       setCurrentTime(data.currentTime)
     }
     player.addListener('playbackStatusUpdate', fn)
-    player.seekTo(0)
+    player.seekTo(11.5)
     return () => {
       player.removeListener('playbackStatusUpdate', fn)
     }
@@ -70,17 +70,19 @@ export default function Screen() {
       >
         {
           lectureData && (
-            <ScrollView>
+            <ScrollView className='px-4'>
               <View className='flex-row gap-2'>
                 <Button text='Play' onPress={async () => {
-                  
+
                   player.play();
                 }} />
                 <Button text="Stop" onPress={() => {
                   player.pause()
                 }} />
               </View>
-              <TextHighlighter text={content} alignments={alignments} currentTime={currentTime} />
+              <View>
+                <TextHighlighter text={content} alignments={alignments} currentTime={currentTime} />
+              </View>
             </ScrollView>
           )
         }

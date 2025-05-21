@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
-
+import { View } from 'react-native';
 type Alignment = [number, number, string]; // [startTime, endTime, word]
 
 interface TextHighlighterProps {
@@ -37,8 +37,9 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     return cn(
       // state.section && 'bg-purple-500',
       // state.paragraph && 'bg-yellow-500',
-      state.sentence && 'bg-green-500',
-      state.word && 'bg-blue-500'
+      state.sentence && 'bg-blue-100',
+      // state.word && 'bg-blue-50',
+      'text-lg leading-8'
     );
   };
 
@@ -69,6 +70,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
   const renderChunk = (chunk: string, state: HighlightState, key: string, offsetElement?: string): JSX.Element => {
     return (
+
       <Text
         key={key}
         className={getHighlightClasses(state)}
@@ -145,5 +147,6 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     return result;
   }, [text, alignments, currentTime]);
 
+  console.log('currentTime', currentTime)
   return <Text>{renderText}</Text>;
 };
