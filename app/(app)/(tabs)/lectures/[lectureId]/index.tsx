@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/Button';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { useAudioPlayer, createAudioPlayer, AudioStatus } from 'expo-audio';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
+import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
+import LectureDrawerOld from '@/components/vapi/lectureDrawerOld';
 
 // const audioSource = require('./assets/Hello.mp3');
 
@@ -17,6 +19,7 @@ export default function Screen() {
   const [currentTime, setCurrentTime] = useState(0);
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
+  const lectureDrawerRef = useRef<LectureDrawerRef>(null);
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
@@ -70,8 +73,8 @@ export default function Screen() {
       >
         {
           lectureData && (
-            <ScrollView className='px-4'>
-              <View className='flex-row gap-2'>
+            <View className='flex-1'>
+              {/* <View className='flex-row gap-2'>
                 <Button text='Play' onPress={async () => {
 
                   player.play();
@@ -79,11 +82,14 @@ export default function Screen() {
                 <Button text="Stop" onPress={() => {
                   player.pause()
                 }} />
-              </View>
-              <View>
+              </View> */}
+              <ScrollView className='px-4'>
                 <TextHighlighter text={content} alignments={alignments} currentTime={currentTime} />
+              </ScrollView>
+              <View className='flex-1 border border-red-500'>
+                <LectureDrawer ref={lectureDrawerRef} />
               </View>
-            </ScrollView>
+            </View>
           )
         }
       </ScreenLayout>

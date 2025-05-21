@@ -1,7 +1,7 @@
 import { Keyboard } from 'react-native';
 import { forwardRef, useImperativeHandle, useState } from 'react';
-import { BottomSheet } from '../BottomSheet';
-import { LectureControls } from './lectureControls';
+import { BottomSheet } from './BottomSheet';
+import { LectureControls } from './LectureControls';
 
 export interface LectureDrawerRef {
   open: () => void;
@@ -12,32 +12,14 @@ const closedSnapPoint = '120';
 const activeInputSnapPoint = '450';
 
 const LectureDrawer = forwardRef<LectureDrawerRef, {
-  elapsedTime: number,
-  isPausing: boolean,
-  isRewinding: boolean,
-  isCreatingNote: boolean,
-  showPause: boolean,
-  onPause: () => void,
-  onRewind: () => void,
-  onNote: () => void,
-  onSubmit: (text: string) => void,
-  isPaused: boolean
+ 
 }>(({
-  elapsedTime,
-  isPausing,
-  isRewinding,
-  isCreatingNote,
-  showPause,
-  onPause,
-  onRewind,
-  onNote,
-  onSubmit,
-  isPaused = false
+ 
 }, ref) => {
   const [text, setText] = useState('');
   const [drawerSettings, setDrawerSettings] = useState({
-    // snapPoints: [closedSnapPoint],
-    snapPoints: ['0'],
+    snapPoints: [closedSnapPoint],
+    // snapPoints: ['0'],
     backdrop: false,
     index: 0,
     gesturesEnabled: false
@@ -81,31 +63,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
         showDrawer();
       }}
     >
-      <LectureControls
-        elapsedTime={elapsedTime}
-        text={text}
-        setText={setText}
-        onInputFocus={() => {
-          setDrawerSettings({
-            ...drawerSettings,
-            snapPoints: [activeInputSnapPoint],
-            backdrop: true,
-          })
-        }}
-        onInputBlur={() => {
-          Keyboard.dismiss();
-          showDrawer();
-        }}
-        onRewind={onRewind}
-        isRewinding={isRewinding}
-        isPaused={isPaused}
-        showPause={showPause}
-        isPausing={isPausing}
-        isCreatingNote={isCreatingNote}
-        onPause={onPause}
-        onSubmit={onSubmit}
-        onNote={onNote}
-      />
+      <LectureControls text={text} />
     </BottomSheet>
   );
 });

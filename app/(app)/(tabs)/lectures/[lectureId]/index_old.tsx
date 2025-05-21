@@ -10,7 +10,7 @@ import { Message } from '@/components/vapi/conversation';
 import { useEffect, useRef, useState } from 'react';
 import LectureSubtitles from '@/components/vapi/lectureSubtitles';
 import LectureStart from '@/components/vapi/lectureStart';
-import LectureDrawer from '@/components/vapi/lectureDrawer';
+import LectureDrawerOld from '@/components/vapi/lectureDrawerOld';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -118,7 +118,7 @@ export default function Screen() {
                   />
                 </View>
               </Pressable>
-              <LectureDrawer
+              <LectureDrawerOld
                 ref={lectureDrawerRef}
                 elapsedTime={elapsedTime}
                 isPaused={isPaused}
