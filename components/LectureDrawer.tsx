@@ -1,7 +1,7 @@
 import { Keyboard } from 'react-native';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { BottomSheet } from './BottomSheet';
-import { LectureControls } from './LectureControls';
+import { LectureControls } from './LectureControls2';
 
 export interface LectureDrawerRef {
   open: () => void;
