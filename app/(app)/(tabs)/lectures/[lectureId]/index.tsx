@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
 import { Lecture } from '@/apollo/__generated__/graphql';
-import { useAudioPlayer, createAudioPlayer, AudioStatus } from 'expo-audio';
+import { useAudioPlayer, useAudioPlayerStatus, AudioStatus } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
@@ -47,15 +47,19 @@ export default function Screen() {
     uri: lectureData?.audioPaths?.wav as string
   }, 100);
 
+  const status = useAudioPlayerStatus(player);
+
   useEffect(() => {
-    const fn = (data: AudioStatus) => {
-      setCurrentTime(data.currentTime)
-    }
-    player.addListener('playbackStatusUpdate', fn)
-    player.seekTo(11.5)
-    return () => {
-      player.removeListener('playbackStatusUpdate', fn)
-    }
+    // const fn = (data: AudioStatus) => {
+    //   setCurrentTime(data.currentTime)
+    // }
+    // player.addListener('playbackStatusUpdate', fn)
+    // player.seekTo(219)
+
+
+    // return () => {
+    //   player.removeListener('playbackStatusUpdate', fn)
+    // }
   }, [player])
 
   return (
@@ -73,21 +77,14 @@ export default function Screen() {
       >
         {
           lectureData && (
-            <View className='flex-1'>
-              {/* <View className='flex-row gap-2'>
-                <Button text='Play' onPress={async () => {
-
-                  player.play();
-                }} />
-                <Button text="Stop" onPress={() => {
-                  player.pause()
-                }} />
-              </View> */}
+            <View className='flex-1'>             
               <ScrollView className='px-4'>
-                <TextHighlighter text={content} alignments={alignments} currentTime={currentTime} />
+                <TextHighlighter text={content} alignments={alignments} currentTime={status.currentTime} />
               </ScrollView>
-              <View className='flex-1 border border-red-500'>
-                <LectureDrawer ref={lectureDrawerRef} />
+              <View className='flex-1'>
+                <LectureDrawer ref={lectureDrawerRef} status={status} onPlayPause={() => {
+                  status.playing ? player.pause() : player.play()
+                }} />
               </View>
             </View>
           )
