@@ -18,10 +18,8 @@ interface PlayLineProps {
 }
 
 export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart, alignments }: PlayLineProps) => {
-  console.log('currentTime 2', currentTime)
   const snapPoints = useMemo(() => {
-    const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);
-    console.log('snapPoints', result)
+    const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);  
     return result;
   }, [alignments]);
 

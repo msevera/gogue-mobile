@@ -79,19 +79,19 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
   const renderChunk = (chunk: string, state: HighlightState, key: string, alignment?: any): JSX.Element => {
     return (
-      <>
+      <Text key={key}>
         <Text
-          key={key}
+
           className={getHighlightClasses(state)}
         >
-          {state.sentence && state.isSentenceEnd ? chunk.trim() : chunk}          
+          {state.sentence && state.isSentenceEnd ? chunk.trim() : chunk}
         </Text>
         {
           state.sentence && state.isSentenceEnd && (
-            <Text key={`${key}-space`} className="text-lg leading-8"> </Text>
+            <Text className="text-lg leading-8"> </Text>
           )
         }
-      </>
+      </Text>
     );
   };
 
