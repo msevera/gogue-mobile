@@ -42,8 +42,8 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
   const getHighlightClasses = (state: HighlightState): string => {
     return cn(
-      // state.section && 'bg-purple-500',
-      // state.paragraph && 'bg-yellow-500',
+      state.section && 'bg-purple-500',
+      state.paragraph && 'bg-yellow-500',
       state.sentence && 'bg-blue-100',
       // state.word && 'bg-blue-50',
       'text-lg leading-8'
@@ -88,7 +88,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         </Text>
         {
           state.sentence && state.isSentenceEnd && (
-            <Text className="text-lg leading-8"> </Text>
+            <Text className="text-lg leading-8">{' '}</Text>
           )
         }
       </Text>
@@ -111,7 +111,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     let lastEndOffset = 0;
 
     alignments.forEach((alignment, index) => {
-      const { word, is_section_start, is_sentence_end } = alignment as any;
+      const { word, is_section_start, is_paragraph_start, is_sentence_end } = alignment as any;
       const { start_offset: wordStartOffset, end_offset: wordEndOffset } = word;
 
       // Handle section start
@@ -133,6 +133,23 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
           </Text>
         );
         sectionsIndex++;
+      }
+
+      if (!is_section_start && is_paragraph_start) { 
+        // Flush any existing chunk before adding section title
+        if (currentChunk) {
+          result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+          currentChunk = '';
+        }
+        
+        result.push(
+          <Text
+            className="text-xl font-semibold leading-8 mt-4 mb-2"
+            key={`paragraph-${lastEndOffset}`}
+          >
+            {`\n`}
+          </Text>
+        );
       }
 
       // Add separator if needed

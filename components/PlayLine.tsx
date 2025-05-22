@@ -2,8 +2,8 @@ import { View, Dimensions } from 'react-native'
 import { Text } from './ui/Text'
 import { AudioStatus } from 'expo-audio';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS } from 'react-native-reanimated';
-import { useMemo } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay } from 'react-native-reanimated';
+import { useMemo, useEffect } from 'react';
 
 const { width: screenWidth } = Dimensions.get('window');
 const LINE_WIDTH = screenWidth - 2;
@@ -17,7 +17,7 @@ interface PlayLineProps {
   alignments: any;
 }
 
-export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart, alignments }: PlayLineProps) => {
+export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart, alignments }: PlayLineProps) => {  
   const snapPoints = useMemo(() => {
     const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);  
     return result;
@@ -32,6 +32,13 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
   // Shared value for the current position
   const position = useSharedValue(progress * LINE_WIDTH);
   const startPosition = useSharedValue(0);
+
+  // Update position when currentTime changes
+  useEffect(() => {
+    if (isLoaded) {
+      position.value = progress * LINE_WIDTH;
+    }
+  }, [currentTime, duration, isLoaded]);
 
   const findClosestSnapPoint = (currentTime: number) => {
     'worklet';
@@ -80,10 +87,15 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
         runOnJS(onSeek)(snappedTime);
       }
     })
-    .onEnd(() => {
+    .onEnd((event) => {
       // Calculate the final progress (0 to 1)
       if (onSeekEnd && isLoaded) {
         const finalTime = positionToTime(position.value);
+        position.value = withDecay({
+          velocity: -event.velocityX,
+          deceleration: 0.99,
+          clamp: [0, LINE_WIDTH]
+        });
         runOnJS(onSeekEnd)(finalTime);
       }
     });
@@ -100,7 +112,7 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
         <View className="h-[2] bg-gray-50 overflow-hidden relative">
           <Animated.View
             className="h-full bg-blue-400 absolute"
-            style={[{ right: markerPosition }, animatedStyle]}
+            style={[{ right: markerPosition }, { width: progress * LINE_WIDTH }]}
           />
           {/* <View 
             className="w-1 h-full bg-black absolute z-10" 
@@ -108,7 +120,7 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
           /> */}
           <View
             className="h-full bg-gray-200 absolute"
-            style={{ left: markerPosition, width: LINE_WIDTH - position.value }}
+            style={{ left: markerPosition, width: LINE_WIDTH - (progress * LINE_WIDTH) }}
           />
         </View>
         <View className="flex-row items-center justify-center mt-2">
