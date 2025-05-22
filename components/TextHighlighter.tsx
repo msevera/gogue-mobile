@@ -73,7 +73,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     };
   };
 
-  const renderChunk = (chunk: string, state: HighlightState, key: string, offsetElement?: string): JSX.Element => {
+  const renderChunk = (chunk: string, state: HighlightState, key: string, alignment?: any): JSX.Element => {
     return (
 
       <Text
@@ -101,7 +101,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     let lastEndOffset = 0;
 
     alignments.forEach((alignment, index) => {
-      const { word, is_section_start, is_paragraph_start } = alignment as any;
+      const { word, is_section_start, is_sentence_end } = alignment as any;
       const { start_offset: wordStartOffset, end_offset: wordEndOffset } = word;
 
       // Handle section start
@@ -142,8 +142,9 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         currentHighlightState.sentence !== newHighlightState.sentence ||
         currentHighlightState.paragraph !== newHighlightState.paragraph ||
         currentHighlightState.section !== newHighlightState.section
-      )) {
-        result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+      )) {        
+        console.log('currentHighlightState', currentHighlightState)
+        result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`, alignment));
         currentChunk = wordText;
         currentHighlightState = newHighlightState;
       } else {
@@ -155,7 +156,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     });
 
     // Add the last chunk if there is one
-    if (currentChunk) {
+    if (currentChunk) {      
       result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
     }
 
