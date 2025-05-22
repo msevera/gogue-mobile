@@ -16,6 +16,7 @@ interface HighlightState {
   sentence: boolean;
   paragraph: boolean;
   section: boolean;
+  isSentenceEnd: boolean;
 }
 
 interface TimingInfo {
@@ -27,6 +28,7 @@ interface TimingInfo {
   paragraphEndTime?: number;
   sectionStartTime?: number;
   sectionEndTime?: number;
+  isSentenceEnd?: boolean;
 }
 
 export const TextHighlighter: React.FC<TextHighlighterProps> = ({
@@ -71,7 +73,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       sentence: currentTime >= timing.sentenceStartTime! && currentTime < timing.sentenceEndTime!,
       paragraph: currentTime >= timing.paragraphStartTime! && currentTime < timing.paragraphEndTime!,
       section: currentTime >= timing.sectionStartTime! && currentTime < timing.sectionEndTime!,
-      isSentenceEnd: timing.isSentenceEnd
+      isSentenceEnd: timing.isSentenceEnd!
     };
   };
 
