@@ -83,7 +83,7 @@ export default function Screen() {
           lectureData && (
             <View className='flex-1'>
               <ScrollView className='px-4'>
-                <TextHighlighter text={content} alignments={alignments} currentTime={status.currentTime} />
+                <TextHighlighter text={content} sections={lectureData.sections.map(section => section.title)} alignments={alignments} currentTime={status.currentTime} />
                 <View className='h-[220]' />
               </ScrollView>
             </View>

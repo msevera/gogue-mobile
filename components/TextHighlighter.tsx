@@ -8,6 +8,7 @@ interface TextHighlighterProps {
   text: string;
   alignments: Alignment[];
   currentTime: number;
+  sections: string[];
 }
 
 interface HighlightState {
@@ -32,6 +33,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   text,
   alignments,
   currentTime,
+  sections
 }) => {
   const getHighlightClasses = (state: HighlightState): string => {
     return cn(
@@ -84,6 +86,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   const renderText = useMemo(() => {
     if (!alignments?.length || !text) return null;
 
+    let sectionsIndex = 0;
     let result: JSX.Element[] = [];
     let currentChunk: string = '';
     let currentHighlightState: HighlightState = {
@@ -98,20 +101,35 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       const { word, is_section_start, is_paragraph_start } = alignment as any;
       const { start_offset: wordStartOffset, end_offset: wordEndOffset } = word;
 
+      // Handle section start
+      if (is_section_start && sectionsIndex < sections.length) {
+        // Flush any existing chunk before adding section title
+        if (currentChunk) {
+          result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+          currentChunk = '';
+        }
+        
+        // Add section title with proper spacing
+        const sectionTitle = sections[sectionsIndex];
+        result.push(
+          <Text 
+            className="text-xl font-semibold leading-8 mt-4 mb-2" 
+            key={`section-${sectionsIndex}`}
+          >
+            {'\n\n' + sectionTitle + '\n'}
+          </Text>
+        );
+        sectionsIndex++;
+      }
+
       // Add separator if needed
       if (index > 0) {
-        if (is_section_start) {
+        if (is_paragraph_start) {
           if (currentChunk) {
             result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
             currentChunk = '';
           }
-          result.push(<Text key={`section-${wordStartOffset}`}>{'\n\n'}</Text>);
-        } else if (is_paragraph_start) {
-          if (currentChunk) {
-            result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
-            currentChunk = '';
-          }
-          result.push(<Text key={`para-${wordStartOffset}`}>{'\n'}</Text>);
+          // result.push(<Text key={`para-${wordStartOffset}`}>{'\n'}</Text>);
         } else if (currentChunk) {
           currentChunk += ' ';
         }
