@@ -3,7 +3,7 @@ import { Text } from './ui/Text'
 import { AudioStatus } from 'expo-audio';
 
 const { width: screenWidth } = Dimensions.get('window');
-const LINE_WIDTH = screenWidth - 2 - 32; // accounting for padding
+const LINE_WIDTH = screenWidth - 2;// - 32; // accounting for padding
 
 export const PlayLine = ({ status }: { status: AudioStatus }) => {
   const isLoaded = status.duration > 0;
@@ -19,8 +19,8 @@ export const PlayLine = ({ status }: { status: AudioStatus }) => {
   const remainingWidth = Math.min(markerPosition, LINE_WIDTH * (1 - progress));
 
   return (
-    <View className="w-full px-4">
-      <View className="h-0.5 bg-gray-50  overflow-hidden relative">
+    <View className="w-full px-0">
+      <View className="h-[2] bg-gray-50  overflow-hidden relative">
         <View
           className="h-full bg-blue-400 absolute"
           style={{ width: playedWidth, right: markerPosition }}
@@ -30,16 +30,16 @@ export const PlayLine = ({ status }: { status: AudioStatus }) => {
           style={{ left: markerPosition, transform: [{ translateX: -1 }] }} 
         /> */}
         <View
-          className="h-full bg-gray-300 absolute"
+          className="h-full bg-gray-200 absolute"
           style={{ left: markerPosition, width: remainingWidth }}
         />
       </View>
       <View className="flex-row items-center justify-center mt-2">
-        <Text className="text-xs text-gray-950">
+        <Text className="text-xs text-blue-400">
           {isLoaded ? formatTime(status.currentTime) : '--:--'}
         </Text>
-        <View className='w-[1] h-[10] bg-gray-950 mr-1 ml-1' />
-        <Text className="text-xs text-gray-400">
+        <View className='w-[1.5] h-[10] bg-gray-400 mr-1 ml-1' />
+        <Text className="text-xs text-gray-500">
           {isLoaded ? formatTime(status.duration) : '--:--'}
         </Text>
       </View>

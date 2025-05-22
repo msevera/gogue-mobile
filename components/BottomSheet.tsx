@@ -271,7 +271,7 @@ export const BottomSheet = ({
         style={[
           backdropStyles
         ]}
-        className={cn('absolute top-0 left-0 right-0 bottom-0 bg-gray-950/65', backdropClassName)}
+        className={cn('absolute top-[-1] left-0 right-0 bottom-0 bg-gray-950/65', backdropClassName)}
       >
         <Pressable className="absolute top-0 left-0 right-0 bottom-0" onPress={onBackdropPressHandler} />
       </Animated.View>

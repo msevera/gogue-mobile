@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import LectureDrawerOld from '@/components/vapi/lectureDrawerOld';
+import { Header } from '@/components/layouts/Header';
 
 // const audioSource = require('./assets/Hello.mp3');
 
@@ -67,28 +68,30 @@ export default function Screen() {
       <ScreenLayout
         screenOptions={{
           headerLoading: loading,
-          headerTitle: lectureData?.title,
-          headerShown: true,
+          // headerTitle: lectureData?.title,
+          headerShown: false,
+          // header: () => <Header title={lectureData?.title} loading={loading} />,
         }}
         contentLoading={loading}
         contentEmpty={false}
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
       >
+
+        <Header title={lectureData?.title} loading={loading} />
         {
           lectureData && (
-            <View className='flex-1'>             
+            <View className='flex-1'>
               <ScrollView className='px-4'>
                 <TextHighlighter text={content} alignments={alignments} currentTime={status.currentTime} />
+                <View className='h-[220]' />
               </ScrollView>
-              <View className='flex-1'>
-                <LectureDrawer ref={lectureDrawerRef} status={status} onPlayPause={() => {
-                  status.playing ? player.pause() : player.play()
-                }} />
-              </View>
             </View>
           )
         }
+        <LectureDrawer ref={lectureDrawerRef} status={status} onPlayPause={() => {
+          status.playing ? player.pause() : player.play()
+        }} />
       </ScreenLayout>
     </View>
   );
