@@ -19,11 +19,23 @@ const controlsDrawerActiveInputSnapPoint = '420';
 const controlsDrawerOnlyInputSnapPoint = '90';
 
 const LectureDrawer = forwardRef<LectureDrawerRef, {
-  status: AudioStatus,
-  onPlayPause: () => void
+  onPlayPause: () => void,
+  onSeek: (position: number) => void,
+  onSeekEnd: (position: number) => void,
+  onSeekStart: (position: number) => void,
+  alignments: any,
+  currentTime: number,
+  isPlaying: boolean,
+  duration: number
 }>(({
-  status,
-  onPlayPause
+  onPlayPause,
+  onSeek,
+  onSeekEnd,
+  onSeekStart,
+  alignments,
+  currentTime,
+  isPlaying,
+  duration
 }, ref) => {
   const [text, setText] = useState('');
   const [isNotesDrawerOpen, setIsNotesDrawerOpen] = useState(false);
@@ -114,7 +126,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
           showDrawer();
         }}
       >
-        <View className='mb-5 flex-row items-center justify-between px-4 gap-2 shadow-md shadow-gray-100'>
+        <View className='flex-row items-center justify-between px-4 gap-2 shadow-md shadow-gray-100'>
           <View className='flex-1'>
             <Input
               value={text}
@@ -188,10 +200,16 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
           />
         <Animated.View className='flex-1' style={animatedStyle}>
           <LectureControls
-            status={status}
+            currentTime={currentTime}
+            isPlaying={isPlaying}
+            duration={duration}
             onPlayPause={onPlayPause}
             isCreatingNote={false}
             onNote={() => { }}
+            onSeek={onSeek}
+            onSeekEnd={onSeekEnd}
+            onSeekStart={onSeekStart}
+            alignments={alignments}
           />
         </Animated.View>
       </BottomSheet>

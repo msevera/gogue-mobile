@@ -35,6 +35,9 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   currentTime,
   sections
 }) => {
+
+  currentTime += 0.5;
+
   const getHighlightClasses = (state: HighlightState): string => {
     return cn(
       // state.section && 'bg-purple-500',
@@ -64,9 +67,9 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   const getHighlightState = (timing: TimingInfo): HighlightState => {
     return {
       word: currentTime >= timing.wordStartTime && currentTime <= timing.wordEndTime,
-      sentence: timing.sentenceStartTime ? (currentTime >= timing.sentenceStartTime && currentTime <= timing.sentenceEndTime!) : false,
-      paragraph: timing.paragraphStartTime ? (currentTime >= timing.paragraphStartTime && currentTime <= timing.paragraphEndTime!) : false,
-      section: timing.sectionStartTime ? (currentTime >= timing.sectionStartTime && currentTime <= timing.sectionEndTime!) : false
+      sentence: currentTime >= timing.sentenceStartTime! && currentTime < timing.sentenceEndTime!,
+      paragraph: currentTime >= timing.paragraphStartTime! && currentTime < timing.paragraphEndTime!,
+      section: currentTime >= timing.sectionStartTime! && currentTime < timing.sectionEndTime!
     };
   };
 
@@ -108,12 +111,12 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
           result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
           currentChunk = '';
         }
-        
+
         // Add section title with proper spacing
         const sectionTitle = sections[sectionsIndex];
         result.push(
-          <Text 
-            className="text-xl font-semibold leading-8 mt-4 mb-2" 
+          <Text
+            className="text-xl font-semibold leading-8 mt-4 mb-2"
             key={`section-${sectionsIndex}`}
           >
             {`${index === 0 ? '' : '\n\n'}${sectionTitle}\n`}
@@ -124,16 +127,6 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
       // Add separator if needed
       if (index > 0) {
-        if (is_paragraph_start) {
-          // if (currentChunk) {
-          //   result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
-          //   currentChunk = ' ';
-          // }
-          // result.push(<Text key={`para-${wordStartOffset}`}>{'\n'}</Text>);
-        } else if (currentChunk) {
-          // currentChunk += ' ';
-        }
-
         if (currentChunk) {
           currentChunk += ' ';
         }
@@ -169,6 +162,5 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     return result;
   }, [text, alignments, currentTime]);
 
-  console.log('currentTime', currentTime)
   return <Text>{renderText}</Text>;
 };

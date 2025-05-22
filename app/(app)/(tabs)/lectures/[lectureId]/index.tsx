@@ -20,7 +20,10 @@ export default function Screen() {
   const [currentTime, setCurrentTime] = useState(0);
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
+  const [wasPlaying, setWasPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
+
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
@@ -46,22 +49,34 @@ export default function Screen() {
 
   const player = useAudioPlayer({
     uri: lectureData?.audioPaths?.wav as string
-  }, 100);
+  }, 1000);
 
   const status = useAudioPlayerStatus(player);
 
-  useEffect(() => {
-    // const fn = (data: AudioStatus) => {
-    //   setCurrentTime(data.currentTime)
-    // }
-    // player.addListener('playbackStatusUpdate', fn)
-    // player.seekTo(219)
+  useEffect(() => {   
+    setCurrentTime(status.currentTime)
+  }, [status.currentTime])
 
+  // console.log('status', status.currentTime)
 
-    // return () => {
-    //   player.removeListener('playbackStatusUpdate', fn)
+  const onSeek = (position: number) => {
+    setCurrentTime(position)
+  }
+
+  const onSeekEnd = (position: number) => {
+    setCurrentTime(position)
+    player.seekTo(position)
+    // if (wasPlaying) {
+    //   player.play()
     // }
-  }, [player])
+  }
+
+  const onSeekStart = (position: number) => {
+    setWasPlaying(player.playing)
+    // if (player.playing) {
+    //   player.pause()
+    // }  
+  }
 
   return (
     <View className="flex-1">
@@ -82,16 +97,33 @@ export default function Screen() {
         {
           lectureData && (
             <View className='flex-1'>
+              <Text>{currentTime}</Text>
               <ScrollView className='px-4 pt-6'>
-                <TextHighlighter text={content} sections={lectureData.sections.map(section => section.title)} alignments={alignments} currentTime={status.currentTime} />
+                <TextHighlighter text={content} sections={lectureData.sections.map(section => section.title)} alignments={alignments} currentTime={currentTime} />
                 <View className='h-[240]' />
               </ScrollView>
             </View>
           )
         }
-        <LectureDrawer ref={lectureDrawerRef} status={status} onPlayPause={() => {
-          status.playing ? player.pause() : player.play()
-        }} />
+        <LectureDrawer
+          ref={lectureDrawerRef}
+          currentTime={currentTime}
+          duration={status.duration}
+          isPlaying={isPlaying}
+          onPlayPause={() => {
+            if (isPlaying) {
+              player.pause()
+              setIsPlaying(false)
+            } else {
+              player.play()
+              setIsPlaying(true)
+            }
+          }}
+          onSeek={onSeek}
+          onSeekEnd={onSeekEnd}
+          onSeekStart={onSeekStart}
+          alignments={alignments}
+        />
       </ScreenLayout>
     </View>
   );
