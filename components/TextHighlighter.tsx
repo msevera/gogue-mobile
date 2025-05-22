@@ -116,7 +116,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
             className="text-xl font-semibold leading-8 mt-4 mb-2" 
             key={`section-${sectionsIndex}`}
           >
-            {'\n\n' + sectionTitle + '\n'}
+            {`${index === 0 ? '' : '\n\n'}${sectionTitle}\n`}
           </Text>
         );
         sectionsIndex++;
@@ -125,12 +125,16 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       // Add separator if needed
       if (index > 0) {
         if (is_paragraph_start) {
-          if (currentChunk) {
-            result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
-            currentChunk = '';
-          }
+          // if (currentChunk) {
+          //   result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+          //   currentChunk = ' ';
+          // }
           // result.push(<Text key={`para-${wordStartOffset}`}>{'\n'}</Text>);
         } else if (currentChunk) {
+          // currentChunk += ' ';
+        }
+
+        if (currentChunk) {
           currentChunk += ' ';
         }
       }
