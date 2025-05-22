@@ -60,7 +60,8 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       paragraphStartTime: paragraph?.start_time,
       paragraphEndTime: paragraph?.end_time,
       sectionStartTime: section?.start_time,
-      sectionEndTime: section?.end_time
+      sectionEndTime: section?.end_time,
+      isSentenceEnd: alignment?.is_sentence_end
     };
   };
 
@@ -69,20 +70,26 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       word: currentTime >= timing.wordStartTime && currentTime <= timing.wordEndTime,
       sentence: currentTime >= timing.sentenceStartTime! && currentTime < timing.sentenceEndTime!,
       paragraph: currentTime >= timing.paragraphStartTime! && currentTime < timing.paragraphEndTime!,
-      section: currentTime >= timing.sectionStartTime! && currentTime < timing.sectionEndTime!
+      section: currentTime >= timing.sectionStartTime! && currentTime < timing.sectionEndTime!,
+      isSentenceEnd: timing.isSentenceEnd
     };
   };
 
   const renderChunk = (chunk: string, state: HighlightState, key: string, alignment?: any): JSX.Element => {
     return (
-
-      <Text
-        key={key}
-        className={getHighlightClasses(state)}
-      >
-        {chunk}
-        {/* {offsetElement} */}
-      </Text>
+      <>
+        <Text
+          key={key}
+          className={getHighlightClasses(state)}
+        >
+          {state.sentence && state.isSentenceEnd ? chunk.trim() : chunk}          
+        </Text>
+        {
+          state.sentence && state.isSentenceEnd && (
+            <Text key={`${key}-space`} className="text-lg leading-8"> </Text>
+          )
+        }
+      </>
     );
   };
 
@@ -136,14 +143,15 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       const newHighlightState = getHighlightState(timing);
       const wordText = text.slice(wordStartOffset, wordEndOffset);
 
+      console.log('newHighlightState', newHighlightState);
+
       // If any highlight state changes, flush the current chunk
       if (currentChunk && (
         currentHighlightState.word !== newHighlightState.word ||
         currentHighlightState.sentence !== newHighlightState.sentence ||
         currentHighlightState.paragraph !== newHighlightState.paragraph ||
         currentHighlightState.section !== newHighlightState.section
-      )) {        
-        console.log('currentHighlightState', currentHighlightState)
+      )) {
         result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`, alignment));
         currentChunk = wordText;
         currentHighlightState = newHighlightState;
@@ -156,7 +164,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     });
 
     // Add the last chunk if there is one
-    if (currentChunk) {      
+    if (currentChunk) {
       result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
     }
 
