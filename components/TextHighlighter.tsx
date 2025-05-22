@@ -105,7 +105,8 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       word: false,
       sentence: false,
       paragraph: false,
-      section: false
+      section: false,
+      isSentenceEnd: false
     };
     let lastEndOffset = 0;
 
@@ -144,8 +145,6 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       const timing = getTimingInfo(alignment);
       const newHighlightState = getHighlightState(timing);
       const wordText = text.slice(wordStartOffset, wordEndOffset);
-
-      console.log('newHighlightState', newHighlightState);
 
       // If any highlight state changes, flush the current chunk
       if (currentChunk && (
