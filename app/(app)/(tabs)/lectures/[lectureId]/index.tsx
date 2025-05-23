@@ -22,6 +22,7 @@ export default function Screen() {
   const [content, setContent] = useState('');
   const [wasPlaying, setWasPlaying] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [textSelectCalled, setTextSelectCalled] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
 
 
@@ -54,8 +55,13 @@ export default function Screen() {
   const status = useAudioPlayerStatus(player);
 
   useEffect(() => {
-    setCurrentTime(status.currentTime)
-  }, [status.currentTime])
+    if (textSelectCalled) {
+      setTextSelectCalled(false)
+      return;
+    }
+
+    setCurrentTime(status.currentTime)    
+  }, [status.currentTime, textSelectCalled])
 
   // console.log('status', status.currentTime)
 
@@ -79,10 +85,11 @@ export default function Screen() {
   }
 
   const onTextSelect = (time: number) => {
+    setTextSelectCalled(true)
     console.log('onPlayFromTime', time)
     setCurrentTime(time)
     player.seekTo(time)
-    // player.play()
+
   }
 
   return (
@@ -90,9 +97,7 @@ export default function Screen() {
       <ScreenLayout
         screenOptions={{
           headerLoading: loading,
-          // headerTitle: lectureData?.title,
           headerShown: false,
-          // header: () => <Header title={lectureData?.title} loading={loading} />,
         }}
         contentLoading={loading}
         contentEmpty={false}
