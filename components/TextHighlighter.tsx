@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
+import { ScrollView } from 'react-native';
 
 type Alignment = [number, number, string]; // [startTime, endTime, word]
 
@@ -10,6 +11,7 @@ interface TextHighlighterProps {
   currentTime: number;
   sections: string[];
   onSelect: (time: number) => void;
+  scrollViewRef: React.RefObject<ScrollView>;
 }
 
 interface HighlightState {
@@ -85,7 +87,8 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   alignments,
   currentTime,
   sections,
-  onSelect
+  onSelect,
+  scrollViewRef
 }) => {
   currentTime += 0.5;
 

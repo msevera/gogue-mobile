@@ -21,7 +21,7 @@ export default function Screen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
   const textSelectedRef = useRef(false);
-
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
@@ -111,22 +111,15 @@ export default function Screen() {
         <Header title={lectureData?.title} loading={loading} />
         {
           lectureData && (
-            <View className='flex-1'>
-              <Pressable onPress={() => {
-                // player.seekTo(10)
-                // setCurrentTime(10)
-                console.log('seekto', player.currentStatus)
-                
-              }}>
-                <Text>Press me</Text>
-              </Pressable>
-              <ScrollView className='px-4 pt-6'>
+            <View className='flex-1'>             
+              <ScrollView className='px-4 pt-6' ref={scrollViewRef}>
                 <TextHighlighter
                   text={content}
                   sections={lectureData.sections.map(section => section.title)}
                   alignments={alignments}
                   currentTime={currentTime}
                   onSelect={onTextSelect}
+                  scrollViewRef={scrollViewRef}
                 />
                 <View className='h-[240]' />
               </ScrollView>
