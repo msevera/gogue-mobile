@@ -99,12 +99,16 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
     })
     .onEnd((event) => {
       if (isLoaded) {
-        const finalTime = positionToTime(position.value);
         position.value = withDecay({
           velocity: event.velocityX,
-          deceleration: 0.99,
+          velocityFactor: 1,
+          deceleration: 1,
+          rubberBandEffect: true,
+          rubberBandFactor: 0.6,
           clamp: [0, LINE_WIDTH]
         });
+        // We'll let the decay animation determine the final position
+        const finalTime = positionToTime(position.value);
         if (onSeekEnd) {
           runOnJS(onSeekEnd)(finalTime);
         }

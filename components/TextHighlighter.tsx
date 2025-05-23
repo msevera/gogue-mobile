@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
-import { View } from 'react-native';
+
 type Alignment = [number, number, string]; // [startTime, endTime, word]
 
 interface TextHighlighterProps {
@@ -9,6 +9,7 @@ interface TextHighlighterProps {
   alignments: Alignment[];
   currentTime: number;
   sections: string[];
+  onSelect: (time: number) => void;
 }
 
 interface HighlightState {
@@ -17,6 +18,9 @@ interface HighlightState {
   paragraph: boolean;
   section: boolean;
   isSentenceEnd: boolean;
+  isSentenceStart: boolean;
+  startTime: number;
+  isParagraphStart: boolean;
 }
 
 interface TimingInfo {
@@ -29,26 +33,55 @@ interface TimingInfo {
   sectionStartTime?: number;
   sectionEndTime?: number;
   isSentenceEnd?: boolean;
+  isSentenceStart?: boolean;
 }
+
+interface SentenceProps {
+  text: string;
+  state: HighlightState;
+  timing?: TimingInfo;
+  onSelect: (time: number) => void;
+}
+
+const Sentence: React.FC<SentenceProps> = ({ text, state, timing, onSelect }) => {
+  const isClickable = timing?.sentenceStartTime !== undefined;
+  
+  const getHighlightClasses = (state: HighlightState): string => {
+    return cn(
+      state.sentence && 'bg-blue-100',
+      'text-lg leading-8'
+    );
+  };
+
+  return (
+    <Text className="text-lg leading-8" suppressHighlighting>
+      <Text
+        className={cn(
+          getHighlightClasses(state),
+          isClickable && 'cursor-pointer hover:bg-blue-200'
+        )}
+        onPress={() => {
+          if (isClickable && timing?.sentenceStartTime !== undefined) {
+            onSelect(timing.sentenceStartTime);
+          }
+        }}
+        suppressHighlighting
+      >
+        {state.isParagraphStart ? '    ' : ''}{text.trim()}
+      </Text>
+      {' '}
+    </Text>
+  );
+};
 
 export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   text,
   alignments,
   currentTime,
-  sections
+  sections,
+  onSelect
 }) => {
-
   currentTime += 0.5;
-
-  const getHighlightClasses = (state: HighlightState): string => {
-    return cn(
-      // state.section && 'bg-purple-500',
-      // state.paragraph && 'bg-yellow-500',
-      state.sentence && 'bg-blue-100',
-      // state.word && 'bg-blue-50',
-      'text-lg leading-8'
-    );
-  };
 
   const getTimingInfo = (alignment: any): TimingInfo => {
     const { word, sentence, paragraph, section } = alignment;
@@ -63,36 +96,23 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       paragraphEndTime: paragraph?.end_time,
       sectionStartTime: section?.start_time,
       sectionEndTime: section?.end_time,
-      isSentenceEnd: alignment?.is_sentence_end
+      isSentenceEnd: alignment?.is_sentence_end,
+      isSentenceStart: alignment?.is_sentence_start,
+      isParagraphStart: alignment?.is_paragraph_start
     };
   };
 
-  const getHighlightState = (timing: TimingInfo): HighlightState => {
+  const getHighlightState = (timing: TimingInfo, isParagraphStart: boolean): HighlightState => {    
     return {
-      word: currentTime >= timing.wordStartTime && currentTime <= timing.wordEndTime,
+      word: false,
       sentence: currentTime >= timing.sentenceStartTime! && currentTime < timing.sentenceEndTime!,
-      paragraph: currentTime >= timing.paragraphStartTime! && currentTime < timing.paragraphEndTime!,
-      section: currentTime >= timing.sectionStartTime! && currentTime < timing.sectionEndTime!,
-      isSentenceEnd: timing.isSentenceEnd!
+      paragraph: false,
+      section: false,
+      isSentenceEnd: timing.isSentenceEnd!,
+      isSentenceStart: timing.isSentenceStart!,
+      startTime: timing.sentenceStartTime!,
+      isParagraphStart: timing.isParagraphStart
     };
-  };
-
-  const renderChunk = (chunk: string, state: HighlightState, key: string, alignment?: any): JSX.Element => {
-    return (
-      <Text key={key}>
-        <Text
-
-          className={getHighlightClasses(state)}
-        >
-          {state.sentence && state.isSentenceEnd ? chunk.trim() : chunk}
-        </Text>
-        {
-          state.sentence && state.isSentenceEnd && (
-            <Text className="text-lg leading-8">{' '}</Text>
-          )
-        }
-      </Text>
-    );
   };
 
   const renderText = useMemo(() => {
@@ -106,23 +126,37 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       sentence: false,
       paragraph: false,
       section: false,
-      isSentenceEnd: false
+      isSentenceEnd: false,
+      isSentenceStart: false,
+      startTime: 0,
+      isParagraphStart: false
     };
     let lastEndOffset = 0;
+    let currentTiming: TimingInfo | undefined;
+    let isParagraphStart = true;
 
     alignments.forEach((alignment, index) => {
       const { word, is_section_start, is_paragraph_start, is_sentence_end } = alignment as any;
       const { start_offset: wordStartOffset, end_offset: wordEndOffset } = word;
+      const timing = getTimingInfo(alignment);
+      const newHighlightState = getHighlightState(timing, isParagraphStart);
+      const wordText = text.slice(wordStartOffset, wordEndOffset);
 
       // Handle section start
       if (is_section_start && sectionsIndex < sections.length) {
-        // Flush any existing chunk before adding section title
         if (currentChunk) {
-          result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+          result.push(
+            <Sentence
+              key={`chunk-${lastEndOffset}`}
+              text={currentChunk}
+              state={currentHighlightState}
+              timing={currentTiming}
+              onSelect={onSelect}
+            />
+          );
           currentChunk = '';
         }
 
-        // Add section title with proper spacing
         const sectionTitle = sections[sectionsIndex];
         result.push(
           <Text
@@ -133,60 +167,78 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
           </Text>
         );
         sectionsIndex++;
+        isParagraphStart = true;
       }
 
-      if (!is_section_start && is_paragraph_start) { 
-        // Flush any existing chunk before adding section title
+      if (!is_section_start && is_paragraph_start) {
         if (currentChunk) {
-          result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+          result.push(
+            <Sentence
+              key={`chunk-${lastEndOffset}`}
+              text={currentChunk}
+              state={currentHighlightState}
+              timing={currentTiming}
+              onSelect={onSelect}
+            />
+          );
           currentChunk = '';
         }
-        
+
         result.push(
-          <Text
-            className="text-xl font-semibold leading-8 mt-4 mb-2"
-            key={`paragraph-${lastEndOffset}`}
-          >
+          <Text key={`paragraph-${lastEndOffset}`}>
             {`\n`}
           </Text>
         );
+        isParagraphStart = true;
       }
 
-      // Add separator if needed
       if (index > 0) {
         if (currentChunk) {
           currentChunk += ' ';
         }
       }
 
-      const timing = getTimingInfo(alignment);
-      const newHighlightState = getHighlightState(timing);
-      const wordText = text.slice(wordStartOffset, wordEndOffset);
-
-      // If any highlight state changes, flush the current chunk
-      if (currentChunk && (
+      // If we reach the end of a sentence or if the highlight state changes, render the current chunk
+      if (is_sentence_end || (currentChunk && (
         currentHighlightState.word !== newHighlightState.word ||
         currentHighlightState.sentence !== newHighlightState.sentence ||
         currentHighlightState.paragraph !== newHighlightState.paragraph ||
         currentHighlightState.section !== newHighlightState.section
-      )) {
-        result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`, alignment));
-        currentChunk = wordText;
-        currentHighlightState = newHighlightState;
-      } else {
-        currentChunk += wordText;
-        currentHighlightState = newHighlightState;
+      ))) {
+        if (currentChunk) {
+          result.push(
+            <Sentence
+              key={`chunk-${lastEndOffset}`}
+              text={currentChunk}
+              state={currentHighlightState}
+              timing={currentTiming}
+              onSelect={onSelect}
+            />
+          );
+          currentChunk = '';
+        }
       }
+
+      currentChunk += wordText;
+      currentHighlightState = newHighlightState;
+      currentTiming = timing;
+      isParagraphStart = false;
 
       lastEndOffset = wordEndOffset;
     });
 
-    // Flush the final chunk if it exists
     if (currentChunk) {
-      result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+      result.push(
+        <Sentence
+          key={`chunk-${lastEndOffset}`}
+          text={currentChunk}
+          state={currentHighlightState}
+          timing={currentTiming}
+          onSelect={onSelect}
+        />
+      );
     }
 
-    // Add any remaining text after the last alignment
     if (lastEndOffset < text.length) {
       const remainingText = text.slice(lastEndOffset);
       if (remainingText.trim()) {
@@ -199,7 +251,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     }
 
     return result;
-  }, [text, alignments, currentTime]);
+  }, [text, alignments, currentTime, onSelect]);
 
   return <Text>{renderText}</Text>;
 };

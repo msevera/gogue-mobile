@@ -53,7 +53,7 @@ export default function Screen() {
 
   const status = useAudioPlayerStatus(player);
 
-  useEffect(() => {   
+  useEffect(() => {
     setCurrentTime(status.currentTime)
   }, [status.currentTime])
 
@@ -75,7 +75,14 @@ export default function Screen() {
     setWasPlaying(player.playing)
     if (player.playing) {
       player.pause()
-    }  
+    }
+  }
+
+  const onTextSelect = (time: number) => {
+    console.log('onPlayFromTime', time)
+    setCurrentTime(time)
+    player.seekTo(time)
+    // player.play()
   }
 
   return (
@@ -97,9 +104,14 @@ export default function Screen() {
         {
           lectureData && (
             <View className='flex-1'>
-              {/* <Text>{currentTime}</Text> */}
               <ScrollView className='px-4 pt-6'>
-                <TextHighlighter text={content} sections={lectureData.sections.map(section => section.title)} alignments={alignments} currentTime={currentTime} />
+                <TextHighlighter
+                  text={content}
+                  sections={lectureData.sections.map(section => section.title)}
+                  alignments={alignments}
+                  currentTime={currentTime}
+                  onSelect={onTextSelect}
+                />
                 <View className='h-[240]' />
               </ScrollView>
             </View>

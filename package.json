@@ -72,7 +72,8 @@
     "react-native-background-timer": "^2.4.1",
     "react-native-get-random-values": "^1.11.0",
     "react-native-screens": "~4.4.0",
-    "expo-audio": "~0.3.5"
+    "expo-audio": "~0.3.5",
+    "expo-haptics": "~14.0.1"
   },
   "devDependencies": {
     "@apollo/client-devtools-vscode": "^4.19.6",
