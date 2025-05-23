@@ -42,8 +42,8 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
   const getHighlightClasses = (state: HighlightState): string => {
     return cn(
-      state.section && 'bg-purple-500',
-      state.paragraph && 'bg-yellow-500',
+      // state.section && 'bg-purple-500',
+      // state.paragraph && 'bg-yellow-500',
       state.sentence && 'bg-blue-100',
       // state.word && 'bg-blue-50',
       'text-lg leading-8'
@@ -181,9 +181,21 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       lastEndOffset = wordEndOffset;
     });
 
-    // Add the last chunk if there is one
+    // Flush the final chunk if it exists
     if (currentChunk) {
       result.push(renderChunk(currentChunk, currentHighlightState, `chunk-${lastEndOffset}`));
+    }
+
+    // Add any remaining text after the last alignment
+    if (lastEndOffset < text.length) {
+      const remainingText = text.slice(lastEndOffset);
+      if (remainingText.trim()) {
+        result.push(
+          <Text key={`remaining-${lastEndOffset}`} className="text-lg leading-8">
+            {remainingText}
+          </Text>
+        );
+      }
     }
 
     return result;

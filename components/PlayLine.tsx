@@ -2,14 +2,14 @@ import { View, Dimensions } from 'react-native'
 import { Text } from './ui/Text'
 import { AudioStatus } from 'expo-audio';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay, withTiming } from 'react-native-reanimated';
 import { useMemo, useEffect } from 'react';
 
 const { width: screenWidth } = Dimensions.get('window');
 const LINE_WIDTH = screenWidth - 2;
 
 interface PlayLineProps {
-  currentTime: number;  
+  currentTime: number;
   duration: number;
   onSeek?: (position: number) => void;
   onSeekEnd?: (position: number) => void;
@@ -17,9 +17,9 @@ interface PlayLineProps {
   alignments: any;
 }
 
-export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart, alignments }: PlayLineProps) => {  
+export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart, alignments }: PlayLineProps) => {
   const snapPoints = useMemo(() => {
-    const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);  
+    const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);
     return result;
   }, [alignments]);
 
@@ -33,6 +33,9 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
   const position = useSharedValue(progress * LINE_WIDTH);
   const startPosition = useSharedValue(0);
 
+  // Shared value for the progress width
+  const progressWidth = useSharedValue(progress * LINE_WIDTH);
+
   // Update position when currentTime changes
   useEffect(() => {
     if (isLoaded) {
@@ -40,10 +43,17 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
     }
   }, [currentTime, duration, isLoaded]);
 
+  // Update progress width when currentTime changes
+  useEffect(() => {
+    if (isLoaded) {
+      progressWidth.value = withTiming(progress * LINE_WIDTH, { duration: 150 });
+    }
+  }, [currentTime, duration, isLoaded]);
+
   const findClosestSnapPoint = (currentTime: number) => {
     'worklet';
     if (!snapPoints.length) return currentTime;
-    
+
     return snapPoints.reduce((prev: number, curr: number) => {
       return Math.abs(curr - currentTime) < Math.abs(prev - currentTime) ? curr : prev;
     });
@@ -70,39 +80,40 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
     .onUpdate((event) => {
       // Calculate new position based on the gesture
       const newPosition = Math.max(0, Math.min(LINE_WIDTH, startPosition.value - event.translationX));
-      
+
       // Convert position to time
       const currentTime = positionToTime(newPosition);
-      
+
       // Find closest snap point
       const snappedTime = findClosestSnapPoint(currentTime);
-      
+
       // Convert back to position
       const snappedPosition = timeToPosition(snappedTime);
-      
+
       position.value = snappedPosition;
-      
+
       // Call onSeek with the snapped time position
       if (onSeek && isLoaded) {
         runOnJS(onSeek)(snappedTime);
       }
     })
     .onEnd((event) => {
-      // Calculate the final progress (0 to 1)
-      if (onSeekEnd && isLoaded) {
+      if (isLoaded) {
         const finalTime = positionToTime(position.value);
         position.value = withDecay({
-          velocity: -event.velocityX,
+          velocity: event.velocityX,
           deceleration: 0.99,
           clamp: [0, LINE_WIDTH]
         });
-        runOnJS(onSeekEnd)(finalTime);
+        if (onSeekEnd) {
+          runOnJS(onSeekEnd)(finalTime);
+        }
       }
     });
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const progressStyle = useAnimatedStyle(() => {
     return {
-      width: position.value,
+      width: progressWidth.value,
     };
   });
 
@@ -112,7 +123,7 @@ export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart
         <View className="h-[2] bg-gray-50 overflow-hidden relative">
           <Animated.View
             className="h-full bg-blue-400 absolute"
-            style={[{ right: markerPosition }, { width: progress * LINE_WIDTH }]}
+            style={[{ right: markerPosition }, progressStyle]}
           />
           {/* <View 
             className="w-1 h-full bg-black absolute z-10" 

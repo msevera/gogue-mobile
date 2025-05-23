@@ -66,16 +66,16 @@ export default function Screen() {
   const onSeekEnd = (position: number) => {
     setCurrentTime(position)
     player.seekTo(position)
-    // if (wasPlaying) {
-    //   player.play()
-    // }
+    if (wasPlaying) {
+      player.play()
+    }
   }
 
   const onSeekStart = (position: number) => {
     setWasPlaying(player.playing)
-    // if (player.playing) {
-    //   player.pause()
-    // }  
+    if (player.playing) {
+      player.pause()
+    }  
   }
 
   return (
@@ -97,7 +97,7 @@ export default function Screen() {
         {
           lectureData && (
             <View className='flex-1'>
-              <Text>{currentTime}</Text>
+              {/* <Text>{currentTime}</Text> */}
               <ScrollView className='px-4 pt-6'>
                 <TextHighlighter text={content} sections={lectureData.sections.map(section => section.title)} alignments={alignments} currentTime={currentTime} />
                 <View className='h-[240]' />
@@ -109,9 +109,9 @@ export default function Screen() {
           ref={lectureDrawerRef}
           currentTime={currentTime}
           duration={status.duration}
-          isPlaying={isPlaying}
+          isPlaying={status.playing}
           onPlayPause={() => {
-            if (isPlaying) {
+            if (status.playing) {
               player.pause()
               setIsPlaying(false)
             } else {
