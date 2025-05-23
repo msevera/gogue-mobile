@@ -18,6 +18,7 @@ export default function Screen() {
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
   const [wasPlaying, setWasPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
   const textSelectedRef = useRef(false);
 
@@ -58,6 +59,16 @@ export default function Screen() {
 
     setCurrentTime(status.currentTime)    
   }, [status.currentTime])
+
+  useEffect(() => {
+    setIsPlaying(status.playing)
+  }, [status.playing])
+
+  useEffect(() => {    
+    if (status.didJustFinish) {
+      setIsPlaying(false)
+    }    
+  }, [status.didJustFinish])
 
   const onSeek = (time: number) => {
     setCurrentTime(time)
@@ -126,9 +137,9 @@ export default function Screen() {
           ref={lectureDrawerRef}
           currentTime={currentTime}
           duration={status.duration}
-          isPlaying={status.playing}
+          isPlaying={isPlaying}
           onPlayPause={() => {
-            if (status.playing) {
+            if (isPlaying) {
               player.pause()
             } else {
               player.play()
