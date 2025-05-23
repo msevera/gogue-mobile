@@ -231,7 +231,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     }
 
     return result;
-  }, [text, alignments, currentTime, onSelect]);
+  }, [text, alignments, currentTime]);
 
   return <Text>{renderText}</Text>;
 };

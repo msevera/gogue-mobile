@@ -10,10 +10,7 @@ import { useAudioPlayer, useAudioPlayerStatus, AudioStatus } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
-import LectureDrawerOld from '@/components/vapi/lectureDrawerOld';
 import { Header } from '@/components/layouts/Header';
-
-// const audioSource = require('./assets/Hello.mp3');
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -21,9 +18,8 @@ export default function Screen() {
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
   const [wasPlaying, setWasPlaying] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [textSelectCalled, setTextSelectCalled] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
+  const textSelectedRef = useRef(false);
 
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
@@ -54,30 +50,28 @@ export default function Screen() {
 
   const status = useAudioPlayerStatus(player);
 
-  useEffect(() => {
-    if (textSelectCalled) {
-      setTextSelectCalled(false)
+  useEffect(() => {    
+    if (textSelectedRef.current) {
+      textSelectedRef.current = false;
       return;
     }
 
     setCurrentTime(status.currentTime)    
-  }, [status.currentTime, textSelectCalled])
+  }, [status.currentTime])
 
-  // console.log('status', status.currentTime)
-
-  const onSeek = (position: number) => {
-    setCurrentTime(position)
+  const onSeek = (time: number) => {
+    setCurrentTime(time)
   }
 
-  const onSeekEnd = (position: number) => {
-    setCurrentTime(position)
-    player.seekTo(position)
+  const onSeekEnd = (time: number) => {
+    setCurrentTime(time)
+    player.seekTo(time)
     if (wasPlaying) {
       player.play()
     }
   }
 
-  const onSeekStart = (position: number) => {
+  const onSeekStart = () => {
     setWasPlaying(player.playing)
     if (player.playing) {
       player.pause()
@@ -85,11 +79,9 @@ export default function Screen() {
   }
 
   const onTextSelect = (time: number) => {
-    setTextSelectCalled(true)
-    console.log('onPlayFromTime', time)
-    setCurrentTime(time)
     player.seekTo(time)
-
+    setCurrentTime(time)
+    textSelectedRef.current = true;      
   }
 
   return (
@@ -109,6 +101,14 @@ export default function Screen() {
         {
           lectureData && (
             <View className='flex-1'>
+              <Pressable onPress={() => {
+                // player.seekTo(10)
+                // setCurrentTime(10)
+                console.log('seekto', player.currentStatus)
+                
+              }}>
+                <Text>Press me</Text>
+              </Pressable>
               <ScrollView className='px-4 pt-6'>
                 <TextHighlighter
                   text={content}
@@ -130,10 +130,8 @@ export default function Screen() {
           onPlayPause={() => {
             if (status.playing) {
               player.pause()
-              setIsPlaying(false)
             } else {
               player.play()
-              setIsPlaying(true)
             }
           }}
           onSeek={onSeek}
