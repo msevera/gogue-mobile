@@ -2,7 +2,6 @@ import { Keyboard, View } from 'react-native';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { BottomSheet } from './BottomSheet';
 import { LectureControls } from './LectureControls';
-import { AudioStatus } from 'expo-audio';
 import { Text } from './ui/Text';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
@@ -12,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 export interface LectureDrawerRef {
   open: () => void;
   close: () => void;
+  getControlsDrawerClosedSnapPoint: () => string;
 }
 
 const controlsDrawerClosedSnapPoint = '200';
@@ -60,6 +60,9 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
     },
     close: () => {
       hideDrawer();
+    },
+    getControlsDrawerClosedSnapPoint: () => {
+      return controlsDrawerClosedSnapPoint;
     }
   }));
 
@@ -181,8 +184,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
               </View>}
             />
           </View>
-        </View>
-        {/* <View className='absolute top-[28] h-[200] w-full left-0 right-0 bg-white z-[-1]' /> */}
+        </View>        
         <LinearGradient
             colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)']}
             locations={[0, 0.18, 1]}            

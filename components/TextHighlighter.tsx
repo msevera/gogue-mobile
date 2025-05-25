@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
-import { ScrollView } from 'react-native';
+import { Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
 
 type Alignment = [number, number, string]; // [startTime, endTime, word]
 
@@ -50,28 +50,33 @@ interface SentenceProps {
 
 const Sentence: React.FC<SentenceProps> = ({ text, state, timing, onSelect }) => {
   const isClickable = timing?.sentenceStartTime !== undefined;
-  
-  const getHighlightClasses = (state: HighlightState): string => {
-    return cn(
-      state.sentence && 'bg-blue-100',
-      'text-lg leading-8'
-    );
-  };
 
   return (
-    <Text className="text-lg leading-8" suppressHighlighting>
+    <Text className="text-lg leading-8">
       {state.isParagraphStart && !state.isSectionStart && (
         <Text className="text-lg leading-8">{'    '}</Text>
       )}
+      {/* {state.isParagraphStart && (
+        <TouchableOpacity
+          onLayout={(event) => {
+            console.log('pressable2', event.nativeEvent.layout.y)
+          }}
+        >
+          <Text className="text-lg leading-8">A</Text>
+        </TouchableOpacity>)} */}
       <Text
         className={cn(
-          getHighlightClasses(state),
-          isClickable && 'cursor-pointer hover:bg-blue-200'
+          "text-lg leading-8",
+          isClickable && 'cursor-pointer hover:bg-blue-200',          
+          state.sentence && 'bg-blue-100',
         )}
         onPress={() => {
           if (isClickable && timing?.sentenceStartTime !== undefined) {
             onSelect(timing.sentenceStartTime);
           }
+        }}
+        onLongPress={() => {
+          console.log('long press')
         }}
         suppressHighlighting
       >
@@ -187,7 +192,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         }
 
         result.push(
-          <Text key={`paragraph-${index}`}>
+          <Text className="text-lg leading-8" key={`paragraph-${index}`}>
             {`\n`}
           </Text>
         );
@@ -236,5 +241,5 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     return result;
   }, [text, alignments, currentTime]);
 
-  return <Text>{renderText}</Text>;
+  return <Text className="text-lg leading-8">{renderText}</Text>;
 };

@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useQuery } from '@apollo/client';
-import { Pressable, ScrollView, View } from 'react-native';
+import { LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
@@ -9,6 +9,7 @@ import { Lecture } from '@/apollo/__generated__/graphql';
 import { useAudioPlayer, useAudioPlayerStatus, AudioStatus } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
+import { TextHighlighter2 } from '@/components/TextHighlighter2';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
 
@@ -22,6 +23,7 @@ export default function Screen() {
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
   const textSelectedRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
@@ -84,15 +86,17 @@ export default function Screen() {
 
   const onSeekStart = () => {
     setWasPlaying(player.playing)
-    if (player.playing) {
-      player.pause()
-    }
+    player.pause()
   }
 
   const onTextSelect = (time: number) => {
     player.seekTo(time)
     setCurrentTime(time)
     textSelectedRef.current = true;      
+  }
+
+  const onLayoutHandler = (event: LayoutChangeEvent) => {
+    setScrollViewHeight(event.nativeEvent.layout.height - parseInt(lectureDrawerRef.current?.getControlsDrawerClosedSnapPoint() as string))
   }
 
   return (
@@ -112,14 +116,15 @@ export default function Screen() {
         {
           lectureData && (
             <View className='flex-1'>             
-              <ScrollView className='px-4 pt-6' ref={scrollViewRef}>
-                <TextHighlighter
+              <ScrollView className='px-4 pt-6' onLayout={onLayoutHandler} ref={scrollViewRef}>
+                <TextHighlighter2
                   text={content}
                   sections={lectureData.sections.map(section => section.title)}
                   alignments={alignments}
                   currentTime={currentTime}
                   onSelect={onTextSelect}
                   scrollViewRef={scrollViewRef}
+                  scrollViewHeight={scrollViewHeight}
                 />
                 <View className='h-[240]' />
               </ScrollView>
