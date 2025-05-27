@@ -72,7 +72,7 @@ export default {
             ]
           }
         ],
-        "UIBackgroundModes": ["voip"],
+        "UIBackgroundModes": ["voip", "audio"],
         "bitcode": false
       },
     },
@@ -120,25 +120,19 @@ export default {
           mode: getOneSignalEnv(),
         }
       ],
-      "@config-plugins/react-native-webrtc",
-      "@daily-co/config-plugin-rn-daily-js",
       [
+        "@config-plugins/react-native-webrtc",
+        {
+          cameraPermission: `Allow ${getAppName()} to access your camera`,
+          microphonePermission: `Allow ${getAppName()} to access your microphone`,
+        },
+      ],
+       [
         "expo-audio",
         {
           "microphonePermission": `Allow ${getAppName()} to access your microphone.`
         }
       ]
-      // [
-      //   "expo-build-properties",
-      //   {
-      //     "android": {
-      //       "minSdkVersion": 24
-      //     },
-      //     "ios": {
-      //       "deploymentTarget": "13.4"
-      //     }
-      //   }
-      // ]
     ],
     "experiments": {
       "typedRoutes": true

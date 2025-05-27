@@ -1,5 +1,5 @@
-import Vapi from '@vapi-ai/react-native';
+// import Vapi from '@vapi-ai/react-native';
 
-const vapi = new Vapi(process.env.EXPO_PUBLIC_VAPI_KEY as string);
+const vapi = null; //new Vapi(process.env.EXPO_PUBLIC_VAPI_KEY as string);
 
 export default vapi;

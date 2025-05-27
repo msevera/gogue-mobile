@@ -1,17 +1,16 @@
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useQuery } from '@apollo/client';
-import { LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native';
-import { Text } from '@/components/ui/Text';
-import { Button } from '@/components/ui/Button';
+import { LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
 import { Lecture } from '@/apollo/__generated__/graphql';
-import { useAudioPlayer, useAudioPlayerStatus, AudioStatus } from 'expo-audio';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
-import { TextHighlighter } from '@/components/TextHighlighter';
 import { TextHighlighter2 } from '@/components/TextHighlighter2';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
+import { Button } from '@/components/ui/Button';
+import { useWebRTC } from '@/hooks/useWebRTC';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -24,6 +23,10 @@ export default function Screen() {
   const textSelectedRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const { muteMic, unmuteMic, isMuted, setupWebRTC, connected, isConnecting, stop } = useWebRTC();
+
+
+
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
@@ -53,23 +56,23 @@ export default function Screen() {
 
   const status = useAudioPlayerStatus(player);
 
-  useEffect(() => {    
+  useEffect(() => {
     if (textSelectedRef.current) {
       textSelectedRef.current = false;
       return;
     }
 
-    setCurrentTime(status.currentTime)    
+    setCurrentTime(status.currentTime)
   }, [status.currentTime])
 
   useEffect(() => {
     setIsPlaying(status.playing)
   }, [status.playing])
 
-  useEffect(() => {    
+  useEffect(() => {
     if (status.didJustFinish) {
       setIsPlaying(false)
-    }    
+    }
   }, [status.didJustFinish])
 
   const onSeek = (time: number) => {
@@ -92,7 +95,7 @@ export default function Screen() {
   const onTextSelect = (time: number) => {
     player.seekTo(time)
     setCurrentTime(time)
-    textSelectedRef.current = true;      
+    textSelectedRef.current = true;
   }
 
   const onLayoutHandler = (event: LayoutChangeEvent) => {
@@ -115,7 +118,31 @@ export default function Screen() {
         <Header title={lectureData?.title} loading={loading} />
         {
           lectureData && (
-            <View className='flex-1'>             
+            <View className='flex-1'>
+              <Button text={`WebRTC ${connected ? 'connected' : 'not connected'} ${isConnecting ? 'connecting...' : ''}`} onPress={() => {
+                setupWebRTC();
+              }} />
+              {
+                connected && (
+                  <View className='flex-row gap-2'>
+                    <Button text="Disconnect" onPress={() => {
+                      stop();
+                    }} />
+                    {
+                      !isMuted ? (
+                        <Button text="Mute" onPress={() => {
+                          muteMic();
+                        }} />
+                      ) : (
+                        <Button text="Unmute" onPress={() => {
+                          unmuteMic();
+                        }} />
+                      )
+                    }                    
+                  </View>
+
+                )
+              }
               <ScrollView className='px-4 pt-6' onLayout={onLayoutHandler} ref={scrollViewRef}>
                 <TextHighlighter2
                   text={content}
