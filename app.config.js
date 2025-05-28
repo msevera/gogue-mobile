@@ -95,11 +95,13 @@ export default {
           "iosUrlScheme": "com.googleusercontent.apps.learnbud"
         }
       ],
-      ["expo-build-properties", {
-        "ios": {
-          "useFrameworks": "static"
+      [
+        "expo-build-properties", {
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
-      }],
+      ],
       [
         "expo-speech-recognition",
         {
@@ -127,7 +129,7 @@ export default {
           microphonePermission: `Allow ${getAppName()} to access your microphone`,
         },
       ],
-       [
+      [
         "expo-audio",
         {
           "microphonePermission": `Allow ${getAppName()} to access your microphone.`

@@ -10,7 +10,7 @@ import { TextHighlighter2 } from '@/components/TextHighlighter2';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
 import { Button } from '@/components/ui/Button';
-import { useVoiceAgent } from '@/hooks/useVoiceAgent';
+import { useWebRTC } from '@/hooks/useWebRTC';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -23,7 +23,7 @@ export default function Screen() {
   const textSelectedRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-  const { connect, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent();
+  const { muteMic, unmuteMic, isMuted, setupWebRTC, connected, isConnecting, stop } = useWebRTC();
 
 
 
@@ -119,24 +119,30 @@ export default function Screen() {
         {
           lectureData && (
             <View className='flex-1'>
+              <Button text={`WebRTC ${connected ? 'connected' : 'not connected'} ${isConnecting ? 'connecting...' : ''}`} onPress={() => {
+                setupWebRTC();
+              }} />
               {
-                botReady ? (
+                connected && (
                   <View className='flex-row gap-2'>
                     <Button text="Disconnect" onPress={() => {
-                      disconnect();
+                      stop();
                     }} />
-                    <Button text="Send Message" onPress={() => {
-                      sendMessage('Hello, how are you?');
-                    }} />
+                    {
+                      !isMuted ? (
+                        <Button text="Mute" onPress={() => {
+                          muteMic();
+                        }} />
+                      ) : (
+                        <Button text="Unmute" onPress={() => {
+                          unmuteMic();
+                        }} />
+                      )
+                    }                    
                   </View>
-                ) : (
-                  <Button text="Connect" onPress={() => {
-                    connect();
-                  }} />
+
                 )
               }
-
-
               <ScrollView className='px-4 pt-6' onLayout={onLayoutHandler} ref={scrollViewRef}>
                 <TextHighlighter2
                   text={content}
