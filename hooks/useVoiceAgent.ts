@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 const inCallStates = new Set(["authenticating", "connecting", "connected", "ready"])
 
-export const useVoiceAgent = () => {
+export const useVoiceAgent = ({ lectureId }: { lectureId: string }) => {
   const [client, setClient] = useState<RTVIClient | undefined>();
   const [currentState, setCurrentState] = useState<TransportState>('disconnected');
   const [inCall, setInCall] = useState<boolean>(false);
@@ -17,11 +17,23 @@ export const useVoiceAgent = () => {
       params: {
         baseUrl: process.env.EXPO_PUBLIC_WEBRTC_ENDPOINT,
         endpoints: { connect: '/connect' },
+        requestData: {
+          lecture_id: lectureId
+        }
       },
       enableMic: true,
       customConnectHandler: () => Promise.resolve(),
+      callbacks: {
+        onTrackStarted: (track: MediaStreamTrack) => {
+          console.log('onTrackStarted 123', track);
+        },
+        onTrackStopped: (track: MediaStreamTrack) => {
+          console.log('onTrackStopped', track);
+        },
+
+      }
     });
-    client.setLogLevel(LogLevel.WARN);
+    client.setLogLevel(LogLevel.DEBUG);
 
     return client;
   }, []);
@@ -55,7 +67,7 @@ export const useVoiceAgent = () => {
         console.log('[VA]: transportStateChanged', state);
       });
       client.on('connected', () => {
-        setBotReady(true);
+        // setBotReady(true);
         console.log('[VA]: connected');
       });
       client.on('disconnected', () => {

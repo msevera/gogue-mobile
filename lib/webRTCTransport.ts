@@ -2,7 +2,7 @@ import Daily, {
   DailyCall,
   DailyEventObjectAvailableDevicesUpdated,
   DailyEventObjectLocalAudioLevel,
-  DailyEventObjectTrack,  
+  DailyEventObjectTrack,
   RTCPeerConnection
 } from "@daily-co/react-native-daily-js";
 
@@ -81,7 +81,7 @@ export class WebRTCTransport extends Transport {
   }) {
     super();
     this._iceServers = iceServers;
-    this._waitForICEGathering = waitForICEGathering;    
+    this._waitForICEGathering = waitForICEGathering;
   }
 
   public initialize(
@@ -124,8 +124,8 @@ export class WebRTCTransport extends Transport {
     );
 
     this._daily!.on('track-started', this.handleTrackStarted.bind(this));
-    this._daily!.on('track-stopped', this.handleTrackStopped.bind(this));    
-    this._daily!.on('local-audio-level', this.handleLocalAudioLevel.bind(this));    
+    this._daily!.on('track-stopped', this.handleTrackStopped.bind(this));
+    this._daily!.on('local-audio-level', this.handleLocalAudioLevel.bind(this));
     this._daily!.on('app-message', this.handleAppMessage.bind(this));
   }
 
@@ -213,9 +213,15 @@ export class WebRTCTransport extends Transport {
 
     if (abortController.signal.aborted) return;
     this.state = "connecting";
-    await this.startNewPeerConnection();    
+    await this.startNewPeerConnection();
 
     if (abortController.signal.aborted) return;
+
+    // Wait until we are actually connected and the data channel is ready
+    await new Promise<void>((resolve, reject) => {
+      this._connectResolved = resolve;
+      this._connectFailed = reject;
+    });
 
     this.state = 'connected';
     this._callbacks.onConnected?.();
@@ -232,24 +238,23 @@ export class WebRTCTransport extends Transport {
   }
 
   sendReadyMessage() {
-    console.log('sendReadyMessage');
-    this.state = "ready";
-    // Sending message that the client is ready, just for testing
-    //this.dc?.send(JSON.stringify({id: 'clientReady', label: 'rtvi-ai', type:'client-ready'}))
+    this.state = "ready";    
     this.sendMessage(RTVIMessage.clientReady());
   }
 
   sendMessage(message: RTVIMessage) {
     if (!this.dc || this.dc.readyState !== "open") {
+      console.log('message not sent', this.dc.readyState);
       logger.warn(`Datachannel is not ready. Message not sent: ${message}`);
       return;
     }
     this.dc?.send(JSON.stringify(message));
+    console.log('message sent', JSON.stringify(message));
   }
 
   private sendSignallingMessage(message: OutboundSignallingMessage) {
     if (!this.dc || this.dc.readyState !== "open") {
-      logger.warn(`Datachannel is not ready. Message not sent: ${message}`);
+      logger.warn(`Datachannel is not ready. Signalling message not sent: ${message}`);
       return;
     }
     const signallingMessage = new SignallingMessageObject(message);
@@ -381,10 +386,10 @@ export class WebRTCTransport extends Transport {
         });
       }
 
-      let offerSdp = this.pc!.localDescription!;      
+      let offerSdp = this.pc!.localDescription!;
       logger.debug(`Will create offer for peerId: ${this.pc_id}`);
 
-      const url = `${this._options.params.baseUrl}${this._options.params.endpoints?.connect || ""}`;
+      const url = `${this._options.params.baseUrl}${this._options.params.endpoints?.connect || ""}`;     
       // Send offer to server
       const response = await fetch(url, {
         body: JSON.stringify({
@@ -392,6 +397,7 @@ export class WebRTCTransport extends Transport {
           type: offerSdp.type,
           pc_id: this.pc_id,
           restart_pc: recreatePeerConnection,
+          ...this._options.params.requestData
         }),
         headers: {
           "Content-Type": "application/json",
@@ -509,7 +515,7 @@ export class WebRTCTransport extends Transport {
     });
 
     dc.addEventListener("open", () => {
-      logger.debug("datachannel opened");
+      logger.debug("datachannel opened", this._connectResolved);
       if (this._connectResolved) {
         this.syncTrackStatus();
         this._connectResolved();

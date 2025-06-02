@@ -23,7 +23,7 @@ export default function Screen() {
   const textSelectedRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-  const { connect, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent();
+  const { connect, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({ lectureId: lectureId as string });
 
 
 
