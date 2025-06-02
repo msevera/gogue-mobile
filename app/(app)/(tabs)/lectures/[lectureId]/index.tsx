@@ -126,7 +126,7 @@ export default function Screen() {
                       disconnect();
                     }} />
                     <Button text="Send Message" onPress={() => {
-                      sendMessage('Hello, how are you?');
+                      sendMessage('What time is it right now?');
                     }} />
                   </View>
                 ) : (

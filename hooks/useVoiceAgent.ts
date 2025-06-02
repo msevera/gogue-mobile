@@ -1,5 +1,6 @@
 import { BotLLMTextData, BotTTSTextData, LogLevel, RTVIClient, RTVIMessage, TranscriptData, TransportState } from '@pipecat-ai/client-js';
-import { RNDailyTransport } from '@pipecat-ai/react-native-daily-transport';
+// import { RNDailyTransport } from '@pipecat-ai/react-native-daily-transport';
+import { WebRTCTransport } from '@/lib/webRTCTransport'
 import { useCallback, useEffect, useState } from 'react';
 
 const inCallStates = new Set(["authenticating", "connecting", "connected", "ready"])
@@ -12,14 +13,14 @@ export const useVoiceAgent = () => {
 
   const createClient = useCallback(() => {
     const client = new RTVIClient({
-      transport: new RNDailyTransport(),
+      transport: new WebRTCTransport({}),
       params: {
         baseUrl: process.env.EXPO_PUBLIC_WEBRTC_ENDPOINT,
         endpoints: { connect: '/connect' },
       },
       enableMic: true,
+      customConnectHandler: () => Promise.resolve(),
     });
-
     client.setLogLevel(LogLevel.WARN);
 
     return client;
@@ -54,7 +55,7 @@ export const useVoiceAgent = () => {
         console.log('[VA]: transportStateChanged', state);
       });
       client.on('connected', () => {
-        
+        setBotReady(true);
         console.log('[VA]: connected');
       });
       client.on('disconnected', () => {
@@ -62,7 +63,7 @@ export const useVoiceAgent = () => {
         console.log('[VA]: disconnected');
       });
       client.on('botConnected', () => {
-       
+
         console.log('[VA]: botConnected');
       });
       client.on('botDisconnected', () => {
