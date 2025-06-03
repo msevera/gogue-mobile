@@ -6,7 +6,7 @@ import { GET_LECTURE } from '@/apollo/queries/lectures';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
-import { TextHighlighter2 } from '@/components/TextHighlighter2';
+import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
 import { Button } from '@/components/ui/Button';
@@ -138,7 +138,7 @@ export default function Screen() {
 
 
               <ScrollView className='px-4 pt-6' onLayout={onLayoutHandler} ref={scrollViewRef}>
-                <TextHighlighter2
+                <TextHighlighter
                   text={content}
                   sections={lectureData.sections.map(section => section.title)}
                   alignments={alignments}

@@ -6,7 +6,7 @@ import { GET_LECTURE } from '@/apollo/queries/lectures';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
-import { TextHighlighter2 } from '@/components/TextHighlighter2';
+import { TextHighlighter2 } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
 import { Button } from '@/components/ui/Button';

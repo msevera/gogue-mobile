@@ -1,9 +1,21 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
-import { Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Dimensions, LayoutChangeEvent, ScrollView, View } from 'react-native';
 
-type Alignment = [number, number, string]; // [startTime, endTime, word]
+const { height: screenHeight } = Dimensions.get("window");
+type SentenceType = {
+  start_offset: number;
+  end_offset: number;
+  start_time: number;
+  end_time: number;
+}
+
+type Alignment = {
+  is_sentence_start: boolean;
+  is_section_start: boolean;
+  sentence: SentenceType;
+};
 
 interface TextHighlighterProps {
   text: string;
@@ -12,80 +24,8 @@ interface TextHighlighterProps {
   sections: string[];
   onSelect: (time: number) => void;
   scrollViewRef: React.RefObject<ScrollView>;
+  scrollViewHeight: number;
 }
-
-interface HighlightState {
-  word: boolean;
-  sentence: boolean;
-  paragraph: boolean;
-  section: boolean;
-  isSentenceEnd: boolean;
-  isSentenceStart: boolean;
-  startTime: number;
-  isParagraphStart: boolean;
-  isSectionStart: boolean;
-}
-
-interface TimingInfo {
-  wordStartTime: number;
-  wordEndTime: number;
-  sentenceStartTime?: number;
-  sentenceEndTime?: number;
-  paragraphStartTime?: number;
-  paragraphEndTime?: number;
-  sectionStartTime?: number;
-  sectionEndTime?: number;
-  isSentenceEnd?: boolean;
-  isSentenceStart?: boolean;
-  isParagraphStart?: boolean;
-  isSectionStart?: boolean;
-}
-
-interface SentenceProps {
-  text: string;
-  state: HighlightState;
-  timing?: TimingInfo;
-  onSelect: (time: number) => void;
-}
-
-const Sentence: React.FC<SentenceProps> = ({ text, state, timing, onSelect }) => {
-  const isClickable = timing?.sentenceStartTime !== undefined;
-
-  return (
-    <Text className="text-lg leading-8">
-      {state.isParagraphStart && !state.isSectionStart && (
-        <Text className="text-lg leading-8">{'    '}</Text>
-      )}
-      {/* {state.isParagraphStart && (
-        <TouchableOpacity
-          onLayout={(event) => {
-            console.log('pressable2', event.nativeEvent.layout.y)
-          }}
-        >
-          <Text className="text-lg leading-8">A</Text>
-        </TouchableOpacity>)} */}
-      <Text
-        className={cn(
-          "text-lg leading-8",
-          isClickable && 'cursor-pointer hover:bg-blue-200',          
-          state.sentence && 'bg-blue-100',
-        )}
-        onPress={() => {
-          if (isClickable && timing?.sentenceStartTime !== undefined) {
-            onSelect(timing.sentenceStartTime);
-          }
-        }}
-        onLongPress={() => {
-          console.log('long press')
-        }}
-        suppressHighlighting
-      >
-        {text.trim()}
-      </Text>
-      {' '}
-    </Text>
-  );
-};
 
 export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   text,
@@ -93,153 +33,87 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   currentTime,
   sections,
   onSelect,
-  scrollViewRef
+  scrollViewRef,
+  scrollViewHeight
 }) => {
   currentTime += 0.5;
 
-  const getTimingInfo = (alignment: any): TimingInfo => {
-    const { word, sentence, paragraph, section } = alignment;
-    const { start_time: wordStartTime, end_time: wordEndTime } = word;
+  const sentences: Alignment[] = useMemo(() => {
+    return alignments.filter((alignment) => {
+      return alignment.is_sentence_start;
+    })
+  }, [alignments])
 
-    return {
-      wordStartTime,
-      wordEndTime,
-      sentenceStartTime: sentence?.start_time,
-      sentenceEndTime: sentence?.end_time,
-      paragraphStartTime: paragraph?.start_time,
-      paragraphEndTime: paragraph?.end_time,
-      sectionStartTime: section?.start_time,
-      sectionEndTime: section?.end_time,
-      isSentenceEnd: alignment?.is_sentence_end,
-      isSentenceStart: alignment?.is_sentence_start,
-      isParagraphStart: alignment?.is_paragraph_start,
-      isSectionStart: alignment?.is_section_start
-    };
-  };
+  const measureViewRef = useRef<View>(null);
 
-  const getHighlightState = (timing: TimingInfo, isFirstSentenceInParagraph: boolean, isFirstSentenceInSection: boolean): HighlightState => {
-    return {
-      word: false,
-      sentence: currentTime >= timing.sentenceStartTime! && currentTime < timing.sentenceEndTime!,
-      paragraph: false,
-      section: false,
-      isSentenceEnd: timing.isSentenceEnd!,
-      isSentenceStart: timing.isSentenceStart!,
-      startTime: timing.sentenceStartTime!,
-      isParagraphStart: isFirstSentenceInParagraph,
-      isSectionStart: isFirstSentenceInSection
-    };
-  };
+
+  const onSentencePress = (startTime: number) => {
+    onSelect(startTime);
+  }
+
+  const onLayoutHandler = (event: LayoutChangeEvent) => {
+    measureViewRef.current?.measure((x, y) => {
+      if (!scrollViewHeight) {
+        return;
+      }
+      
+      scrollViewRef.current?.scrollTo({ y: y - (scrollViewHeight / 2), animated: true });     
+    });
+  }
 
   const renderText = useMemo(() => {
-    if (!alignments?.length || !text) return null;
+    if (!sentences?.length || !text) return null;
 
     let sectionsIndex = 0;
-    let result: JSX.Element[] = [];
-    let currentSentence: string = '';
-    let currentTiming: TimingInfo | undefined;
-    let isFirstSentenceInParagraph = true;
-    let isFirstSentenceInSection = true;
 
-    alignments.forEach((alignment, index) => {
-      const { word, is_section_start, is_paragraph_start, is_sentence_end } = alignment as any;
-      const { start_offset: wordStartOffset, end_offset: wordEndOffset } = word;
-      const timing = getTimingInfo(alignment);
-      const wordText = text.slice(wordStartOffset, wordEndOffset);
+    const result: JSX.Element[] = [];
+    sentences.forEach((entry, index) => {
+      const { sentence, is_section_start, is_paragraph_start } = entry;
+      const { start_offset, end_offset, start_time, end_time } = sentence;
 
-      // Handle section start
-      if (is_section_start && sectionsIndex < sections.length) {
-        if (currentSentence) {
-          result.push(
-            <Sentence
-              key={`sentence-${index}`}
-              text={currentSentence}
-              state={getHighlightState(currentTiming!, isFirstSentenceInParagraph, isFirstSentenceInSection)}
-              timing={currentTiming}
-              onSelect={onSelect}
-            />
-          );
-          currentSentence = '';
-        }
+      const chunk = text.slice(start_offset, end_offset);
 
+      if (is_section_start) {
         const sectionTitle = sections[sectionsIndex];
-        result.push(
-          <Text
-            className="text-xl font-semibold leading-8 mt-4"
-            key={`section-${sectionsIndex}`}
-          >
-            {`${index === 0 ? '' : '\n\n'}${sectionTitle}\n`}
-          </Text>
-        );
+        result.push(<Text key={`section-title-${index}`} className="text-xl font-semibold leading-8">
+          {`${index === 0 ? '' : '\n\n'}${sectionTitle}\n`}
+        </Text>)
         sectionsIndex++;
-        isFirstSentenceInParagraph = true;
-        isFirstSentenceInSection = true;
+      } else if (is_paragraph_start) {
+        result.push(<Text key={`paragraph-${index}`}>{`\n`}</Text>)
       }
 
-      // Handle paragraph start
-      if (!is_section_start && is_paragraph_start) {
-        if (currentSentence) {
-          result.push(
-            <Sentence
-              key={`sentence-${index}`}
-              text={currentSentence}
-              state={getHighlightState(currentTiming!, isFirstSentenceInParagraph, isFirstSentenceInSection)}
-              timing={currentTiming}
-              onSelect={onSelect}
-            />
-          );
-          currentSentence = '';
-        }
 
-        result.push(
-          <Text className="text-lg leading-8" key={`paragraph-${index}`}>
-            {`\n`}
-          </Text>
-        );
-        isFirstSentenceInParagraph = true;
-        isFirstSentenceInSection = false;
+
+      const isHighlighted = currentTime >= start_time && currentTime < end_time;
+      if (isHighlighted) {
+        const firstChar = chunk.slice(0, 1);
+        const lastPart = chunk.slice(1);
+        result.push(<Text
+          suppressHighlighting
+          onPress={() => onSentencePress(start_time)}
+          key={`sentence-${index}`}
+          className={cn("text-lg leading-8 bg-blue-100 flex-row")}>
+          {firstChar}
+          <View ref={measureViewRef} onLayout={onLayoutHandler} />
+          {lastPart}
+        </Text>)
+      } else {
+        result.push(<Text suppressHighlighting onPress={() => onSentencePress(start_time)} key={`sentence-${index}`} className={cn("text-lg leading-8")}>
+          {chunk}
+        </Text>)
       }
 
-      // Add space between words
-      if (currentSentence) {
-        currentSentence += ' ';
-      }
+      result.push(<Text key={`sentence-${index}-space`}> </Text>)
+    })
 
-      currentSentence += wordText;
-      currentTiming = timing;
+    return result
 
-      // If we reach the end of a sentence, render it
-      if (is_sentence_end) {
-        result.push(
-          <Sentence
-            key={`sentence-${index}`}
-            text={currentSentence}
-            state={getHighlightState(currentTiming, isFirstSentenceInParagraph, isFirstSentenceInSection)}
-            timing={currentTiming}
-            onSelect={onSelect}
-          />
-        );
-        currentSentence = '';
-        isFirstSentenceInParagraph = false;
-        isFirstSentenceInSection = false;
-      }
-    });
+  }, [text, sentences, currentTime, sections]);
 
-    // Render any remaining sentence
-    if (currentSentence) {
-      result.push(
-        <Sentence
-          key="sentence-final"
-          text={currentSentence}
-          state={getHighlightState(currentTiming!, isFirstSentenceInParagraph, isFirstSentenceInSection)}
-          timing={currentTiming}
-          onSelect={onSelect}
-        />
-      );
-    }
-
-    return result;
-  }, [text, alignments, currentTime]);
-
-  return <Text className="text-lg leading-8">{renderText}</Text>;
+  return <View className='pt-[2]'>
+    <Text>
+      {renderText}
+    </Text>
+  </View>;
 };
