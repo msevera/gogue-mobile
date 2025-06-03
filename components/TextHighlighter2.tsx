@@ -109,7 +109,7 @@ export const TextHighlighter2: React.FC<TextHighlighterProps> = ({
 
     return result
 
-  }, [text, sentences, currentTime]);
+  }, [text, sentences, currentTime, sections]);
 
   return <View className='pt-[2]'>
     <Text>

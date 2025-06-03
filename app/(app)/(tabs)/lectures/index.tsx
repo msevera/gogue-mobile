@@ -8,9 +8,7 @@ import { RootHeader } from '@/components/layouts/RootHeader';
 import { RootSettings } from '@/components/RootSettings';
 import { CreateLecture } from '@/components/CreateLecture';
 import { Button } from '@/components/ui/Button';
-import { useGetNotes } from '@/hooks/useGetNotes';
 import { useSubscription } from '@apollo/client';
-import { NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
 import { LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { LectureItem } from '@/components/LectureItem';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -34,8 +32,7 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
 
 const keyExtractor = (item: Lecture) => item.id || 'temp';
 
-export default function Screen() {
-  const { updateCreateNoteCache } = useGetNotes();
+export default function Screen() {  
   const { items, isLoading, updateCreatingLectureCache } = useGetLectures();
   const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -45,12 +42,6 @@ export default function Screen() {
     onData: ({ data }) => {
       const lecture = data.data?.lectureCreating as Lecture;
       updateCreatingLectureCache(lecture);
-    }
-  });
-
-  useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
-    onData: ({ data }) => {
-      updateCreateNoteCache(data.data?.noteCreated as Note);
     }
   });
 
