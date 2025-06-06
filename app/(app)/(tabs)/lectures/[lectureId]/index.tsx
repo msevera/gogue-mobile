@@ -3,14 +3,15 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useQuery } from '@apollo/client';
 import { LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
-import { Lecture } from '@/apollo/__generated__/graphql';
+import { Lecture, Note } from '@/apollo/__generated__/graphql';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
 import { Button } from '@/components/ui/Button';
 import { useVoiceAgent } from '@/hooks/useVoiceAgent';
+import { useGetNotes } from '@/hooks/useGetNotes';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -23,9 +24,15 @@ export default function Screen() {
   const textSelectedRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-  const { connect, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({ lectureId: lectureId as string });
+  const [noteId, setNoteId] = useState<string | undefined>(undefined);
+  const { connect, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({
+    onNoteCreated: (noteId: string) => {
+      setNoteId(noteId);
+    }
+  });
 
-
+  const { items: notes, isLoading: notesLoading } = useGetNotes({ lectureId: lectureId as string });
+  console.log('notes', notes)
 
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
@@ -102,6 +109,18 @@ export default function Screen() {
     setScrollViewHeight(event.nativeEvent.layout.height - parseInt(lectureDrawerRef.current?.getControlsDrawerClosedSnapPoint() as string))
   }
 
+  const onSentenceChange = (time: number) => {
+    setNoteId(undefined);
+  }
+
+  const onPlayPause = () => {
+    if (isPlaying) {
+      player.pause()
+    } else {
+      player.play()
+    }
+  }
+
   return (
     <View className="flex-1">
       <ScreenLayout
@@ -126,24 +145,28 @@ export default function Screen() {
                       disconnect();
                     }} />
                     <Button text="Send Message" onPress={() => {
-                      sendMessage('What time is it right now?');
+                      sendMessage('Tell me a long joke');
                     }} />
                   </View>
                 ) : (
                   <Button text="Connect" onPress={() => {
-                    connect();
+                    connect({
+                      lectureId: lectureId as string,
+                      noteId,
+                      noteTimestamp: currentTime
+                    });
                   }} />
                 )
               }
-
-
               <ScrollView className='px-4 pt-6' onLayout={onLayoutHandler} ref={scrollViewRef}>
                 <TextHighlighter
+                  notes={notes as Note[]}
                   text={content}
                   sections={lectureData.sections.map(section => section.title)}
                   alignments={alignments}
                   currentTime={currentTime}
                   onSelect={onTextSelect}
+                  onSentenceChange={onSentenceChange}
                   scrollViewRef={scrollViewRef}
                   scrollViewHeight={scrollViewHeight}
                 />
@@ -157,17 +180,12 @@ export default function Screen() {
           currentTime={currentTime}
           duration={status.duration}
           isPlaying={isPlaying}
-          onPlayPause={() => {
-            if (isPlaying) {
-              player.pause()
-            } else {
-              player.play()
-            }
-          }}
+          onPlayPause={onPlayPause}
           onSeek={onSeek}
           onSeekEnd={onSeekEnd}
           onSeekStart={onSeekStart}
           alignments={alignments}
+          notes={notes as Note[]}
         />
       </ScreenLayout>
     </View>

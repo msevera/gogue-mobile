@@ -1,9 +1,9 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
 import { Dimensions, LayoutChangeEvent, ScrollView, View } from 'react-native';
+import { Note } from '@/apollo/__generated__/graphql';
 
-const { height: screenHeight } = Dimensions.get("window");
 type SentenceType = {
   start_offset: number;
   end_offset: number;
@@ -19,23 +19,29 @@ type Alignment = {
 
 interface TextHighlighterProps {
   text: string;
+  notes: Note[];
   alignments: Alignment[];
   currentTime: number;
   sections: string[];
   onSelect: (time: number) => void;
+  onSentenceChange: (time: number) => void;
   scrollViewRef: React.RefObject<ScrollView>;
   scrollViewHeight: number;
 }
 
 export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   text,
+  notes,
   alignments,
   currentTime,
   sections,
   onSelect,
+  onSentenceChange,
   scrollViewRef,
   scrollViewHeight
 }) => {
+  const [sentenceStartTime, setSentenceStartTime] = useState<number | null>(null);
+
   currentTime += 0.5;
 
   const sentences: Alignment[] = useMemo(() => {
@@ -48,6 +54,10 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
 
   const onSentencePress = (startTime: number) => {
+    if (startTime !== sentenceStartTime) {
+      onSentenceChange(startTime)
+    }
+
     onSelect(startTime);
   }
 
@@ -56,10 +66,23 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       if (!scrollViewHeight) {
         return;
       }
-      
-      scrollViewRef.current?.scrollTo({ y: y - (scrollViewHeight / 2), animated: true });     
+
+      scrollViewRef.current?.scrollTo({ y: y - (scrollViewHeight / 2), animated: true });
     });
   }
+
+  useEffect(() => {
+    if (!sentences?.length) return;
+
+    const entry = sentences.find((entry) => {
+      return currentTime >= entry.sentence.start_time && currentTime < entry.sentence.end_time;
+    });
+
+    if (entry) {
+      setSentenceStartTime(entry.sentence.start_time);
+    }
+
+  }, [sentences, currentTime, sections]);
 
   const renderText = useMemo(() => {
     if (!sentences?.length || !text) return null;
@@ -83,9 +106,8 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         result.push(<Text key={`paragraph-${index}`}>{`\n`}</Text>)
       }
 
-
-
       const isHighlighted = currentTime >= start_time && currentTime < end_time;
+      const sentenceWithNote = notes.find((note) => note.timestamp === start_time)
       if (isHighlighted) {
         const firstChar = chunk.slice(0, 1);
         const lastPart = chunk.slice(1);
@@ -93,13 +115,25 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
           suppressHighlighting
           onPress={() => onSentencePress(start_time)}
           key={`sentence-${index}`}
-          className={cn("text-lg leading-8 bg-blue-100 flex-row")}>
+          className={cn(
+            sentenceWithNote && 'bg-yellow-100',
+            "text-lg leading-8 bg-blue-100 flex-row",            
+          )}
+        >
           {firstChar}
           <View ref={measureViewRef} onLayout={onLayoutHandler} />
           {lastPart}
         </Text>)
       } else {
-        result.push(<Text suppressHighlighting onPress={() => onSentencePress(start_time)} key={`sentence-${index}`} className={cn("text-lg leading-8")}>
+        result.push(<Text
+          suppressHighlighting
+          onPress={() => onSentencePress(start_time)}
+          key={`sentence-${index}`}
+          className={cn(
+            "text-lg leading-8",
+            sentenceWithNote && 'bg-yellow-100'
+          )}
+        >
           {chunk}
         </Text>)
       }
@@ -109,7 +143,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
     return result
 
-  }, [text, sentences, currentTime, sections]);
+  }, [text, sentences, notes, currentTime, sections, sentenceStartTime]);
 
   return <View className='pt-[2]'>
     <Text>

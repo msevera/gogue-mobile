@@ -3,19 +3,22 @@ import { SortOrder } from '@/apollo/__generated__/graphql';
 import { GET_NOTES } from '@/apollo/queries/notes';
 import { useApolloClient, useQuery } from "@apollo/client";
 
-export const useGetNotes = ({ skip }: { skip?: boolean } = {}) => {
+export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
   const apolloClient = useApolloClient();
+
+  const pagination = {
+    sort: [{
+      by: 'createdAt',
+      order: SortOrder.Desc
+    }]
+  }
 
   const { data: { notes: { items = [] } = { items: [] } } = {}, loading: isLoading } = useQuery<GetNotesQuery, GetNotesQueryVariables>(GET_NOTES, {
     variables: {
-      pagination: {
-        sort: [{
-          by: 'createdAt',
-          order: SortOrder.Desc
-        }]
-      }
+      lectureId,
+      pagination
     },
-    skip,
+    skip: !lectureId,
     onError: (error) => {
       console.error('Error fetching notes', error);
     }
@@ -25,12 +28,8 @@ export const useGetNotes = ({ skip }: { skip?: boolean } = {}) => {
     const buildQueryParams = (params?: any) => {
       return {
         ...params,
-        pagination: {
-          sort: [{
-            by: 'createdAt',
-            order: SortOrder.Desc
-          }]
-        }
+        lectureId,
+        pagination
       }
     }
 

@@ -2,23 +2,31 @@ import { BotLLMTextData, BotTTSTextData, LogLevel, RTVIClient, RTVIMessage, Tran
 // import { RNDailyTransport } from '@pipecat-ai/react-native-daily-transport';
 import { WebRTCTransport } from '@/lib/webRTCTransport'
 import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from './useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const inCallStates = new Set(["authenticating", "connecting", "connected", "ready"])
 
-export const useVoiceAgent = ({ lectureId }: { lectureId: string }) => {
+export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: string) => void }) => {
+  const { authUser } = useAuth();
   const [client, setClient] = useState<RTVIClient | undefined>();
   const [currentState, setCurrentState] = useState<TransportState>('disconnected');
   const [inCall, setInCall] = useState<boolean>(false);
   const [botReady, setBotReady] = useState<boolean>(false);
 
-  const createClient = useCallback(() => {
+  const createClient = useCallback(async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {
     const client = new RTVIClient({
       transport: new WebRTCTransport({}),
       params: {
         baseUrl: process.env.EXPO_PUBLIC_WEBRTC_ENDPOINT,
         endpoints: { connect: '/connect' },
         requestData: {
-          lecture_id: lectureId
+          lecture_id: lectureId,
+          user_id: authUser?.id,
+          workspace_id: await AsyncStorage.getItem('workspaceId'),
+          note_timestamp: noteTimestamp,
+          note_id: noteId
+
         }
       },
       enableMic: true,
@@ -33,15 +41,16 @@ export const useVoiceAgent = ({ lectureId }: { lectureId: string }) => {
 
       }
     });
-    client.setLogLevel(LogLevel.DEBUG);
+    client.setLogLevel(LogLevel.WARN);
 
     return client;
   }, []);
 
 
-  const connect = async () => {
+  const connect = async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {
+    console.log('connect', lectureId, noteId, noteTimestamp);
     try {
-      const client = createClient();
+      const client = await createClient({ lectureId, noteId, noteTimestamp });
       setClient(client);
       await client.connect();
     } catch (e) {
@@ -52,6 +61,13 @@ export const useVoiceAgent = ({ lectureId }: { lectureId: string }) => {
   const disconnect = async () => {
     try {
       if (client) {
+        await client.sendMessage(
+          new RTVIMessage('client_before_disconnect',
+            {
+              "message": 'disconnect'
+            })
+        );
+        await client.disconnectBot();
         await client.disconnect();
         setClient(undefined);
       }
@@ -100,14 +116,21 @@ export const useVoiceAgent = ({ lectureId }: { lectureId: string }) => {
       client.on('userTranscript', (transcript: TranscriptData) => {
         console.log('[VA]: userTranscript', transcript);
       });
-      client.on('botTranscript', (transcript: BotLLMTextData) => {
-        console.log('[VA]: botTranscript', transcript);
-      });
-      client.on('botTtsText', (transcript: BotTTSTextData) => {
-        console.log('[VA]: botTtsText', transcript);
-      });
+      // client.on('botTranscript', (transcript: BotLLMTextData) => {
+      //   console.log('[VA]: botTranscript', transcript);
+      // });
+      // client.on('botTtsText', (transcript: BotTTSTextData) => {
+      //   console.log('[VA]: botTtsText', transcript);
+      // });
       client.on('serverMessage', (message: any) => {
-        console.log('[VA]: serverMessage', message);
+        const { payload } = message;
+        if (message.type === 'tts-text') {
+          console.log('[VA]: botTtsText', payload.role, payload.content);
+        }
+
+        if (message.type === 'note-created') {
+          onNoteCreated(payload.noteId);
+        }
       });
     }
 

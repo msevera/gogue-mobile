@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 import { NOTE_SHORT } from '../fragments/note';
 
 export const GET_NOTES = gql`
-  query GetNotes($pagination: PaginationInput) {
-    notes(pagination: $pagination) {
+  query GetNotes($lectureId: ID!, $pagination: PaginationInput) {
+    notes(input: { lectureId: $lectureId }, pagination: $pagination) {
       items {
         ...Note       
       }
@@ -30,8 +30,8 @@ export const GET_NOTE_AGENT = gql`
 `;
 
 export const NOTE_CREATED_SUBSCRIPTION = gql`
-  subscription NoteCreated {
-    noteCreated {
+  subscription NoteCreated($lectureId: ID!) {
+    noteCreated(lectureId: $lectureId) {
       ...Note
     }
   }

@@ -4,6 +4,7 @@ import { AudioStatus } from 'expo-audio';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay, withTiming } from 'react-native-reanimated';
 import { useMemo, useEffect } from 'react';
+import { Note } from '@/apollo/__generated__/graphql';
 
 const { width: screenWidth } = Dimensions.get('window');
 const LINE_WIDTH = screenWidth - 2;
@@ -15,9 +16,19 @@ interface PlayLineProps {
   onSeekEnd?: (position: number) => void;
   onSeekStart?: (position: number) => void;
   alignments: any;
+  notes: Note[];
 }
 
-export const PlayLine = ({ currentTime, duration, onSeek, onSeekEnd, onSeekStart, alignments }: PlayLineProps) => {
+export const PlayLine = ({
+  currentTime,
+  duration,
+  onSeek,
+  onSeekEnd,
+  onSeekStart,
+  alignments,
+  notes
+}: PlayLineProps
+) => {
   const snapPoints = useMemo(() => {
     const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);
     return result;

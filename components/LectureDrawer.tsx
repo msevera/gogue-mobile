@@ -1,3 +1,4 @@
+import React from 'react';
 import { Keyboard, View } from 'react-native';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { BottomSheet } from './BottomSheet';
@@ -7,6 +8,7 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Note } from '@/apollo/__generated__/graphql';
 
 export interface LectureDrawerRef {
   open: () => void;
@@ -19,6 +21,7 @@ const controlsDrawerActiveInputSnapPoint = '420';
 const controlsDrawerOnlyInputSnapPoint = '90';
 
 const LectureDrawer = forwardRef<LectureDrawerRef, {
+  notes: Note[],
   onPlayPause: () => void,
   onSeek: (position: number) => void,
   onSeekEnd: (position: number) => void,
@@ -28,6 +31,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   isPlaying: boolean,
   duration: number
 }>(({
+  notes,
   onPlayPause,
   onSeek,
   onSeekEnd,
@@ -212,6 +216,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
             onSeekEnd={onSeekEnd}
             onSeekStart={onSeekStart}
             alignments={alignments}
+            notes={notes}
           />
         </Animated.View>
       </BottomSheet>
