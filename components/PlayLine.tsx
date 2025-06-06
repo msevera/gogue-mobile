@@ -39,9 +39,11 @@ export const PlayLine = ({
     return result;
   }, [sentences]);
 
-  const highlightNotes = useMemo(() => {
+  const highlightNotes = useMemo(() => { 
+    if (sentences.length === 0 || notes.length === 0 || duration === 0) return [];       
+
     const result = notes.map((note) => {
-      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);
+      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);      
       return {
         startTime: sentenceToHighlight?.sentence.start_time,
         endTime: sentenceToHighlight?.sentence.end_time,
@@ -50,7 +52,7 @@ export const PlayLine = ({
     })
 
     return result;
-  }, [sentences, notes])
+  }, [sentences, notes, duration])
 
   const isLoaded = duration > 0;
   const progress = isLoaded ? currentTime / duration : 0;
@@ -144,28 +146,54 @@ export const PlayLine = ({
       }
     });
 
-  const progressStyle = useAnimatedStyle(() => {
+  const progressActiveStyle = useAnimatedStyle(() => {
     return {
       width: progressWidth.value,
+    };
+  });
+
+  const progressInactiveStyle = useAnimatedStyle(() => {
+    return {
+      width: LINE_WIDTH - progressWidth.value,
+    };
+  });
+
+  const progressHighlightStyle = useAnimatedStyle(() => {
+    return {
+      left: markerPosition + 2 - progressWidth.value,     
     };
   });
 
   return (
     <GestureDetector gesture={panGesture}>
       <View className="w-full px-0 pt-5">
-        <View className="h-[2] bg-gray-50 overflow-hidden relative">
+        <View className="h-[2] bg-gray-50 relative">
           <Animated.View
             className="h-full bg-blue-400 absolute"
-            style={[{ right: markerPosition }, progressStyle]}
+            style={[{ right: markerPosition }, progressActiveStyle]}
           />
-          {/* <View 
-            className="w-1 h-full bg-black absolute z-10" 
-            style={{ left: markerPosition, transform: [{ translateX: -1 }] }} 
-          /> */}
-          <View
+          <View 
+            className="w-[10] h-[10] top-[-4] bg-blue-400 absolute z-10 rounded-full" 
+            style={{ left: markerPosition, transform: [{ translateX: -3 }] }} 
+          />
+          <Animated.View
             className="h-full bg-gray-200 absolute"
-            style={{ left: markerPosition, width: LINE_WIDTH - (progress * LINE_WIDTH) }}
+            style={[{ left: markerPosition }, progressInactiveStyle]}
           />
+          <Animated.View 
+            className="h-full absolute top-[0]"
+            style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
+          >
+            {
+              highlightNotes.map((highlight) => {
+                const { startTime, endTime, note } = highlight;
+                const startPosition = timeToPosition(startTime);
+                const endPosition = timeToPosition(endTime);
+                const width = endPosition - startPosition;
+                return <View key={note.id} className="h-[10] top-[-10] bg-yellow-400 absolute rounded-t-sm" style={{ left: startPosition, width, zIndex: 10 }} />
+              })
+            }
+          </Animated.View>         
         </View>
         <View className="flex-row items-center justify-center mt-2">
           <Text className="text-xs text-blue-400">

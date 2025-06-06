@@ -32,8 +32,6 @@ export default function Screen() {
   });
 
   const { items: notes, isLoading: notesLoading } = useGetNotes({ lectureId: lectureId as string });
-  console.log('notes', notes)
-
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
