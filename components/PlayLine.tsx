@@ -29,10 +29,28 @@ export const PlayLine = ({
   notes
 }: PlayLineProps
 ) => {
+
+  const sentences = useMemo(() => {
+    return alignments.filter((alignment: any) => alignment.is_sentence_start)
+  }, [alignments])
+
   const snapPoints = useMemo(() => {
-    const result = alignments.filter((alignment: any) => alignment.is_sentence_start).map((alignment: any) => alignment.sentence.start_time);
+    const result = sentences.map((alignment: any) => alignment.sentence.start_time);
     return result;
-  }, [alignments]);
+  }, [sentences]);
+
+  const highlightNotes = useMemo(() => {
+    const result = notes.map((note) => {
+      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);
+      return {
+        startTime: sentenceToHighlight?.sentence.start_time,
+        endTime: sentenceToHighlight?.sentence.end_time,
+        note
+      }
+    })
+
+    return result;
+  }, [sentences, notes])
 
   const isLoaded = duration > 0;
   const progress = isLoaded ? currentTime / duration : 0;
