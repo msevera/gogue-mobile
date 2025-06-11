@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Keyboard, View } from 'react-native';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { BottomSheet } from './BottomSheet';
@@ -9,6 +9,8 @@ import { Button } from './ui/Button';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Note } from '@/apollo/__generated__/graphql';
+import { LectureInput } from './LectureInput';
+import { useVoiceAgent } from '@/hooks/useVoiceAgent';
 
 export interface LectureDrawerRef {
   open: () => void;
@@ -26,22 +28,43 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   onSeek: (position: number) => void,
   onSeekEnd: (position: number) => void,
   onSeekStart: (position: number) => void,
+  onCreateNote: () => void,
+  onAgentCreateNote: (noteId: string) => void,
+  onCreateNoteLoading: boolean,
+  onNotes: () => void,
   alignments: any,
   currentTime: number,
   isPlaying: boolean,
-  duration: number
+  duration: number,
+  notesCount: number,
+  noteId: string,
+  lectureId: string
 }>(({
   notes,
   onPlayPause,
   onSeek,
   onSeekEnd,
   onSeekStart,
+  onCreateNote,
+  onAgentCreateNote,
+  onCreateNoteLoading,
+  onNotes,
   alignments,
   currentTime,
   isPlaying,
-  duration
+  duration,
+  notesCount,
+  noteId,
+  lectureId
 }, ref) => {
-  const [text, setText] = useState('');
+  const { connect, connecting, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({
+    onNoteCreated: (noteId: string) => {
+      onAgentCreateNote(noteId);
+    }
+  });
+
+  const [agentMode, setAgentMode] = useState<'text' | 'voice' | null>(null);
+
   const [isNotesDrawerOpen, setIsNotesDrawerOpen] = useState(false);
   const [controlsDrawerSettings, setControlsDrawerSettings] = useState({
     snapPoints: [controlsDrawerClosedSnapPoint],
@@ -92,7 +115,6 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
     };
   });
 
-
   return (
     <>
       <BottomSheet
@@ -102,6 +124,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
         snapPoints={notesDrawerSettings.snapPoints}
         index={notesDrawerSettings.index}
         onBackdropPress={() => {
+          disconnect();
+          setAgentMode(null);
           Keyboard.dismiss();
           showDrawer();
           setControlsDrawerSettings({
@@ -135,12 +159,27 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
       >
         <View className='flex-row items-center justify-between px-4 gap-2 shadow-md shadow-gray-100'>
           <View className='flex-1'>
-            <Input
-              value={text}
-              onChangeText={setText}
-              placeholder='Ask anything'
-              componentClassName='p-2 px-4 pr-2 rounded-4xl'
+            <LectureInput
+              agentMode={agentMode}
+              loading={connecting}
+              onTextSubmit={(text) => {
+                sendMessage(text);
+              }}
+              onRecordPress={() => {
+                setAgentMode('voice');
+                connect({
+                  lectureId: lectureId,
+                  noteId: noteId,
+                  noteTimestamp: currentTime
+                });
+              }}
               onFocus={() => {
+                setAgentMode('text');
+                connect({
+                  lectureId: lectureId,
+                  noteId: noteId,
+                  noteTimestamp: currentTime
+                });
                 setControlsDrawerSettings({
                   ...controlsDrawerSettings,
                   snapPoints: [controlsDrawerActiveInputSnapPoint],
@@ -158,65 +197,54 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
                 Keyboard.dismiss();
                 showDrawer();
               }}
-              right={<View className='flex-row items-center gap-2'>
-                <Button
-                  secondary
-                  className={`p-2 border-1 bg-gray-100`}
-                  textClassName={'text-gray-300'}
-                  onPress={() => {
-                    setControlsDrawerSettings({
-                      ...controlsDrawerSettings,
-                      snapPoints: [controlsDrawerOnlyInputSnapPoint],
-                    });
-    
-                    setNotesDrawerSettings({
-                      ...notesDrawerSettings,
-                      snapPoints: ['100%'],
-                      backdrop: true,
-                    });
-                    
-                    setIsNotesDrawerOpen(true);
-                  }}
-                  icon={{
-                    component: 'Ionicons',
-                    name: 'mic',
-                    size: 24,
-                    color: '#374151',
-                  }}
-                // text={!isHolding ? 'Hold to ask' : 'Speak'}
-                />
-              </View>}
+              onPress={() => {
+                setControlsDrawerSettings({
+                  ...controlsDrawerSettings,
+                  snapPoints: [controlsDrawerOnlyInputSnapPoint],
+                });
+
+                setNotesDrawerSettings({
+                  ...notesDrawerSettings,
+                  snapPoints: ['100%'],
+                  backdrop: true,
+                });
+
+                setIsNotesDrawerOpen(true);
+                Keyboard.dismiss();
+              }}
             />
           </View>
-        </View>        
+        </View>
         <LinearGradient
-            colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)']}
-            locations={[0, 0.18, 1]}            
-            style={{
-              // borderWidth: 1,
-              // borderColor: 'red',
-              position: 'absolute',
-              top: -20,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 200,
-              zIndex: -1,
-            }}
-          />
+          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)']}
+          locations={[0, 0.18, 1]}
+          style={{
+            // borderWidth: 1,
+            // borderColor: 'red',
+            position: 'absolute',
+            top: -20,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 200,
+            zIndex: -1,
+          }}
+        />
         <Animated.View className='flex-1' style={animatedStyle}>
           <LectureControls
             currentTime={currentTime}
             isPlaying={isPlaying}
             duration={duration}
             onPlayPause={onPlayPause}
-            isCreatingNote={false}
-            onNote={() => { }}
+            onCreateNote={onCreateNote}
+            onCreateNoteLoading={onCreateNoteLoading}
+            onNotes={onNotes}
             onSeek={onSeek}
             onSeekEnd={onSeekEnd}
             onSeekStart={onSeekStart}
             alignments={alignments}
             notes={notes}
+            notesCount={notesCount}
           />
         </Animated.View>
       </BottomSheet>

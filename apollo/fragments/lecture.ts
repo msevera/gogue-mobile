@@ -7,10 +7,9 @@ export const LECTURE_SHORT_FRAGMENT = gql`
     title    
     userId
     emoji
-    checkpoint
     creationEvent {
       name
-    }
+    }    
     sections {     
       title
       hasContent
@@ -18,6 +17,12 @@ export const LECTURE_SHORT_FRAGMENT = gql`
     audioPaths {
       stream
       wav
+    }
+    audioDuration
+    metadata {
+      id
+      notesCount
+      playbackTimestamp
     }
   }
 `;

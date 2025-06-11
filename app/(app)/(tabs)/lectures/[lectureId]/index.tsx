@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
-import { Lecture, Note } from '@/apollo/__generated__/graphql';
+import { CreateNoteMutation, CreateNoteMutationVariables, Lecture, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
@@ -12,6 +12,7 @@ import { Header } from '@/components/layouts/Header';
 import { Button } from '@/components/ui/Button';
 import { useVoiceAgent } from '@/hooks/useVoiceAgent';
 import { useGetNotes } from '@/hooks/useGetNotes';
+import { CREATE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -25,15 +26,14 @@ export default function Screen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
-  const { connect, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({
-    onNoteCreated: (noteId: string) => {
-      setNoteId(noteId);
-    }
-  });
 
-  const { items: notes, isLoading: notesLoading } = useGetNotes({ lectureId: lectureId as string });
+  const { items: notes, isLoading: notesLoading, updateCreateNoteCache } = useGetNotes({ lectureId: lectureId as string });
 
-  const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
+  const onNotes = () => {
+    console.log('onNotes');
+  }
+
+  const { data: { lecture } = {}, loading, refetch } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
     variables: {
       id: lectureId as string,
@@ -45,6 +45,35 @@ export default function Screen() {
   });
 
   const lectureData = lecture as Lecture;
+
+  useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
+    variables: {
+      lectureId: lectureId as string,
+    },    
+    onData: async ({ data }) => {      
+      const note = data.data?.noteCreated as Note;      
+      updateCreateNoteCache(note);      
+    }
+  });
+
+  const [createNote, { loading: createNoteLoading }] = useMutation<CreateNoteMutation, CreateNoteMutationVariables>(CREATE_NOTE, {   
+    onError: (error) => {
+      console.log('CREATE_NOTE error', JSON.stringify(error, null, 2));
+    }
+  });
+
+  const onCreateNote = () => {
+    createNote({
+      variables: {
+        lectureId: lectureId as string,
+        timestamp: currentTime
+      }
+    });
+  }
+
+  const onAgentCreateNote = (noteId: string) => {
+    setNoteId(noteId);
+  }
 
 
   useEffect(() => {
@@ -119,6 +148,8 @@ export default function Screen() {
     }
   }
 
+  console.log('notes', lectureData?.metadata?.notesCount);
+
   return (
     <View className="flex-1">
       <ScreenLayout
@@ -135,28 +166,8 @@ export default function Screen() {
         <Header title={lectureData?.title} loading={loading} />
         {
           lectureData && (
-            <View className='flex-1'>
-              {
-                botReady ? (
-                  <View className='flex-row gap-2'>
-                    <Button text="Disconnect" onPress={() => {
-                      disconnect();
-                    }} />
-                    <Button text="Send Message" onPress={() => {
-                      sendMessage('Tell me a long joke');
-                    }} />
-                  </View>
-                ) : (
-                  <Button text="Connect" onPress={() => {
-                    connect({
-                      lectureId: lectureId as string,
-                      noteId,
-                      noteTimestamp: currentTime
-                    });
-                  }} />
-                )
-              }
-              <ScrollView className='px-4 pt-6' onLayout={onLayoutHandler} ref={scrollViewRef}>
+            <View className='flex-1'>                         
+              <ScrollView className='px-4 pt-4' onLayout={onLayoutHandler} ref={scrollViewRef}>
                 <TextHighlighter
                   notes={notes as Note[]}
                   text={content}
@@ -184,6 +195,13 @@ export default function Screen() {
           onSeekStart={onSeekStart}
           alignments={alignments}
           notes={notes as Note[]}
+          notesCount={lectureData?.metadata?.notesCount as number}
+          noteId={noteId as string}
+          lectureId={lectureId as string}
+          onCreateNote={onCreateNote}
+          onCreateNoteLoading={createNoteLoading}
+          onNotes={onNotes}
+          onAgentCreateNote={onAgentCreateNote}
         />
       </ScreenLayout>
     </View>

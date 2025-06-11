@@ -29,10 +29,33 @@ export const GET_NOTE_AGENT = gql`
   }
 `;
 
+export const CREATE_NOTE = gql`
+  mutation CreateNote($lectureId: ID!, $timestamp: Float!) {
+    createNote(input: { lectureId: $lectureId, timestamp: $timestamp }) {
+      ...Note
+      lecture {
+        id
+        metadata {
+          id
+          notesCount
+        }
+      }
+    }
+  }
+  ${NOTE_SHORT}
+`;
+
 export const NOTE_CREATED_SUBSCRIPTION = gql`
   subscription NoteCreated($lectureId: ID!) {
     noteCreated(lectureId: $lectureId) {
       ...Note
+      lecture {
+        id
+        metadata {
+          id
+          notesCount
+        }
+      }
     }
   }
   ${NOTE_SHORT}

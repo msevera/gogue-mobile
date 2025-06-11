@@ -10,20 +10,23 @@ export const LectureControls = React.memo(({
   isPlaying,
   duration,
   className,
-  isCreatingNote,
   onPlayPause,
-  onNote,
+  onCreateNote,
+  onCreateNoteLoading,
+  onNotes,
   onSeek,
   onSeekEnd,
   alignments,
   onSeekStart,
-  notes
+  notes,
+  notesCount
 }:
   {
     className?: string,
-    isCreatingNote: boolean,
     onPlayPause: () => void,
-    onNote: () => void,
+    onCreateNote: () => void,
+    onCreateNoteLoading: boolean,
+    onNotes: () => void,
     onSeek: (position: number) => void,
     onSeekEnd: (position: number) => void,
     alignments: any,
@@ -31,8 +34,10 @@ export const LectureControls = React.memo(({
     isPlaying: boolean,
     duration: number,
     onSeekStart: (position: number) => void,
-    notes: Note[]
-  }) => {
+    notes: Note[],
+    notesCount: number
+  }) => {  
+  const added = false;
   return (
     <View className={cn('flex-1', className)}>
       <View className='flex-1 bg-white'>
@@ -45,12 +50,20 @@ export const LectureControls = React.memo(({
           alignments={alignments}
           notes={notes}
         />
-        <View className='flex-row items-center justify-between px-6 gap-4 mt-5'>
-          {
-            notes.length > 0 ? (
-              <Button text={`${notes.length} note${notes.length > 1 ? 's' : ''}`} secondary sm className='bg-gray-100' textClassName='text-gray-500' />
-            ) : (<View />)
-          }
+        <View className='flex-row items-center justify-between px-4 gap-4 mt-5'>
+          <Button
+            icon={{
+              component: 'MaterialIcons',
+              name: added ? 'star' : 'star-outline',
+              color: added ? '#9ca3af' : '#374151',              
+            }}
+            disabled
+            text={added ? 'Saved' : 'Save'}
+            secondary
+            sm
+            className='bg-gray-100'
+            textClassName={added ? 'text-gray-500' : 'text-gray-800'}
+          />
           <View className='absolute left-0 right-0 top-0 bottom-0 items-center justify-center'>
             <Button
               sm
@@ -68,20 +81,42 @@ export const LectureControls = React.memo(({
               loaderClassName='top-[1]'
             />
           </View>
-          <Button
-            sm
-            className={`bg-gray-100 w-[40px] h-[40px]`}
-            icon={{
-              component: 'MaterialIcons',
-              name: 'bookmark-add',
-              size: 24,
-              color: '#374151',
-            }}
-            onPress={onNote}
-            loading={isCreatingNote}
-            loaderColor='#374151'
-            loaderClassName='top-[1]'
-          />
+          <View className='flex-row items-center gap-2'>
+            {
+              notesCount > 0 && (
+                <View className='flex-row items-center gap-2'>
+                  <Button
+                    text={notesCount.toString()}
+                    secondary
+                    sm
+                    className='bg-gray-100'
+                    textClassName='text-gray-800'
+                    icon={{
+                      component: 'MaterialIcons',
+                      name: 'notes',
+                      color: '#374151',
+                    }}
+                    onPress={onNotes}
+                  />
+                </View>
+              )
+            }
+            <Button
+              icon={{
+                component: 'MaterialIcons',
+                name: 'add',
+                color: '#374151',
+              }}
+              loading={onCreateNoteLoading}
+              loaderColor='#374151'
+              text="Note"
+              secondary
+              sm
+              className='bg-gray-100'
+              textClassName='text-gray-800'
+              onPress={onCreateNote}
+            />
+          </View>
         </View>
       </View>
     </View>

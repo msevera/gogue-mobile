@@ -13,6 +13,7 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
   const [currentState, setCurrentState] = useState<TransportState>('disconnected');
   const [inCall, setInCall] = useState<boolean>(false);
   const [botReady, setBotReady] = useState<boolean>(false);
+  const [connecting, setConnecting] = useState<boolean>(false);
 
   const createClient = useCallback(async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {
     const client = new RTVIClient({
@@ -47,13 +48,14 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
   }, []);
 
 
-  const connect = async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {
-    console.log('connect', lectureId, noteId, noteTimestamp);
+  const connect = async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {    
     try {
+      setConnecting(true);
       const client = await createClient({ lectureId, noteId, noteTimestamp });
       setClient(client);
       await client.connect();
     } catch (e) {
+      setConnecting(false);
       console.log('Failed to start the bot', e);
     }
   }
@@ -71,7 +73,7 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
         await client.disconnect();
         setClient(undefined);
       }
-    } catch (e) {
+    } catch (e) {    
       console.log('Failed to disconnect', e);
     }
   }
@@ -84,6 +86,7 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
       });
       client.on('connected', () => {
         // setBotReady(true);
+        setConnecting(false);
         console.log('[VA]: connected');
       });
       client.on('disconnected', () => {
@@ -91,14 +94,14 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
         console.log('[VA]: disconnected');
       });
       client.on('botConnected', () => {
-
         console.log('[VA]: botConnected');
       });
       client.on('botDisconnected', () => {
         console.log('[VA]: botDisconnected');
       });
       client.on('botReady', () => {
-        setBotReady(true);
+       setBotReady(true);
+       
         console.log('[VA]: botReady');
       });
       client.on('userStartedSpeaking', () => {
@@ -163,6 +166,7 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
     currentState,
     inCall,
     sendMessage,
-    botReady
+    botReady,
+    connecting
   }
 }

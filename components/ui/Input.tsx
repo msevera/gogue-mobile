@@ -80,7 +80,8 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, TextInputProp
             <Button
               secondary
               className={cn(
-                `absolute right-[12] bottom-[12]  ${recordingActive ? 'bg-red-100' : 'bg-gray-100'}`,
+                `absolute right-[12] bottom-[12]`,
+                recordingActive ? 'bg-red-100' : 'bg-gray-100',
               )}
               sm
               icon={{ component: 'Ionicons', name: 'mic', color: recordingActive ? '#ef4444' : '#374151' }}
