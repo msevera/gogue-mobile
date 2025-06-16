@@ -16,6 +16,7 @@ import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { PortalProvider } from '@gorhom/portal';
 import { GlobalDrawerProvider } from '@/contexts/globalDrawerContext';
 import { GenerateLectureProvider } from '@/contexts/generateLectureContext';
+import { typePolicies } from '@/apollo/settings';
 
 OneSignal.Debug.setLogLevel(LogLevel.Verbose);
 OneSignal.initialize(process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID!);
@@ -28,7 +29,9 @@ configureReanimatedLogger({
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache({
+    typePolicies,
+  }),
 });
 
 // connectApolloClientToVSCodeDevTools(

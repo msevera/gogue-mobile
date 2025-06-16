@@ -4,14 +4,14 @@ import { cn } from '@/lib/utils';
 import { Dimensions, LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { Note } from '@/apollo/__generated__/graphql';
 
-type SentenceType = {
+export type SentenceType = {
   start_offset: number;
   end_offset: number;
   start_time: number;
   end_time: number;
 }
 
-type Alignment = {
+export type Alignment = {
   is_sentence_start: boolean;
   is_section_start: boolean;
   sentence: SentenceType;
@@ -20,11 +20,10 @@ type Alignment = {
 interface TextHighlighterProps {
   text: string;
   notes: Note[];
-  alignments: Alignment[];
+  sentences: Alignment[];
   currentTime: number;
   sections: string[];
   onSelect: (time: number) => void;
-  onSentenceChange: (time: number) => void;
   scrollViewRef: React.RefObject<ScrollView>;
   scrollViewHeight: number;
 }
@@ -32,32 +31,15 @@ interface TextHighlighterProps {
 export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   text,
   notes,
-  alignments,
+  sentences,
   currentTime,
   sections,
   onSelect,
-  onSentenceChange,
   scrollViewRef,
   scrollViewHeight
 }) => {
-  const [sentenceStartTime, setSentenceStartTime] = useState<number | null>(null);
-
-  currentTime += 0.5;
-
-  const sentences: Alignment[] = useMemo(() => {
-    return alignments.filter((alignment) => {
-      return alignment.is_sentence_start;
-    })
-  }, [alignments])
-
   const measureViewRef = useRef<View>(null);
-
-
-  const onSentencePress = (startTime: number) => {
-    if (startTime !== sentenceStartTime) {
-      onSentenceChange(startTime)
-    }
-
+  const onSentencePress = (startTime: number) => {    
     onSelect(startTime);
   }
 
@@ -70,19 +52,6 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
       scrollViewRef.current?.scrollTo({ y: y - (scrollViewHeight / 2), animated: true });
     });
   }
-
-  useEffect(() => {
-    if (!sentences?.length) return;
-
-    const entry = sentences.find((entry) => {
-      return currentTime >= entry.sentence.start_time && currentTime < entry.sentence.end_time;
-    });
-
-    if (entry) {
-      setSentenceStartTime(entry.sentence.start_time);
-    }
-
-  }, [sentences, currentTime, sections]);
 
   const renderText = useMemo(() => {
     if (!sentences?.length || !text) return null;
@@ -143,7 +112,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
     return result
 
-  }, [text, sentences, notes, currentTime, sections, sentenceStartTime]);
+  }, [text, sentences, notes, currentTime, sections]);
 
   return <View className='pt-[2]'>
     <Text>

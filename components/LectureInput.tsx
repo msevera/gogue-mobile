@@ -55,7 +55,8 @@ export const LectureInput = ({
           onPress={() => {
             onPress();
             if (agentMode === 'text') {
-              onTextSubmit(text);              
+              onTextSubmit(text);       
+              setText('');
             } else {
               onRecordPress();
             }

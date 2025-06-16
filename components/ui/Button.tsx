@@ -46,7 +46,7 @@ export const Button = React.forwardRef<View, ButtonProps>(({
   ...props
 }, ref) => {
   const onPressHandler = useCallback((event: GestureResponderEvent) => {
-    if (loading) return;
+    if (loading || disabled) return;
     onPress?.(event);
   }, [loading, onPress]);
 

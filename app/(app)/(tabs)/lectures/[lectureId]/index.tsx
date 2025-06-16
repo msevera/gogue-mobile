@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { useVoiceAgent } from '@/hooks/useVoiceAgent';
 import { useGetNotes } from '@/hooks/useGetNotes';
 import { CREATE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
+import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -26,8 +27,16 @@ export default function Screen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
-
   const { items: notes, isLoading: notesLoading, updateCreateNoteCache } = useGetNotes({ lectureId: lectureId as string });
+  const { sentences, currentNote, currentSentence } = useSentence({
+    alignments,
+    notes: notes as Note[],
+    content,
+    currentTime,
+    onSentenceChange: (sentenceIndex: number, sentenceStartTime: number) => {      
+      setNoteId(undefined);
+    }
+  });
 
   const onNotes = () => {
     console.log('onNotes');
@@ -49,14 +58,14 @@ export default function Screen() {
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
     variables: {
       lectureId: lectureId as string,
-    },    
-    onData: async ({ data }) => {      
-      const note = data.data?.noteCreated as Note;      
-      updateCreateNoteCache(note);      
+    },
+    onData: async ({ data }) => {
+      const note = data.data?.noteCreated as Note;
+      updateCreateNoteCache(note);
     }
   });
 
-  const [createNote, { loading: createNoteLoading }] = useMutation<CreateNoteMutation, CreateNoteMutationVariables>(CREATE_NOTE, {   
+  const [createNote, { loading: createNoteLoading }] = useMutation<CreateNoteMutation, CreateNoteMutationVariables>(CREATE_NOTE, {
     onError: (error) => {
       console.log('CREATE_NOTE error', JSON.stringify(error, null, 2));
     }
@@ -95,7 +104,7 @@ export default function Screen() {
       textSelectedRef.current = false;
       return;
     }
-
+    
     setCurrentTime(status.currentTime)
   }, [status.currentTime])
 
@@ -109,11 +118,11 @@ export default function Screen() {
     }
   }, [status.didJustFinish])
 
-  const onSeek = (time: number) => {
+  const onSeek = (time: number) => {    
     setCurrentTime(time)
   }
 
-  const onSeekEnd = (time: number) => {
+  const onSeekEnd = (time: number) => {  
     setCurrentTime(time)
     player.seekTo(time)
     if (wasPlaying) {
@@ -136,10 +145,6 @@ export default function Screen() {
     setScrollViewHeight(event.nativeEvent.layout.height - parseInt(lectureDrawerRef.current?.getControlsDrawerClosedSnapPoint() as string))
   }
 
-  const onSentenceChange = (time: number) => {
-    setNoteId(undefined);
-  }
-
   const onPlayPause = () => {
     if (isPlaying) {
       player.pause()
@@ -147,8 +152,6 @@ export default function Screen() {
       player.play()
     }
   }
-
-  console.log('notes', lectureData?.metadata?.notesCount);
 
   return (
     <View className="flex-1">
@@ -166,16 +169,15 @@ export default function Screen() {
         <Header title={lectureData?.title} loading={loading} />
         {
           lectureData && (
-            <View className='flex-1'>                         
+            <View className='flex-1'>
               <ScrollView className='px-4 pt-4' onLayout={onLayoutHandler} ref={scrollViewRef}>
                 <TextHighlighter
                   notes={notes as Note[]}
                   text={content}
                   sections={lectureData.sections.map(section => section.title)}
-                  alignments={alignments}
+                  sentences={sentences}
                   currentTime={currentTime}
                   onSelect={onTextSelect}
-                  onSentenceChange={onSentenceChange}
                   scrollViewRef={scrollViewRef}
                   scrollViewHeight={scrollViewHeight}
                 />
@@ -193,7 +195,7 @@ export default function Screen() {
           onSeek={onSeek}
           onSeekEnd={onSeekEnd}
           onSeekStart={onSeekStart}
-          alignments={alignments}
+          sentences={sentences}
           notes={notes as Note[]}
           notesCount={lectureData?.metadata?.notesCount as number}
           noteId={noteId as string}
@@ -202,6 +204,8 @@ export default function Screen() {
           onCreateNoteLoading={createNoteLoading}
           onNotes={onNotes}
           onAgentCreateNote={onAgentCreateNote}
+          currentNote={currentNote as Note}
+          currentSentence={currentSentence as CurrentSentence}
         />
       </ScreenLayout>
     </View>

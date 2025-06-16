@@ -41,6 +41,7 @@ class SignallingMessageObject {
 }
 
 const AUDIO_TRANSCEIVER_INDEX = 0;
+const VIDEO_TRANSCEIVER_INDEX = 1;
 
 class TrackStatusMessage {
   type = "trackStatus";
@@ -426,12 +427,19 @@ export class WebRTCTransport extends Transport {
   private addInitialTransceivers() {
     // Transceivers always appear in creation-order for both peers
     this.pc!.addTransceiver("audio", { direction: "sendrecv" });
+    this.pc!.addTransceiver("video", { direction: "sendrecv" });
   }
 
   private getAudioTransceiver() {
     // Transceivers always appear in creation-order for both peers
     // Look at addInitialTransceivers
     return this.pc!.getTransceivers()[AUDIO_TRANSCEIVER_INDEX];
+  }
+
+  private getVideoTransceiver() {
+    // Transceivers always appear in creation-order for both peers
+    // Look at addInitialTransceivers
+    return this.pc!.getTransceivers()[VIDEO_TRANSCEIVER_INDEX];
   }
 
   private async startNewPeerConnection(
@@ -451,6 +459,12 @@ export class WebRTCTransport extends Transport {
     logger.debug(`addUserMedia audioTrack: ${audioTrack}`);
     if (audioTrack) {
       await this.getAudioTransceiver().sender.replaceTrack(audioTrack);
+    }
+
+    let videoTrack = this.tracks().local.video;
+    logger.debug(`addUserMedia videoTrack: ${videoTrack}`);
+    if (videoTrack) {
+      await this.getVideoTransceiver().sender.replaceTrack(videoTrack);
     }
   }
 
@@ -634,7 +648,7 @@ export class WebRTCTransport extends Transport {
   }
 
   enableMic(enable: boolean): void {
-    this._daily!.setLocalAudio(enable);
+    this._daily!.setLocalAudio(enable);  
     this.sendSignallingMessage(
       new TrackStatusMessage(AUDIO_TRANSCEIVER_INDEX, enable),
     );

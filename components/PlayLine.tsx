@@ -15,7 +15,7 @@ interface PlayLineProps {
   onSeek?: (position: number) => void;
   onSeekEnd?: (position: number) => void;
   onSeekStart?: (position: number) => void;
-  alignments: any;
+  sentences: any;
   notes: Note[];
 }
 
@@ -25,15 +25,10 @@ export const PlayLine = ({
   onSeek,
   onSeekEnd,
   onSeekStart,
-  alignments,
+  sentences,
   notes
 }: PlayLineProps
 ) => {
-
-  const sentences = useMemo(() => {
-    return alignments.filter((alignment: any) => alignment.is_sentence_start)
-  }, [alignments])
-
   const snapPoints = useMemo(() => {
     const result = sentences.map((alignment: any) => alignment.sentence.start_time);
     return result;
@@ -97,7 +92,7 @@ export const PlayLine = ({
 
   const positionToTime = (pos: number) => {
     'worklet';
-    return (pos / LINE_WIDTH) * duration;
+    return Number(((pos / LINE_WIDTH) * duration).toFixed(2));
   };
 
   const panGesture = Gesture.Pan()

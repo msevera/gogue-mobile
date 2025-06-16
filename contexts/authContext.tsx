@@ -173,7 +173,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const [setProfileMutation] = useMutation<SetProfileMutation, SetProfileMutationVariables>(SET_PROFILE);
 
-  const onAuthStateChanged = async (user: FirebaseAuthTypes.User | null) => {                
+  const onAuthStateChanged = async (user: FirebaseAuthTypes.User | null) => {                    
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
@@ -201,8 +201,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       value={{       
         signInWithGoogle: async () => {
           await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-          const signInResult = await GoogleSignin.signIn();
-          let idToken = signInResult.data?.idToken;
+          console.log('A')
+          const signInResult = await GoogleSignin.signIn();        
+          let idToken = signInResult.data?.idToken;          
           if (!idToken) {
             console.log('signInResult.data', signInResult)
             throw new Error('No ID token found 2');

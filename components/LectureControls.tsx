@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View } from 'react-native';
 import { Button } from './ui/Button';
 import { cn } from '@/lib/utils';
@@ -16,28 +16,41 @@ export const LectureControls = React.memo(({
   onNotes,
   onSeek,
   onSeekEnd,
-  alignments,
+  sentences,
   onSeekStart,
   notes,
-  notesCount
+  notesCount,
+  currentNote,
+  onOpenNote
 }:
   {
     className?: string,
     onPlayPause: () => void,
     onCreateNote: () => void,
+    onOpenNote: (note: Note) => void,
     onCreateNoteLoading: boolean,
     onNotes: () => void,
     onSeek: (position: number) => void,
     onSeekEnd: (position: number) => void,
-    alignments: any,
+    sentences: any,
     currentTime: number,
     isPlaying: boolean,
     duration: number,
     onSeekStart: (position: number) => void,
     notes: Note[],
-    notesCount: number
-  }) => {  
+    notesCount: number,
+    currentNote: Note
+  }) => {
   const added = false;
+
+  const onNotePress = useCallback(() => {
+    if (currentNote) {
+      onOpenNote(currentNote);
+    } else {
+      onCreateNote();
+    }
+  }, [currentNote]);
+
   return (
     <View className={cn('flex-1', className)}>
       <View className='flex-1 bg-white'>
@@ -47,7 +60,7 @@ export const LectureControls = React.memo(({
           onSeek={onSeek}
           onSeekEnd={onSeekEnd}
           onSeekStart={onSeekStart}
-          alignments={alignments}
+          sentences={sentences}
           notes={notes}
         />
         <View className='flex-row items-center justify-between px-4 gap-4 mt-5'>
@@ -55,7 +68,7 @@ export const LectureControls = React.memo(({
             icon={{
               component: 'MaterialIcons',
               name: added ? 'star' : 'star-outline',
-              color: added ? '#9ca3af' : '#374151',              
+              color: added ? '#9ca3af' : '#374151',
             }}
             disabled
             text={added ? 'Saved' : 'Save'}
@@ -104,7 +117,7 @@ export const LectureControls = React.memo(({
             <Button
               icon={{
                 component: 'MaterialIcons',
-                name: 'add',
+                name: currentNote ? 'arrow-upward' : 'add',
                 color: '#374151',
               }}
               loading={onCreateNoteLoading}
@@ -112,9 +125,9 @@ export const LectureControls = React.memo(({
               text="Note"
               secondary
               sm
-              className='bg-gray-100'
+              className={cn(currentNote ? 'bg-yellow-300' : 'bg-gray-100')}
               textClassName='text-gray-800'
-              onPress={onCreateNote}
+              onPress={onNotePress}
             />
           </View>
         </View>

@@ -17,6 +17,7 @@ type Documents = {
     "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audioPaths {\n      stream\n      wav\n    }\n    audioDuration\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n    }\n  }\n": typeof types.LectureShortFragmentDoc,
     "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n  }\n  \n": typeof types.LectureFullFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    timestamp    \n  }\n": typeof types.NoteFragmentDoc,
+    "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": typeof types.NoteMessageFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n": typeof types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": typeof types.UserFragmentDoc,
     "\n  query GetLectures($pagination: PaginationInput) {\n    lectures(pagination: $pagination) {\n      items {\n        ...LectureShort       \n      }\n    }    \n  }\n  \n": typeof types.GetLecturesDocument,
@@ -24,6 +25,7 @@ type Documents = {
     "\n  query GetLectureAgent($id: ID!) {\n    lectureAgent(id: $id) {\n      config\n    }\n  }\n": typeof types.GetLectureAgentDocument,
     "\n  subscription LectureCreating {\n    lectureCreating {\n      ...LectureFull\n    }\n  }\n  \n": typeof types.LectureCreatingDocument,
     "\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n": typeof types.CreateLectureAsyncDocument,
+    "\n  query GetNoteMessages($noteId: ID!, $pagination: PaginationInput) {\n    noteMessages(input: { noteId: $noteId }, pagination: $pagination) {\n      items {\n        ...NoteMessage       \n      },\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": typeof types.GetNoteMessagesDocument,
     "\n  query GetNotes($lectureId: ID!, $pagination: PaginationInput) {\n    notes(input: { lectureId: $lectureId }, pagination: $pagination) {\n      items {\n        ...Note       \n      }\n    }    \n  }\n  \n": typeof types.GetNotesDocument,
     "\n  query GetNote($id: ID!) {\n    note(id: $id) {\n      ...Note\n    }\n  }\n  \n": typeof types.GetNoteDocument,
     "\n  query GetNoteAgent($id: ID!) {\n    noteAgent(id: $id) {\n      config\n    }\n  }\n": typeof types.GetNoteAgentDocument,
@@ -37,6 +39,7 @@ const documents: Documents = {
     "\n  fragment LectureShort on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audioPaths {\n      stream\n      wav\n    }\n    audioDuration\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n    }\n  }\n": types.LectureShortFragmentDoc,
     "\n  fragment LectureFull on Lecture {\n    ...LectureShort\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n  }\n  \n": types.LectureFullFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    timestamp    \n  }\n": types.NoteFragmentDoc,
+    "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": types.NoteMessageFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n": types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": types.UserFragmentDoc,
     "\n  query GetLectures($pagination: PaginationInput) {\n    lectures(pagination: $pagination) {\n      items {\n        ...LectureShort       \n      }\n    }    \n  }\n  \n": types.GetLecturesDocument,
@@ -44,6 +47,7 @@ const documents: Documents = {
     "\n  query GetLectureAgent($id: ID!) {\n    lectureAgent(id: $id) {\n      config\n    }\n  }\n": types.GetLectureAgentDocument,
     "\n  subscription LectureCreating {\n    lectureCreating {\n      ...LectureFull\n    }\n  }\n  \n": types.LectureCreatingDocument,
     "\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n": types.CreateLectureAsyncDocument,
+    "\n  query GetNoteMessages($noteId: ID!, $pagination: PaginationInput) {\n    noteMessages(input: { noteId: $noteId }, pagination: $pagination) {\n      items {\n        ...NoteMessage       \n      },\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": types.GetNoteMessagesDocument,
     "\n  query GetNotes($lectureId: ID!, $pagination: PaginationInput) {\n    notes(input: { lectureId: $lectureId }, pagination: $pagination) {\n      items {\n        ...Note       \n      }\n    }    \n  }\n  \n": types.GetNotesDocument,
     "\n  query GetNote($id: ID!) {\n    note(id: $id) {\n      ...Note\n    }\n  }\n  \n": types.GetNoteDocument,
     "\n  query GetNoteAgent($id: ID!) {\n    noteAgent(id: $id) {\n      config\n    }\n  }\n": types.GetNoteAgentDocument,
@@ -83,6 +87,10 @@ export function gql(source: "\n  fragment Note on Note {\n    id\n    title\n   
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function gql(source: "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n"): (typeof documents)["\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function gql(source: "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n"): (typeof documents)["\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -108,6 +116,10 @@ export function gql(source: "\n  subscription LectureCreating {\n    lectureCrea
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n"): (typeof documents)["\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query GetNoteMessages($noteId: ID!, $pagination: PaginationInput) {\n    noteMessages(input: { noteId: $noteId }, pagination: $pagination) {\n      items {\n        ...NoteMessage       \n      },\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n"): (typeof documents)["\n  query GetNoteMessages($noteId: ID!, $pagination: PaginationInput) {\n    noteMessages(input: { noteId: $noteId }, pagination: $pagination) {\n      items {\n        ...NoteMessage       \n      },\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

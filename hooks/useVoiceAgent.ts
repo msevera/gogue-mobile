@@ -4,10 +4,12 @@ import { WebRTCTransport } from '@/lib/webRTCTransport'
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Message } from './useNoteChat';
+import axios from '@/lib/axios';
 
 const inCallStates = new Set(["authenticating", "connecting", "connected", "ready"])
 
-export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: string) => void }) => {
+export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: (noteId: string) => void, onTranscript: (message: Message) => void }) => {
   const { authUser } = useAuth();
   const [client, setClient] = useState<RTVIClient | undefined>();
   const [currentState, setCurrentState] = useState<TransportState>('disconnected');
@@ -15,9 +17,16 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
   const [botReady, setBotReady] = useState<boolean>(false);
   const [connecting, setConnecting] = useState<boolean>(false);
 
-  const createClient = useCallback(async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {
+  const createClient = useCallback(async ({ lectureId, noteId, noteTimestamp, enableMic }: { lectureId: string, noteId?: string, noteTimestamp: number, enableMic: boolean }) => {
+
+    const response = await axios.post('/turn', {});
+    console.log('[VA]: token', response.data.iceServers);
+
     const client = new RTVIClient({
-      transport: new WebRTCTransport({}),
+      transport: new WebRTCTransport({
+        iceServers: response.data.iceServers,
+        waitForICEGathering: false
+      }),
       params: {
         baseUrl: process.env.EXPO_PUBLIC_WEBRTC_ENDPOINT,
         endpoints: { connect: '/connect' },
@@ -26,15 +35,15 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
           user_id: authUser?.id,
           workspace_id: await AsyncStorage.getItem('workspaceId'),
           note_timestamp: noteTimestamp,
-          note_id: noteId
-
+          note_id: noteId,
+          ice_servers: response.data.iceServers,
         }
       },
       enableMic: true,
       customConnectHandler: () => Promise.resolve(),
       callbacks: {
         onTrackStarted: (track: MediaStreamTrack) => {
-          console.log('onTrackStarted 123', track);
+          console.log('onTrackStarted', track);
         },
         onTrackStopped: (track: MediaStreamTrack) => {
           console.log('onTrackStopped', track);
@@ -42,18 +51,23 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
 
       }
     });
-    client.setLogLevel(LogLevel.WARN);
+    client.setLogLevel(LogLevel.DEBUG);
 
     return client;
   }, []);
 
 
-  const connect = async ({ lectureId, noteId, noteTimestamp }: { lectureId: string, noteId?: string, noteTimestamp: number }) => {    
+  const connect = async ({ lectureId, noteId, noteTimestamp, enableMic }: { lectureId: string, noteId?: string, noteTimestamp: number, enableMic: boolean }) => {
     try {
       setConnecting(true);
-      const client = await createClient({ lectureId, noteId, noteTimestamp });
+      const client = await createClient({ lectureId, noteId, noteTimestamp, enableMic });
+
       setClient(client);
+      console.log('Connecting to the bot');
       await client.connect();
+      client.enableMic(enableMic);
+      console.log('[VA]: client', enableMic, client.isMicEnabled);
+      console.log('Connected to the bot');
     } catch (e) {
       setConnecting(false);
       console.log('Failed to start the bot', e);
@@ -63,17 +77,10 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
   const disconnect = async () => {
     try {
       if (client) {
-        await client.sendMessage(
-          new RTVIMessage('client_before_disconnect',
-            {
-              "message": 'disconnect'
-            })
-        );
-        await client.disconnectBot();
         await client.disconnect();
         setClient(undefined);
       }
-    } catch (e) {    
+    } catch (e) {
       console.log('Failed to disconnect', e);
     }
   }
@@ -90,6 +97,7 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
         console.log('[VA]: connected');
       });
       client.on('disconnected', () => {
+        setConnecting(false);
         setBotReady(false);
         console.log('[VA]: disconnected');
       });
@@ -100,8 +108,8 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
         console.log('[VA]: botDisconnected');
       });
       client.on('botReady', () => {
-       setBotReady(true);
-       
+        setBotReady(true);
+        setConnecting(false);
         console.log('[VA]: botReady');
       });
       client.on('userStartedSpeaking', () => {
@@ -116,9 +124,16 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
       client.on('botStoppedSpeaking', () => {
         console.log('[VA]: botStoppedSpeaking');
       });
-      client.on('userTranscript', (transcript: TranscriptData) => {
-        console.log('[VA]: userTranscript', transcript);
-      });
+      // client.on('userTranscript', (transcript: TranscriptData) => {
+      //   console.log('[VA]: userTranscript', transcript);
+      //   if (transcript.final) {
+      //     onUserTranscript({
+      //       role: 'user',
+      //       content: transcript.text,
+      //       timestamp: transcript.timestamp
+      //     } as Message);
+      //   }
+      // });
       // client.on('botTranscript', (transcript: BotLLMTextData) => {
       //   console.log('[VA]: botTranscript', transcript);
       // });
@@ -128,7 +143,13 @@ export const useVoiceAgent = ({ onNoteCreated }: { onNoteCreated: (noteId: strin
       client.on('serverMessage', (message: any) => {
         const { payload } = message;
         if (message.type === 'tts-text') {
-          console.log('[VA]: botTtsText', payload.role, payload.content);
+          onTranscript({
+            role: payload.role,
+            content: payload.content,
+            timestamp: payload.timestamp
+          } as Message);
+
+          console.log('[VA]: serverMessage', payload);
         }
 
         if (message.type === 'note-created') {

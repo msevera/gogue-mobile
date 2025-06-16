@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { Keyboard, View } from 'react-native';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { BottomSheet } from './BottomSheet';
@@ -11,6 +11,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Note } from '@/apollo/__generated__/graphql';
 import { LectureInput } from './LectureInput';
 import { useVoiceAgent } from '@/hooks/useVoiceAgent';
+import { Alignment } from './TextHighlighter';
+import { NoteDetails, NoteDetailsRef } from './NoteDetails';
+import { CurrentSentence } from '@/hooks/useSentence';
+import { Message } from '@/hooks/useNoteChat';
 
 export interface LectureDrawerRef {
   open: () => void;
@@ -32,13 +36,15 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   onAgentCreateNote: (noteId: string) => void,
   onCreateNoteLoading: boolean,
   onNotes: () => void,
-  alignments: any,
+  sentences: any,
   currentTime: number,
   isPlaying: boolean,
   duration: number,
   notesCount: number,
   noteId: string,
-  lectureId: string
+  lectureId: string,
+  currentNote: Note,
+  currentSentence: CurrentSentence
 }>(({
   notes,
   onPlayPause,
@@ -49,18 +55,26 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   onAgentCreateNote,
   onCreateNoteLoading,
   onNotes,
-  alignments,
+  sentences,
   currentTime,
   isPlaying,
   duration,
   notesCount,
   noteId,
-  lectureId
+  lectureId,
+  currentNote,
+  currentSentence
 }, ref) => {
+
+  const noteDetailsRef = useRef<NoteDetailsRef>(null);
+
   const { connect, connecting, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({
     onNoteCreated: (noteId: string) => {
       onAgentCreateNote(noteId);
-    }
+    },
+    onTranscript: (message: Message) => {      
+      noteDetailsRef.current?.addMessage(message);
+    },   
   });
 
   const [agentMode, setAgentMode] = useState<'text' | 'voice' | null>(null);
@@ -115,6 +129,33 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
     };
   });
 
+  const connectToAgent = useCallback((enableMic: boolean) => {
+    if (!inCall) {
+      connect({
+        lectureId: lectureId,
+        noteId: currentNote?.id || noteId,
+        noteTimestamp: currentTime,
+        enableMic
+      });
+    }   
+  }, [lectureId, noteId, currentTime, currentNote, inCall]);
+
+
+  const openDrawer = (snapPoint: string) => {
+    setControlsDrawerSettings({
+      ...controlsDrawerSettings,
+      snapPoints: [snapPoint],
+    });
+
+    setNotesDrawerSettings({
+      ...notesDrawerSettings,
+      snapPoints: ['100%'],
+      backdrop: true,
+    });
+
+    setIsNotesDrawerOpen(true);
+  }
+
   return (
     <>
       <BottomSheet
@@ -143,7 +184,11 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
         }}
       >
         <View className='flex-1'>
-          <Text>Notes</Text>
+          <NoteDetails
+            ref={noteDetailsRef}
+            currentNote={currentNote}
+            currentSentence={currentSentence}
+          />
         </View>
       </BottomSheet>
       <BottomSheet
@@ -167,49 +212,19 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
               }}
               onRecordPress={() => {
                 setAgentMode('voice');
-                connect({
-                  lectureId: lectureId,
-                  noteId: noteId,
-                  noteTimestamp: currentTime
-                });
+                connectToAgent(true)
               }}
               onFocus={() => {
                 setAgentMode('text');
-                connect({
-                  lectureId: lectureId,
-                  noteId: noteId,
-                  noteTimestamp: currentTime
-                });
-                setControlsDrawerSettings({
-                  ...controlsDrawerSettings,
-                  snapPoints: [controlsDrawerActiveInputSnapPoint],
-                });
-
-                setNotesDrawerSettings({
-                  ...notesDrawerSettings,
-                  snapPoints: ['100%'],
-                  backdrop: true,
-                });
-
-                setIsNotesDrawerOpen(true);
+                connectToAgent(false)
+                openDrawer(controlsDrawerActiveInputSnapPoint)
               }}
               onBlur={() => {
                 Keyboard.dismiss();
                 showDrawer();
               }}
               onPress={() => {
-                setControlsDrawerSettings({
-                  ...controlsDrawerSettings,
-                  snapPoints: [controlsDrawerOnlyInputSnapPoint],
-                });
-
-                setNotesDrawerSettings({
-                  ...notesDrawerSettings,
-                  snapPoints: ['100%'],
-                  backdrop: true,
-                });
-
-                setIsNotesDrawerOpen(true);
+                openDrawer(controlsDrawerOnlyInputSnapPoint)
                 Keyboard.dismiss();
               }}
             />
@@ -242,9 +257,13 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
             onSeek={onSeek}
             onSeekEnd={onSeekEnd}
             onSeekStart={onSeekStart}
-            alignments={alignments}
+            sentences={sentences}
             notes={notes}
             notesCount={notesCount}
+            currentNote={currentNote}
+            onOpenNote={() => {
+              openDrawer(controlsDrawerOnlyInputSnapPoint)
+            }}
           />
         </Animated.View>
       </BottomSheet>
