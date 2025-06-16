@@ -68,7 +68,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
 
   const noteDetailsRef = useRef<NoteDetailsRef>(null);
 
-  const { connect, connecting, disconnect, currentState, inCall, sendMessage, botReady } = useVoiceAgent({
+  const { connect, connecting, disconnect, inCall, sendMessage } = useVoiceAgent({
     onNoteCreated: (noteId: string) => {
       onAgentCreateNote(noteId);
     },
@@ -134,11 +134,11 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
       connect({
         lectureId: lectureId,
         noteId: currentNote?.id || noteId,
-        noteTimestamp: currentTime,
+        noteTimestamp: currentSentence?.sentence.start_time,
         enableMic
       });
     }   
-  }, [lectureId, noteId, currentTime, currentNote, inCall]);
+  }, [lectureId, noteId, currentSentence, currentNote, inCall]);
 
 
   const openDrawer = (snapPoint: string) => {

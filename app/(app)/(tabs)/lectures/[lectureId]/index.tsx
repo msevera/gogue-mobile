@@ -4,8 +4,8 @@ import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
 import { CreateNoteMutation, CreateNoteMutationVariables, Lecture, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { PLAYBACK_STATUS_UPDATE, useAudioPlayer, useAudioPlayerStatus, createAudioPlayer, AudioPlayer, AudioStatus } from 'expo-audio';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
@@ -17,7 +17,6 @@ import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
-  const [currentTime, setCurrentTime] = useState(0);
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
   const [wasPlaying, setWasPlaying] = useState(false);
@@ -26,17 +25,25 @@ export default function Screen() {
   const textSelectedRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const [status, setStatus] = useState<{
+    playing: boolean;
+    didJustFinish: boolean;
+    duration: number;
+    currentTime: number;
+  }>({ playing: false, didJustFinish: false, duration: 0, currentTime: 0 })
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
   const { items: notes, isLoading: notesLoading, updateCreateNoteCache } = useGetNotes({ lectureId: lectureId as string });
   const { sentences, currentNote, currentSentence } = useSentence({
     alignments,
     notes: notes as Note[],
     content,
-    currentTime,
-    onSentenceChange: (sentenceIndex: number, sentenceStartTime: number) => {      
+    currentTime: status.currentTime,
+    onSentenceChange: (sentenceIndex: number, sentenceStartTime: number) => {
       setNoteId(undefined);
     }
   });
+
+  const playerRef = useRef<AudioPlayer>(null);
 
   const onNotes = () => {
     console.log('onNotes');
@@ -75,7 +82,7 @@ export default function Screen() {
     createNote({
       variables: {
         lectureId: lectureId as string,
-        timestamp: currentTime
+        timestamp: status.currentTime
       }
     });
   }
@@ -83,7 +90,6 @@ export default function Screen() {
   const onAgentCreateNote = (noteId: string) => {
     setNoteId(noteId);
   }
-
 
   useEffect(() => {
     if (lectureData) {
@@ -97,16 +103,49 @@ export default function Screen() {
     uri: lectureData?.audioPaths?.stream as string
   }, 1000);
 
-  const status = useAudioPlayerStatus(player);
-
   useEffect(() => {
-    if (textSelectedRef.current) {
-      textSelectedRef.current = false;
-      return;
+    if (!player) return;
+
+    const listener = (status: any) => {
+      setStatus((oldStatus) => {
+        let statusChanged = false;
+        const time = Number(status.currentTime.toFixed(2));
+        if (time !== oldStatus.currentTime) {
+          statusChanged = true;
+        }
+
+        if (status.playing !== oldStatus.playing) {
+          statusChanged = true;
+        }
+
+        if (status.didJustFinish !== oldStatus.didJustFinish) {
+          statusChanged = true;
+        }
+
+        if (status.duration !== oldStatus.duration) {
+          statusChanged = true;
+        }
+
+        if (statusChanged) {
+          return {
+            ...oldStatus,
+            currentTime: time,
+            playing: status.playing,
+            didJustFinish: status.didJustFinish,
+            duration: status.duration
+          };
+        }
+
+        return oldStatus;              
+      })
     }
-    
-    setCurrentTime(status.currentTime)
-  }, [status.currentTime])
+   
+    player.addListener(PLAYBACK_STATUS_UPDATE, listener)
+   
+    return () => {
+      player.removeAllListeners(PLAYBACK_STATUS_UPDATE)
+    }
+  }, [player?.id])
 
   useEffect(() => {
     setIsPlaying(status.playing)
@@ -118,12 +157,22 @@ export default function Screen() {
     }
   }, [status.didJustFinish])
 
-  const onSeek = (time: number) => {    
-    setCurrentTime(time)
+  const onSeek = (time: number) => {
+    setStatus((oldStatus) => {
+      return {
+        ...oldStatus,
+        currentTime: time
+      }
+    })
   }
 
-  const onSeekEnd = (time: number) => {  
-    setCurrentTime(time)
+  const onSeekEnd = (time: number) => {
+    setStatus((oldStatus) => {
+      return {
+        ...oldStatus,
+        currentTime: time
+      }
+    })
     player.seekTo(time)
     if (wasPlaying) {
       player.play()
@@ -137,7 +186,12 @@ export default function Screen() {
 
   const onTextSelect = (time: number) => {
     player.seekTo(time)
-    setCurrentTime(time)
+    setStatus((oldStatus) => {
+      return {
+        ...oldStatus,
+        currentTime: time
+      }
+    })
     textSelectedRef.current = true;
   }
 
@@ -147,8 +201,10 @@ export default function Screen() {
 
   const onPlayPause = () => {
     if (isPlaying) {
+      setIsPlaying(false)
       player.pause()
-    } else {
+    } else {      
+      setIsPlaying(true)
       player.play()
     }
   }
@@ -164,8 +220,7 @@ export default function Screen() {
         contentEmpty={false}
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
-      >
-
+      >        
         <Header title={lectureData?.title} loading={loading} />
         {
           lectureData && (
@@ -176,7 +231,7 @@ export default function Screen() {
                   text={content}
                   sections={lectureData.sections.map(section => section.title)}
                   sentences={sentences}
-                  currentTime={currentTime}
+                  currentSentence={currentSentence as CurrentSentence}
                   onSelect={onTextSelect}
                   scrollViewRef={scrollViewRef}
                   scrollViewHeight={scrollViewHeight}
@@ -188,7 +243,7 @@ export default function Screen() {
         }
         <LectureDrawer
           ref={lectureDrawerRef}
-          currentTime={currentTime}
+          currentTime={status.currentTime}
           duration={status.duration}
           isPlaying={isPlaying}
           onPlayPause={onPlayPause}

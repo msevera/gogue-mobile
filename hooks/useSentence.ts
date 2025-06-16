@@ -18,9 +18,14 @@ export const useSentence = ({
   currentTime: number,
   onSentenceChange: (sentenceIndex: number, sentenceStartTime: number) => void,
   content: string
-}) => {
-  const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number>(-1);
-  const [currentSentence, setCurrentSentence] = useState<CurrentSentence | null>(null);
+}) => {  
+  const [currentSentence, setCurrentSentence] = useState<{
+    index: number;
+    sentence: CurrentSentence | null;
+  }>({
+    index: -1,
+    sentence: null
+  });
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
 
   const sentences: Alignment[] = useMemo(() => {
@@ -32,39 +37,56 @@ export const useSentence = ({
   useEffect(() => {
     if (!sentences?.length || !content) return;
 
-    const sentenceIndex = sentences.findIndex((item) => {
+    const sentenceIndex = sentences.findIndex((item, index) => {
       const { sentence } = item;
+      if (index === sentences.length - 1) {
+        return currentTime >= sentence.start_time;
+      }
       return currentTime >= sentence.start_time && currentTime < sentence.end_time;
     });
 
-    if (sentenceIndex !== currentSentenceIndex) {
-      const currentSentence = sentences[sentenceIndex];
-      const currentSentenceText = content.slice(currentSentence.sentence.start_offset, currentSentence.sentence.end_offset);
-      setCurrentSentence({
-        ...currentSentence,
-        text: currentSentenceText
-      });
-      setCurrentSentenceIndex(sentenceIndex);
-      onSentenceChange(sentenceIndex, sentences[sentenceIndex].sentence.start_time);
-    }
-  }, [sentences, currentTime, currentSentenceIndex, content]);
+
+    setCurrentSentence((old) => {
+      if (old.index !== sentenceIndex) {
+        const currentSentence = sentences[sentenceIndex];
+        if (!currentSentence) {
+          console.log('[useSentence]: currentSentence is null', sentenceIndex, currentTime, sentences[sentences.length - 1].sentence.start_time, sentences[sentences.length - 1].sentence.end_time);
+          return;
+        };
+        const currentSentenceText = content.slice(currentSentence.sentence.start_offset, currentSentence.sentence.end_offset);
+        onSentenceChange(sentenceIndex, sentences[sentenceIndex].sentence.start_time);
+        return {
+          ...old,
+          sentence: {
+            ...currentSentence,
+            text: currentSentenceText
+          },
+          index: sentenceIndex,
+        }
+
+      }
+
+      return old;
+    })   
+  }, [sentences, currentTime, content]);
 
 
   useEffect(() => {
-    if (!notes?.length || !currentSentence) return;
-    
-    const note = notes.find((note) => {      
-      return currentSentence.sentence.start_time <= note.timestamp && currentSentence.sentence.end_time > note.timestamp;
+    if (!notes?.length || !currentSentence.sentence) return;
+
+    const note = notes.find((note) => {
+      return currentSentence.sentence!.sentence.start_time <= note.timestamp && currentSentence.sentence!.sentence.end_time > note.timestamp;
     });
-    
+
     setCurrentNote(note || null);
-   
-  }, [notes, currentTime, currentSentence]);
+
+  }, [notes, currentSentence]);
+  
 
   return {
     sentences,
-    currentSentenceIndex,
-    currentSentence,
+    currentSentenceIndex: currentSentence.index,
+    currentSentence: currentSentence.sentence,
     currentNote
   }
 } 

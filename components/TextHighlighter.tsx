@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
-import { Dimensions, LayoutChangeEvent, ScrollView, View } from 'react-native';
+import { LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { Note } from '@/apollo/__generated__/graphql';
+import { CurrentSentence } from '@/hooks/useSentence';
 
 export type SentenceType = {
   start_offset: number;
@@ -20,8 +21,8 @@ export type Alignment = {
 interface TextHighlighterProps {
   text: string;
   notes: Note[];
-  sentences: Alignment[];
-  currentTime: number;
+  sentences: Alignment[];  
+  currentSentence: CurrentSentence;
   sections: string[];
   onSelect: (time: number) => void;
   scrollViewRef: React.RefObject<ScrollView>;
@@ -32,7 +33,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   text,
   notes,
   sentences,
-  currentTime,
+  currentSentence,
   sections,
   onSelect,
   scrollViewRef,
@@ -75,7 +76,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         result.push(<Text key={`paragraph-${index}`}>{`\n`}</Text>)
       }
 
-      const isHighlighted = currentTime >= start_time && currentTime < end_time;
+      const isHighlighted = currentSentence?.sentence.start_time === start_time;
       const sentenceWithNote = notes.find((note) => note.timestamp === start_time)
       if (isHighlighted) {
         const firstChar = chunk.slice(0, 1);
@@ -112,7 +113,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
 
     return result
 
-  }, [text, sentences, notes, currentTime, sections]);
+  }, [text, sentences, notes, currentSentence, sections]);
 
   return <View className='pt-[2]'>
     <Text>
