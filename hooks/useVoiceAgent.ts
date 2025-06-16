@@ -18,10 +18,7 @@ export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: 
   const [connecting, setConnecting] = useState<boolean>(false);
 
   const createClient = useCallback(async ({ lectureId, noteId, noteTimestamp, enableMic }: { lectureId: string, noteId?: string, noteTimestamp: number, enableMic: boolean }) => {
-
     const response = await axios.post('/turn', {});
-    console.log('[VA]: token', response.data.iceServers);
-
     const client = new RTVIClient({
       transport: new WebRTCTransport({
         iceServers: response.data.iceServers,
