@@ -17,6 +17,7 @@ const slideDuration = 300;
 type BottomSheetProps = {
   customBackground?: boolean,
   title?: string,
+  headerLeft?: React.ReactNode,
   backdropClassName?: string,
   headerBorder?: boolean,
   headerContainerClassName?: string,
@@ -40,6 +41,7 @@ type BottomSheetProps = {
 export const BottomSheet = ({
   customBackground,
   title,
+  headerLeft,
   headerBorder,
   gesturesEnabled,
   onIndexChanged,
@@ -300,7 +302,7 @@ export const BottomSheet = ({
                         headerContentClassName
                       )}
                     >
-                      <View className='h-6 w-6' />
+                      {headerLeft || <View className='h-6 w-6' />}
                       <Text className="text-lg font-medium">
                         {title}
                       </Text>

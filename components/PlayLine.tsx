@@ -2,15 +2,16 @@ import { View, Dimensions } from 'react-native'
 import { Text } from './ui/Text'
 import { AudioStatus } from 'expo-audio';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay, withTiming } from 'react-native-reanimated';
-import { useMemo, useEffect } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay, withTiming, useDerivedValue, SharedValue } from 'react-native-reanimated';
+import { useMemo, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { Note } from '@/apollo/__generated__/graphql';
+import { formatTime } from '@/lib/utils';
 
 const { width: screenWidth } = Dimensions.get('window');
 const LINE_WIDTH = screenWidth - 2;
+const markerPosition = LINE_WIDTH / 2;
 
 interface PlayLineProps {
-  currentTime: number;
   duration: number;
   onSeek?: (position: number) => void;
   onSeekEnd?: (position: number) => void;
@@ -19,26 +20,46 @@ interface PlayLineProps {
   notes: Note[];
 }
 
-export const PlayLine = ({
-  currentTime,
+export interface PlayLineRef {
+  setCurrentTime: (currentTime: number) => void;
+}
+
+export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
   duration,
   onSeek,
   onSeekEnd,
   onSeekStart,
   sentences,
   notes
-}: PlayLineProps
-) => {
+}, ref) => {
+  const isLoaded = duration > 0;
+  const position = useSharedValue(0);
+  const startPosition = useSharedValue(0);
+  const closestSnapPoint = useSharedValue(0);
+  const [timeLabel, setTimeLabel] = useState(0);
+
+  useImperativeHandle(ref, () => ({
+    setCurrentTime(currentTime: number) {
+      closestSnapPoint.value = currentTime;
+      const snappedPosition = timeToPosition(currentTime);
+      position.value = snappedPosition;
+    }
+  }));
+  
+  useDerivedValue(() => {    
+    runOnJS(setTimeLabel)(closestSnapPoint.value)
+  }, []);
+
   const snapPoints = useMemo(() => {
     const result = sentences.map((alignment: any) => alignment.sentence.start_time);
     return result;
   }, [sentences]);
 
-  const highlightNotes = useMemo(() => { 
-    if (sentences.length === 0 || notes.length === 0 || duration === 0) return [];       
+  const highlightNotes = useMemo(() => {
+    if (sentences.length === 0 || notes.length === 0 || duration === 0) return [];
 
     const result = notes.map((note) => {
-      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);      
+      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);
       return {
         startTime: sentenceToHighlight?.sentence.start_time,
         endTime: sentenceToHighlight?.sentence.end_time,
@@ -48,33 +69,6 @@ export const PlayLine = ({
 
     return result;
   }, [sentences, notes, duration])
-
-  const isLoaded = duration > 0;
-  const progress = isLoaded ? currentTime / duration : 0;
-
-  // Calculate the position of the current time marker
-  const markerPosition = LINE_WIDTH / 2;
-
-  // Shared value for the current position
-  const position = useSharedValue(progress * LINE_WIDTH);
-  const startPosition = useSharedValue(0);
-
-  // Shared value for the progress width
-  const progressWidth = useSharedValue(progress * LINE_WIDTH);
-
-  // Update position when currentTime changes
-  useEffect(() => {
-    if (isLoaded) {
-      position.value = progress * LINE_WIDTH;
-    }
-  }, [currentTime, duration, isLoaded]);
-
-  // Update progress width when currentTime changes
-  useEffect(() => {
-    if (isLoaded) {
-      progressWidth.value = withTiming(progress * LINE_WIDTH, { duration: 150 });
-    }
-  }, [currentTime, duration, isLoaded]);
 
   const findClosestSnapPoint = (currentTime: number) => {
     'worklet';
@@ -97,7 +91,6 @@ export const PlayLine = ({
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
-      console.log('onStart', position.value)
       startPosition.value = position.value;
       if (onSeekStart) {
         runOnJS(onSeekStart)(position.value);
@@ -112,6 +105,7 @@ export const PlayLine = ({
 
       // Find closest snap point
       const snappedTime = findClosestSnapPoint(currentTime);
+      closestSnapPoint.value = snappedTime;
 
       // Convert back to position
       const snappedPosition = timeToPosition(snappedTime);
@@ -120,44 +114,37 @@ export const PlayLine = ({
 
       // Call onSeek with the snapped time position
       if (onSeek && isLoaded) {
-        runOnJS(onSeek)(snappedTime);
+        runOnJS(onSeek)(closestSnapPoint.value);
       }
     })
     .onEnd((event) => {
-      if (isLoaded) {
-        position.value = withDecay({
-          velocity: event.velocityX,
-          velocityFactor: 1,
-          deceleration: 1,
-          rubberBandEffect: true,
-          rubberBandFactor: 0.6,
-          clamp: [0, LINE_WIDTH]
-        });
-        // We'll let the decay animation determine the final position
-        const finalTime = positionToTime(position.value);
+      if (isLoaded) {       
+        // const currentTime = positionToTime(position.value);
+        // const snappedTime = findClosestSnapPoint(currentTime);
+        // closestSnapPoint.value = snappedTime;
         if (onSeekEnd) {
-          runOnJS(onSeekEnd)(finalTime);
+          runOnJS(onSeekEnd)(closestSnapPoint.value);
         }
       }
     });
 
   const progressActiveStyle = useAnimatedStyle(() => {
     return {
-      width: progressWidth.value,
+      width: position.value,
     };
-  });
+  }, []);
 
   const progressInactiveStyle = useAnimatedStyle(() => {
     return {
-      width: LINE_WIDTH - progressWidth.value,
+      width: LINE_WIDTH - position.value,
     };
-  });
+  }, []);
 
   const progressHighlightStyle = useAnimatedStyle(() => {
     return {
-      left: markerPosition + 2 - progressWidth.value,     
+      left: markerPosition + 2 - position.value,
     };
-  });
+  }, []);
 
   return (
     <GestureDetector gesture={panGesture}>
@@ -167,15 +154,15 @@ export const PlayLine = ({
             className="h-full bg-blue-400 absolute"
             style={[{ right: markerPosition }, progressActiveStyle]}
           />
-          <View 
-            className="w-[10] h-[10] top-[-4] bg-blue-400 absolute z-10 rounded-full" 
-            style={{ left: markerPosition, transform: [{ translateX: -3 }] }} 
+          <View
+            className="w-[10] h-[10] top-[-4] bg-blue-400 absolute z-10 rounded-full"
+            style={{ left: markerPosition, transform: [{ translateX: -3 }] }}
           />
           <Animated.View
             className="h-full bg-gray-200 absolute"
             style={[{ left: markerPosition }, progressInactiveStyle]}
           />
-          <Animated.View 
+          <Animated.View
             className="h-full absolute top-[0]"
             style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
           >
@@ -188,11 +175,11 @@ export const PlayLine = ({
                 return <View key={note.id} className="h-[10] top-[-10] bg-yellow-400 absolute rounded-t-sm" style={{ left: startPosition, width, zIndex: 10 }} />
               })
             }
-          </Animated.View>         
+          </Animated.View>
         </View>
         <View className="flex-row items-center justify-center mt-2">
           <Text className="text-xs text-blue-400">
-            {isLoaded ? formatTime(currentTime) : '--:--'}
+            {isLoaded ? formatTime(timeLabel) : '--:--'}
           </Text>
           <View className='w-[1.5] h-[10] bg-gray-400 mr-1 ml-1' />
           <Text className="text-xs text-gray-500">
@@ -202,10 +189,4 @@ export const PlayLine = ({
       </View>
     </GestureDetector>
   )
-}
-
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
+})

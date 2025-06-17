@@ -12,6 +12,7 @@ export type Message = {
 export const useNoteChat = ({ noteId }: { noteId: string }) => {
   const [messages, setMessages] = useState<Message[]>([])
   const [init, setInit] = useState(false);
+  const [localNoteId, setLocalNoteId] = useState<string | null>(null);
 
   const variables = useMemo(() => {
     return {
@@ -26,19 +27,27 @@ export const useNoteChat = ({ noteId }: { noteId: string }) => {
     }
   }, [noteId]);
 
-  const { data, loading, error, fetchMore } = useQuery<GetNoteMessagesQuery, GetNoteMessagesQueryVariables>(GET_NOTE_MESSAGES, {
+  const { data, loading, fetchMore } = useQuery<GetNoteMessagesQuery, GetNoteMessagesQueryVariables>(GET_NOTE_MESSAGES, {
     variables,
     skip: !noteId,
     fetchPolicy: 'network-only'
   });
 
   useEffect(() => {
-    setMessages([]);
+    if (localNoteId === noteId) {
+      return;
+    }
+
+    if (localNoteId) {
+      setMessages([]);
+    }
+    
     setInit(false);
-  }, [noteId])
+    setLocalNoteId(noteId);
+  }, [noteId, localNoteId])
 
   useEffect(() => {
-    if (!init  && data?.noteMessages?.items) {      
+    if (!init && data?.noteMessages?.items) {      
       setMessages((data?.noteMessages?.items as NoteMessage[]).map((item) => {
         return {
           role: item.role as 'user' | 'assistant',
@@ -98,6 +107,7 @@ export const useNoteChat = ({ noteId }: { noteId: string }) => {
   return {
     messages,
     addMessage,
+    loading: loading && !messages.length,
     fetchMore: fetchMoreMessages
   }
 }

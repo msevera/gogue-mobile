@@ -1,6 +1,6 @@
 import { Note } from '@/apollo/__generated__/graphql';
 import { Alignment } from '@/components/TextHighlighter';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export type CurrentSentence = Alignment & {
   text: string;
@@ -72,21 +72,31 @@ export const useSentence = ({
 
 
   useEffect(() => {
-    if (!notes?.length || !currentSentence.sentence) return;
+    if (!notes.length) {
+      setCurrentNote(null);
+      return;
+    }
+
+    if (!currentSentence.sentence) return;
 
     const note = notes.find((note) => {
       return currentSentence.sentence!.sentence.start_time <= note.timestamp && currentSentence.sentence!.sentence.end_time > note.timestamp;
     });
 
     setCurrentNote(note || null);
-
   }, [notes, currentSentence]);
   
+  const selectNote = useCallback((id: string) => {    
+    const note = notes.find((note) => note.id === id) || null;
+    
+    setCurrentNote(note);
+  }, [notes]);
 
   return {
     sentences,
     currentSentenceIndex: currentSentence.index,
     currentSentence: currentSentence.sentence,
-    currentNote
+    currentNote,
+    selectNote
   }
 } 

@@ -60,3 +60,18 @@ export const NOTE_CREATED_SUBSCRIPTION = gql`
   }
   ${NOTE_SHORT}
 `;
+
+export const DELETE_NOTE = gql`
+  mutation DeleteNote($id: ID!) {
+    deleteNote(id: $id) {
+      id
+      lecture {
+        id
+        metadata {
+          id
+          notesCount
+        }
+      }
+    }
+  }
+`;

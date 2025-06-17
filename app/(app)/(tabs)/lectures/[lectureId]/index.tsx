@@ -3,7 +3,7 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, ScrollView, View } from 'react-native';
 import { GET_LECTURE } from '@/apollo/queries/lectures';
-import { CreateNoteMutation, CreateNoteMutationVariables, Lecture, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
+import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
 import { PLAYBACK_STATUS_UPDATE, useAudioPlayer, useAudioPlayerStatus, createAudioPlayer, AudioPlayer, AudioStatus } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
@@ -12,8 +12,10 @@ import { Header } from '@/components/layouts/Header';
 import { Button } from '@/components/ui/Button';
 import { useVoiceAgent } from '@/hooks/useVoiceAgent';
 import { useGetNotes } from '@/hooks/useGetNotes';
-import { CREATE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
+import { CREATE_NOTE, DELETE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
 import { CurrentSentence, useSentence } from '@/hooks/useSentence';
+import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
+import { S } from 'graphql-ws/dist/common-DY-PBNYy';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -32,24 +34,22 @@ export default function Screen() {
     currentTime: number;
   }>({ playing: false, didJustFinish: false, duration: 0, currentTime: 0 })
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
-  const { items: notes, isLoading: notesLoading, updateCreateNoteCache } = useGetNotes({ lectureId: lectureId as string });
-  const { sentences, currentNote, currentSentence } = useSentence({
+  const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
+  const { sentences, currentNote, currentSentence, selectNote } = useSentence({
     alignments,
     notes: notes as Note[],
     content,
     currentTime: status.currentTime,
-    onSentenceChange: (sentenceIndex: number, sentenceStartTime: number) => {
+    onSentenceChange: useCallback(() => {
       setNoteId(undefined);
-    }
+    }, [])
   });
 
-  const playerRef = useRef<AudioPlayer>(null);
-
-  const onNotes = () => {
+  const onNotes = useCallback(() => {
     console.log('onNotes');
-  }
+  }, []);
 
-  const { data: { lecture } = {}, loading, refetch } = useQuery(GET_LECTURE, {
+  const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
     fetchPolicy: 'network-only',
     variables: {
       id: lectureId as string,
@@ -78,18 +78,28 @@ export default function Screen() {
     }
   });
 
-  const onCreateNote = () => {
+  const [deleteNote, { loading: deleteNoteLoading }] = useMutation<DeleteNoteMutation, DeleteNoteMutationVariables>(DELETE_NOTE, {
+    onError: (error) => {
+      console.log('DELETE_NOTE error', JSON.stringify(error, null, 2));
+    },
+    update: (cache, result, { variables }) => {
+      const { id } = variables || {};
+      updateDeleteNoteCache(id as string);
+    }
+  });
+
+  const onCreateNote = useCallback(() => {
     createNote({
       variables: {
         lectureId: lectureId as string,
         timestamp: status.currentTime
       }
     });
-  }
+  }, [lectureId, status.currentTime, createNote]);
 
-  const onAgentCreateNote = (noteId: string) => {
+  const onAgentCreateNote = useCallback((noteId: string) => {
     setNoteId(noteId);
-  }
+  }, []);
 
   useEffect(() => {
     if (lectureData) {
@@ -111,6 +121,7 @@ export default function Screen() {
         let statusChanged = false;
         const time = Number(status.currentTime.toFixed(2));
         if (time !== oldStatus.currentTime) {
+          lectureDrawerRef.current?.setPlayLineCurrentTime(time);
           statusChanged = true;
         }
 
@@ -136,12 +147,12 @@ export default function Screen() {
           };
         }
 
-        return oldStatus;              
+        return oldStatus;
       })
     }
-   
+
     player.addListener(PLAYBACK_STATUS_UPDATE, listener)
-   
+
     return () => {
       player.removeAllListeners(PLAYBACK_STATUS_UPDATE)
     }
@@ -157,16 +168,18 @@ export default function Screen() {
     }
   }, [status.didJustFinish])
 
-  const onSeek = (time: number) => {
+  const onSeek = useCallback((time: number) => {
     setStatus((oldStatus) => {
       return {
         ...oldStatus,
         currentTime: time
       }
     })
-  }
 
-  const onSeekEnd = (time: number) => {
+
+  }, []);
+
+  const onSeekEnd = useCallback((time: number) => {
     setStatus((oldStatus) => {
       return {
         ...oldStatus,
@@ -177,14 +190,15 @@ export default function Screen() {
     if (wasPlaying) {
       player.play()
     }
-  }
+  }, [wasPlaying, player]);
 
-  const onSeekStart = () => {
+  const onSeekStart = useCallback(() => {
     setWasPlaying(player.playing)
     player.pause()
-  }
+  }, [player]);
 
-  const onTextSelect = (time: number) => {
+  const onTextSelect = useCallback((time: number) => {
+    lectureDrawerRef.current?.setPlayLineCurrentTime(time);
     player.seekTo(time)
     setStatus((oldStatus) => {
       return {
@@ -193,21 +207,60 @@ export default function Screen() {
       }
     })
     textSelectedRef.current = true;
-  }
+  }, [player]);
 
-  const onLayoutHandler = (event: LayoutChangeEvent) => {
+  const onLayoutHandler = useCallback((event: LayoutChangeEvent) => {
     setScrollViewHeight(event.nativeEvent.layout.height - parseInt(lectureDrawerRef.current?.getControlsDrawerClosedSnapPoint() as string))
-  }
+  }, []);
 
-  const onPlayPause = () => {
+  const onPlayPause = useCallback(() => {
     if (isPlaying) {
       setIsPlaying(false)
       player.pause()
-    } else {      
+    } else {
       setIsPlaying(true)
       player.play()
     }
-  }
+  }, [isPlaying, player]);
+
+  const onDeleteNote = useCallback(async (id: string) => {
+    await deleteNote({
+      variables: {
+        id
+      }
+    });
+  }, [deleteNote]);
+
+  const onSelectNote = useCallback((note: Note) => {    
+    player.seekTo(note.timestamp)
+    setStatus((oldStatus) => {
+      return {
+        ...oldStatus,
+        currentTime: note.timestamp
+      }
+    })
+  }, [selectNote]);
+
+  const memoizedContent = useMemo(() => {
+    if (!lectureData) return null;
+    return (
+      <View className='flex-1'>
+        <ScrollView className='px-4 pt-4' onLayout={onLayoutHandler} ref={scrollViewRef}>
+          <TextHighlighter
+            notes={notes as Note[]}
+            text={content}
+            sections={lectureData.sections.map(section => section.title)}
+            sentences={sentences}
+            currentSentence={currentSentence as CurrentSentence}
+            onSelect={onTextSelect}
+            scrollViewRef={scrollViewRef}
+            scrollViewHeight={scrollViewHeight}
+          />
+          <View className='h-[240]' />
+        </ScrollView>
+      </View>
+    );
+  }, [lectureData, notes, content, sentences, currentSentence, scrollViewHeight, onLayoutHandler, onTextSelect]);
 
   return (
     <View className="flex-1">
@@ -220,30 +273,11 @@ export default function Screen() {
         contentEmpty={false}
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
-      >        
+      >
         <Header title={lectureData?.title} loading={loading} />
-        {
-          lectureData && (
-            <View className='flex-1'>
-              <ScrollView className='px-4 pt-4' onLayout={onLayoutHandler} ref={scrollViewRef}>
-                <TextHighlighter
-                  notes={notes as Note[]}
-                  text={content}
-                  sections={lectureData.sections.map(section => section.title)}
-                  sentences={sentences}
-                  currentSentence={currentSentence as CurrentSentence}
-                  onSelect={onTextSelect}
-                  scrollViewRef={scrollViewRef}
-                  scrollViewHeight={scrollViewHeight}
-                />
-                <View className='h-[240]' />
-              </ScrollView>
-            </View>
-          )
-        }
+        {lectureData && memoizedContent}
         <LectureDrawer
           ref={lectureDrawerRef}
-          currentTime={status.currentTime}
           duration={status.duration}
           isPlaying={isPlaying}
           onPlayPause={onPlayPause}
@@ -257,10 +291,13 @@ export default function Screen() {
           lectureId={lectureId as string}
           onCreateNote={onCreateNote}
           onCreateNoteLoading={createNoteLoading}
+          onDeleteNoteLoading={deleteNoteLoading}          
           onNotes={onNotes}
           onAgentCreateNote={onAgentCreateNote}
           currentNote={currentNote as Note}
           currentSentence={currentSentence as CurrentSentence}
+          onDeleteNote={onDeleteNote}
+          onSelectNote={onSelectNote}
         />
       </ScreenLayout>
     </View>

@@ -54,7 +54,7 @@ export const LectureInput = ({
           textClassName={'text-gray-300'}
           onPress={() => {
             onPress();
-            if (agentMode === 'text') {
+            if (agentMode === 'text' && text.length > 0) {
               onTextSubmit(text);       
               setText('');
             } else {

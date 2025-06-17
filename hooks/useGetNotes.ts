@@ -8,8 +8,8 @@ export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
 
   const pagination = {
     sort: [{
-      by: 'createdAt',
-      order: SortOrder.Desc
+      by: 'timestamp',
+      order: SortOrder.Asc
     }]
   }
 
@@ -24,7 +24,7 @@ export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
     }
   });
 
-  const handleCache = (newNote: Note) => {
+  const handleAddCache = (newNote: Note) => {
     const buildQueryParams = (params?: any) => {
       return {
         ...params,
@@ -52,9 +52,38 @@ export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
     );
   }
 
+  const handleDeleteCache = (id: string) => {
+    const buildQueryParams = (params?: any) => {
+      return {
+        ...params,
+        lectureId,
+        pagination
+      }
+    }
+
+    const updateFn = (data: any) => {
+      return {
+        ...data,
+        notes: {
+          ...data?.notes,
+          items: data?.notes?.items?.filter((item: Note) => item.id !== id)
+        }
+      }
+    }
+
+    apolloClient.cache.updateQuery<GetNotesQuery, GetNotesQueryVariables>(
+      {
+        query: GET_NOTES,
+        variables: buildQueryParams()
+      },
+      (data) => updateFn(data)
+    );
+  }
+
   return {
     items,
     isLoading,
-    updateCreateNoteCache: handleCache
+    updateCreateNoteCache: handleAddCache,
+    updateDeleteNoteCache: handleDeleteCache
   };
 };

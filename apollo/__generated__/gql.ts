@@ -31,6 +31,7 @@ type Documents = {
     "\n  query GetNoteAgent($id: ID!) {\n    noteAgent(id: $id) {\n      config\n    }\n  }\n": typeof types.GetNoteAgentDocument,
     "\n  mutation CreateNote($lectureId: ID!, $timestamp: Float!) {\n    createNote(input: { lectureId: $lectureId, timestamp: $timestamp }) {\n      ...Note\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n  \n": typeof types.CreateNoteDocument,
     "\n  subscription NoteCreated($lectureId: ID!) {\n    noteCreated(lectureId: $lectureId) {\n      ...Note\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n  \n": typeof types.NoteCreatedDocument,
+    "\n  mutation DeleteNote($id: ID!) {\n    deleteNote(id: $id) {\n      id\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n": typeof types.DeleteNoteDocument,
     "\n  query SignIn($idToken: String!) {\n    signIn(input: { idToken: $idToken }) {\n      ...AuthUser\n    }\n  }\n  \n": typeof types.SignInDocument,
     "\n  mutation SetProfile($firstName: String!, $lastName: String!) {\n    setProfile(input: { firstName: $firstName, lastName: $lastName }) {\n      ...AuthUser\n    }\n  }\n  \n": typeof types.SetProfileDocument,
     "\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      ...User\n    }\n  }\n  \n": typeof types.GetUserDocument,
@@ -53,6 +54,7 @@ const documents: Documents = {
     "\n  query GetNoteAgent($id: ID!) {\n    noteAgent(id: $id) {\n      config\n    }\n  }\n": types.GetNoteAgentDocument,
     "\n  mutation CreateNote($lectureId: ID!, $timestamp: Float!) {\n    createNote(input: { lectureId: $lectureId, timestamp: $timestamp }) {\n      ...Note\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n  \n": types.CreateNoteDocument,
     "\n  subscription NoteCreated($lectureId: ID!) {\n    noteCreated(lectureId: $lectureId) {\n      ...Note\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n  \n": types.NoteCreatedDocument,
+    "\n  mutation DeleteNote($id: ID!) {\n    deleteNote(id: $id) {\n      id\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n": types.DeleteNoteDocument,
     "\n  query SignIn($idToken: String!) {\n    signIn(input: { idToken: $idToken }) {\n      ...AuthUser\n    }\n  }\n  \n": types.SignInDocument,
     "\n  mutation SetProfile($firstName: String!, $lastName: String!) {\n    setProfile(input: { firstName: $firstName, lastName: $lastName }) {\n      ...AuthUser\n    }\n  }\n  \n": types.SetProfileDocument,
     "\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      ...User\n    }\n  }\n  \n": types.GetUserDocument,
@@ -140,6 +142,10 @@ export function gql(source: "\n  mutation CreateNote($lectureId: ID!, $timestamp
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  subscription NoteCreated($lectureId: ID!) {\n    noteCreated(lectureId: $lectureId) {\n      ...Note\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n  \n"): (typeof documents)["\n  subscription NoteCreated($lectureId: ID!) {\n    noteCreated(lectureId: $lectureId) {\n      ...Note\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n  \n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation DeleteNote($id: ID!) {\n    deleteNote(id: $id) {\n      id\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteNote($id: ID!) {\n    deleteNote(id: $id) {\n      id\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
