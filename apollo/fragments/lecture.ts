@@ -24,6 +24,9 @@ export const LECTURE_SHORT_FRAGMENT = gql`
       notesCount
       playbackTimestamp
     }
+    image {
+      webp
+    }
   }
 `;
 

@@ -50,7 +50,7 @@ export default function Screen() {
   }, []);
 
   const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
-    fetchPolicy: 'network-only',
+    // fetchPolicy: 'network-only',
     variables: {
       id: lectureId as string,
     },
@@ -61,6 +61,7 @@ export default function Screen() {
   });
 
   const lectureData = lecture as Lecture;
+  console.log('lectureData', lectureId, lectureData?.id, loading);
 
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
     variables: {

@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue, runOnJS } from 'react-native-reanimated';
+import { Image } from 'expo-image';
 
 export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
   const [isCreating, setIsCreating] = useState(lecture.creationEvent?.name !== 'DONE');
@@ -140,18 +141,7 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
       if (isCreating) return;
       router.push(`/lectures/${lecture.id}`);
     }}>
-      <View className='flex-row px-5 py-4 '>
-        <View className="mr-4">
-          {
-            isCreating ? (
-              <View className='w-6 h-6 bg-gray-100 rounded-sm mt-1' />
-            ) : (
-              <Animated.View style={contentAnimatedStyle}>
-                <Text className='text-xl top-[1]'>{lecture.emoji}</Text>
-              </Animated.View>
-            )
-          }
-        </View>
+      <View className='flex-row px-5 py-4'>       
         <View className='flex-1'>
           {
             isCreating ? (
@@ -172,8 +162,21 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
               </>
             ) : (
               <Animated.View style={contentAnimatedStyle}>
-                <Text className="text-lg text-gray-950">{lecture.title}</Text>
-                <Text className="text-base text-gray-500" numberOfLines={2}>{lecture.topic}</Text>
+                <View className='items-center justify-center'>
+                  <Image
+                    source={lecture.image?.webp}
+                    contentFit="contain"
+                    transition={1000}
+                    style={{
+                      flex: 1,
+                      width: 1024/5,
+                      height: 1536/5,
+                      borderRadius: 4,
+                    }}
+                  />
+                </View>
+                <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text>
+                <Text className="text-base text-gray-500 text-center" numberOfLines={2}>{lecture.topic}</Text>
               </Animated.View>
             )
           }
