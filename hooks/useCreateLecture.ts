@@ -5,10 +5,14 @@ import { useGetLectures } from './useGetLectures';
 
 export const useCreateLecture = () => {
   const { updateCreatingLectureCache } = useGetLectures({ skip: true });
-  const [createLectureAsyncMut] = useMutation<CreateLectureAsyncMutation, CreateLectureAsyncMutationVariables>(CREATE_LECTURE_ASYNC);
+  const [createLectureAsyncMut] = useMutation<CreateLectureAsyncMutation, CreateLectureAsyncMutationVariables>(CREATE_LECTURE_ASYNC, {
+    onError: (error) => {
+      console.log('createLectureAsyncMut error', error)
+    }
+  });
 
   return {
-    createLectureAsyncMut: async (description: string, duration: number) => {
+    createLectureAsyncMut: async (description: string, duration: number) => {      
       updateCreatingLectureCache({
         id: 'temp',             
         creationEvent: {
@@ -16,6 +20,7 @@ export const useCreateLecture = () => {
         },
       } as Lecture)
 
+      console.log('createLectureAsyncMut', description, duration)
       await createLectureAsyncMut({
         variables: {
           input: {
@@ -27,3 +32,5 @@ export const useCreateLecture = () => {
     }
   };
 };
+
+// I want to learn about microlearning. Something advanced.

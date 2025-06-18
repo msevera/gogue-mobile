@@ -7,6 +7,7 @@ export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
   const apolloClient = useApolloClient();
 
   const pagination = {
+    limit: 30,
     sort: [{
       by: 'timestamp',
       order: SortOrder.Asc

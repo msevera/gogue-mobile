@@ -110,7 +110,7 @@ export default function Screen() {
   }, [lectureData]);
 
   const player = useAudioPlayer({
-    uri: lectureData?.audioPaths?.stream as string
+    uri: lectureData?.audio?.stream as string
   }, 1000);
 
   useEffect(() => {
@@ -278,7 +278,7 @@ export default function Screen() {
         {lectureData && memoizedContent}
         <LectureDrawer
           ref={lectureDrawerRef}
-          duration={status.duration}
+          duration={lectureData?.audio?.duration as number}
           isPlaying={isPlaying}
           onPlayPause={onPlayPause}
           onSeek={onSeek}
@@ -298,6 +298,7 @@ export default function Screen() {
           currentSentence={currentSentence as CurrentSentence}
           onDeleteNote={onDeleteNote}
           onSelectNote={onSelectNote}
+          bars={lectureData?.audio?.bars as number[]}
         />
       </ScreenLayout>
     </View>

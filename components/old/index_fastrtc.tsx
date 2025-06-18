@@ -51,7 +51,7 @@ export default function Screen() {
   }, [lectureData]);
 
   const player = useAudioPlayer({
-    uri: lectureData?.audioPaths?.wav as string
+    uri: lectureData?.audio?.stream as string
   }, 1000);
 
   const status = useAudioPlayerStatus(player);

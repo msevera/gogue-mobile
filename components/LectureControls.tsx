@@ -35,7 +35,8 @@ export const LectureControls = React.memo(forwardRef<LectureControlsRef, {
   onSeekStart: (position: number) => void,
   notes: Note[],
   notesCount: number,
-  currentNote: Note
+  currentNote: Note,
+  bars: number[]
 }>(({
   isPlaying,
   duration,
@@ -51,7 +52,8 @@ export const LectureControls = React.memo(forwardRef<LectureControlsRef, {
   notes,
   notesCount,
   currentNote,
-  onOpenNote
+  onOpenNote,
+  bars
 }, ref) => {
   const playLineRef = useRef<PlayLineRef>(null);
 
@@ -99,6 +101,7 @@ export const LectureControls = React.memo(forwardRef<LectureControlsRef, {
           onSeekStart={onSeekStart}
           sentences={sentences}
           notes={notes}
+          bars={bars}
         />
         <View className='flex-row items-center justify-between px-4 gap-4 mt-5'>
           <Button

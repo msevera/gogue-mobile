@@ -71,7 +71,7 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
         );
       }
       case 'FINALIZING': {
-        return <Text className='text-gray-500 text-sm'>Finalizing...</Text>;
+        return <Text className='text-gray-500 text-sm'>Generating audio...</Text>;
       }
       default: {
         return <Text className='text-gray-500 text-sm'>Creating lecture...</Text>;

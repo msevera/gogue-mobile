@@ -6,10 +6,12 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDe
 import { useMemo, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { Note } from '@/apollo/__generated__/graphql';
 import { formatTime } from '@/lib/utils';
+import { AudioWave } from './AudioWave';
 
 const { width: screenWidth } = Dimensions.get('window');
-const LINE_WIDTH = screenWidth - 2;
-const markerPosition = LINE_WIDTH / 2;
+const barWidth = 2;
+const barGap = 1;
+const markerPosition = screenWidth / 2;
 
 interface PlayLineProps {
   duration: number;
@@ -18,6 +20,7 @@ interface PlayLineProps {
   onSeekStart?: (position: number) => void;
   sentences: any;
   notes: Note[];
+  bars: number[];
 }
 
 export interface PlayLineRef {
@@ -30,8 +33,10 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
   onSeekEnd,
   onSeekStart,
   sentences,
-  notes
+  notes,
+  bars
 }, ref) => {
+  const LINE_WIDTH = (bars.length - 2) * (barWidth + barGap);
   const isLoaded = duration > 0;
   const position = useSharedValue(0);
   const startPosition = useSharedValue(0);
@@ -45,8 +50,8 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       position.value = snappedPosition;
     }
   }));
-  
-  useDerivedValue(() => {    
+
+  useDerivedValue(() => {
     runOnJS(setTimeLabel)(closestSnapPoint.value)
   }, []);
 
@@ -55,20 +60,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
     return result;
   }, [sentences]);
 
-  const highlightNotes = useMemo(() => {
-    if (sentences.length === 0 || notes.length === 0 || duration === 0) return [];
 
-    const result = notes.map((note) => {
-      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);
-      return {
-        startTime: sentenceToHighlight?.sentence.start_time,
-        endTime: sentenceToHighlight?.sentence.end_time,
-        note
-      }
-    })
-
-    return result;
-  }, [sentences, notes, duration])
 
   const findClosestSnapPoint = (currentTime: number) => {
     'worklet';
@@ -88,6 +80,23 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
     'worklet';
     return Number(((pos / LINE_WIDTH) * duration).toFixed(2));
   };
+
+  const highlightNotes = useMemo(() => {
+    if (sentences.length === 0 || notes.length === 0 || duration === 0) return [];
+
+    const result = notes.map((note) => {
+      const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);
+      return {
+        startTime: sentenceToHighlight?.sentence.start_time,
+        endTime: sentenceToHighlight?.sentence.end_time,
+        startPosition: timeToPosition(sentenceToHighlight?.sentence.start_time),
+        endPosition: timeToPosition(sentenceToHighlight?.sentence.end_time),
+        note
+      }
+    })
+
+    return result;
+  }, [sentences, notes, duration])
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
@@ -118,7 +127,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       }
     })
     .onEnd((event) => {
-      if (isLoaded) {       
+      if (isLoaded) {
         // const currentTime = positionToTime(position.value);
         // const snappedTime = findClosestSnapPoint(currentTime);
         // closestSnapPoint.value = snappedTime;
@@ -149,32 +158,18 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
   return (
     <GestureDetector gesture={panGesture}>
       <View className="w-full px-0 pt-5">
-        <View className="h-[2] bg-gray-50 relative">
-          <Animated.View
-            className="h-full bg-blue-400 absolute"
-            style={[{ right: markerPosition }, progressActiveStyle]}
-          />
+        <View className="h-[1] bg-gray-50 relative">
           <View
-            className="w-[10] h-[10] top-[-4] bg-blue-400 absolute z-10 rounded-full"
-            style={{ left: markerPosition, transform: [{ translateX: -3 }] }}
-          />
-          <Animated.View
-            className="h-full bg-gray-200 absolute"
-            style={[{ left: markerPosition }, progressInactiveStyle]}
-          />
+            className="w-[8] h-[8] top-[-3] bg-blue-400 absolute z-10 rounded-full"
+            style={{ left: markerPosition, transform: [{ translateX: -1 }] }}
+          />         
           <Animated.View
             className="h-full absolute top-[0]"
             style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
-          >
-            {
-              highlightNotes.map((highlight) => {
-                const { startTime, endTime, note } = highlight;
-                const startPosition = timeToPosition(startTime);
-                const endPosition = timeToPosition(endTime);
-                const width = endPosition - startPosition;
-                return <View key={note.id} className="h-[10] top-[-10] bg-yellow-400 absolute rounded-t-sm" style={{ left: startPosition, width, zIndex: 10 }} />
-              })
-            }
+          >           
+            <View className='absolute top-[-11] left-0'>
+              <AudioWave barWidth={barWidth} barGap={barGap} bars={bars} position={position.value} highlightNotes={highlightNotes} />
+            </View>
           </Animated.View>
         </View>
         <View className="flex-row items-center justify-center mt-2">

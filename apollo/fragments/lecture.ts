@@ -14,11 +14,11 @@ export const LECTURE_SHORT_FRAGMENT = gql`
       title
       hasContent
     }
-    audioPaths {
+    audio {
       stream
       wav
+      duration      
     }
-    audioDuration
     metadata {
       id
       notesCount
@@ -36,6 +36,12 @@ export const LECTURE_FULL_FRAGMENT = gql`
     }
     aligners {
       mfa
+    }
+    audio {
+      stream
+      wav
+      duration  
+      bars
     }
   }
   ${LECTURE_SHORT_FRAGMENT}

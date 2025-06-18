@@ -59,7 +59,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   noteId: string,
   lectureId: string,
   currentNote: Note,
-  currentSentence: CurrentSentence
+  currentSentence: CurrentSentence,
+  bars: number[]
 }>(({
   notes,
   onPlayPause,
@@ -80,7 +81,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   noteId,
   lectureId,
   currentNote,
-  currentSentence
+  currentSentence,
+  bars
 }, ref) => {
   const noteDetailsRef = useRef<NoteDetailsRef>(null);
   const lectureControlsRef = useRef<LectureControlsRef>(null);
@@ -302,6 +304,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
       notesCount={notesCount}
       currentNote={currentNote}
       onOpenNote={handleOpenNote}
+      bars={bars}
     />
   ), [
     isPlaying,
