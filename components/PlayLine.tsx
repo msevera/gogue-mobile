@@ -7,6 +7,7 @@ import { useMemo, useEffect, forwardRef, useImperativeHandle, useState } from 'r
 import { Note } from '@/apollo/__generated__/graphql';
 import { formatTime } from '@/lib/utils';
 import { AudioWave } from './AudioWave';
+import * as Haptics from 'expo-haptics';
 
 const { width: screenWidth } = Dimensions.get('window');
 const barWidth = 2;
@@ -120,7 +121,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       const snappedPosition = timeToPosition(snappedTime);
 
       position.value = snappedPosition;
-
+      runOnJS(Haptics.selectionAsync)();
       // Call onSeek with the snapped time position
       // if (onSeek && isLoaded) {
       //   runOnJS(onSeek)(closestSnapPoint.value);
