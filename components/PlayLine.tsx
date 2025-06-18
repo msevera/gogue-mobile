@@ -8,6 +8,7 @@ import { Note } from '@/apollo/__generated__/graphql';
 import { formatTime } from '@/lib/utils';
 import { AudioWave } from './AudioWave';
 import * as Haptics from 'expo-haptics';
+import MaskedView from '@react-native-masked-view/masked-view';
 
 const { width: screenWidth } = Dimensions.get('window');
 const barWidth = 2;
@@ -87,11 +88,15 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
 
     const result = notes.map((note) => {
       const sentenceToHighlight = sentences.find((alignment: any) => alignment.sentence.start_time === note.timestamp);
+      const startPosition = timeToPosition(sentenceToHighlight?.sentence.start_time);
+      const endPosition = timeToPosition(sentenceToHighlight?.sentence.end_time);
+      const width = timeToPosition(sentenceToHighlight?.sentence.end_time) - timeToPosition(sentenceToHighlight?.sentence.start_time);
       return {
         startTime: sentenceToHighlight?.sentence.start_time,
         endTime: sentenceToHighlight?.sentence.end_time,
-        startPosition: timeToPosition(sentenceToHighlight?.sentence.start_time),
-        endPosition: timeToPosition(sentenceToHighlight?.sentence.end_time),
+        startPosition,
+        endPosition,
+        width,
         note
       }
     })
@@ -123,14 +128,14 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       position.value = snappedPosition;
       runOnJS(Haptics.selectionAsync)();
       // Call onSeek with the snapped time position
-      // if (onSeek && isLoaded) {
-      //   runOnJS(onSeek)(closestSnapPoint.value);
-      // }
+      if (onSeek && isLoaded) {
+        runOnJS(onSeek)(closestSnapPoint.value);
+      }
     })
     .onEnd((event) => {
-      if (isLoaded) {        
+      if (isLoaded) {
         if (onSeekEnd) {
-         runOnJS(onSeekEnd)(closestSnapPoint.value);
+          runOnJS(onSeekEnd)(closestSnapPoint.value);
         }
       }
     });
@@ -138,7 +143,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
 
   const progressHighlightStyle = useAnimatedStyle(() => {
     return {
-      left: markerPosition + 2 - position.value,
+      left: markerPosition - position.value,
     };
   }, []);
 
@@ -148,16 +153,49 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
         <View className="h-[1] bg-gray-50 relative">
           <View
             className="w-[8] h-[8] top-[-3] bg-blue-400 absolute z-10 rounded-full"
-            style={{ left: markerPosition, transform: [{ translateX: -3 }] }}
-          />         
-          <Animated.View
-            className="h-full absolute top-[0]"
-            style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
-          >           
-            <View className='absolute top-[-11] left-0'>
-              <AudioWave barWidth={barWidth} barGap={barGap} bars={bars} position={position.value} highlightNotes={highlightNotes} />
+            style={{ left: markerPosition, transform: [{ translateX: -4 }] }}
+          />
+          <MaskedView
+            style={{ top: -11 }}
+            maskElement={
+              <Animated.View
+                className="h-full absolute top-[0]"
+                style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
+              >
+                <View className='absolute top-[0] left-0'>
+                  <AudioWave barWidth={barWidth} barGap={barGap} bars={bars} />
+                </View>
+              </Animated.View>
+            }
+          >
+            <View className='flex-row'>
+              <View className='bg-blue-400 h-10 absolute w-[50%] z-10 left-0' />
+              <View className='bg-gray-200 h-10 w-full' />
+              <Animated.View
+                className="absolute top-0 z-20"
+                style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
+              >
+                {
+                  highlightNotes.map((note) => {
+                    return <View
+                      key={note.note.id}
+                      className='bg-yellow-500 h-10 absolute w-[50%] z-10 left-0'
+                      style={{ left: note.startPosition, width: note.width }}
+                    />
+                  })
+                }
+              </Animated.View>
+
             </View>
-          </Animated.View>
+          </MaskedView>
+          {/* <Animated.View
+                className="h-full absolute top-[0]"
+                style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
+              >
+                <View className='absolute top-[-11] left-0'>
+                  <AudioWave barWidth={barWidth} barGap={barGap} bars={bars} />
+                </View>
+              </Animated.View> */}
         </View>
         <View className="flex-row items-center justify-center mt-2">
           <Text className="text-xs text-blue-400">
