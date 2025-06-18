@@ -17,15 +17,7 @@ export const RootHeader = ({ onMenuPress, title }: RootHeaderProps) => {
         <Button sm ghost icon={{ component: 'Ionicons', name: 'menu' }} onPress={onMenuPress} />
         <View className='absolute left-0 right-0 z-[-1]'>
           <Text className="w-full text-xl font-bold text-center">{title}</Text>
-        </View>
-        <Button
-          secondary
-          text='Notes'
-          sm
-          icon={{ component: 'MaterialCommunityIcons', name: 'note' }}
-          onPress={() => {
-            router.push('/lectures/notes');
-          }} />
+        </View>        
       </View>
     </View>
   )
