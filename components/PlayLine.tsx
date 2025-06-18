@@ -36,7 +36,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
   notes,
   bars
 }, ref) => {
-  const LINE_WIDTH = (bars.length - 2) * (barWidth + barGap);
+  const LINE_WIDTH = (bars.length) * (barWidth + barGap);
   const isLoaded = duration > 0;
   const position = useSharedValue(0);
   const startPosition = useSharedValue(0);
@@ -122,32 +122,18 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       position.value = snappedPosition;
 
       // Call onSeek with the snapped time position
-      if (onSeek && isLoaded) {
-        runOnJS(onSeek)(closestSnapPoint.value);
-      }
+      // if (onSeek && isLoaded) {
+      //   runOnJS(onSeek)(closestSnapPoint.value);
+      // }
     })
     .onEnd((event) => {
-      if (isLoaded) {
-        // const currentTime = positionToTime(position.value);
-        // const snappedTime = findClosestSnapPoint(currentTime);
-        // closestSnapPoint.value = snappedTime;
+      if (isLoaded) {        
         if (onSeekEnd) {
-          runOnJS(onSeekEnd)(closestSnapPoint.value);
+         runOnJS(onSeekEnd)(closestSnapPoint.value);
         }
       }
     });
 
-  const progressActiveStyle = useAnimatedStyle(() => {
-    return {
-      width: position.value,
-    };
-  }, []);
-
-  const progressInactiveStyle = useAnimatedStyle(() => {
-    return {
-      width: LINE_WIDTH - position.value,
-    };
-  }, []);
 
   const progressHighlightStyle = useAnimatedStyle(() => {
     return {
@@ -161,7 +147,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
         <View className="h-[1] bg-gray-50 relative">
           <View
             className="w-[8] h-[8] top-[-3] bg-blue-400 absolute z-10 rounded-full"
-            style={{ left: markerPosition, transform: [{ translateX: -1 }] }}
+            style={{ left: markerPosition, transform: [{ translateX: -3 }] }}
           />         
           <Animated.View
             className="h-full absolute top-[0]"
