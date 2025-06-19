@@ -271,27 +271,37 @@ export default function Screen() {
           headerShown: false,
           animation: 'slide_from_bottom',
           gestureDirection: 'vertical',
-          // transitionSpec: {
-          //   open: {
-          //     animation: 'timing',
-          //     config: {
-          //       duration: 2000,
-          //     },
-          //   },
-          //   close: {
-          //     animation: 'timing',
-          //     config: {
-          //       duration: 2000,
-          //     },
-          //   }
-          // }
+          transitionSpec: {
+            open: {
+              animation: 'timing',
+              config: {
+                duration: 100,
+              },
+            },
+            close: {
+              animation: 'timing',
+              config: {
+                duration: 100,
+              },
+            }
+          }
         }}
         contentLoading={loading}
         contentEmpty={false}
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
       >
-        <Header title={lectureData?.title} loading={loading} />
+        <Header
+          backClassName='left-[5]'
+          icon={{
+            component: 'Ionicons',
+            name: 'chevron-down',
+            color: 'black',
+            size: 24
+          }}
+          title={lectureData?.title || ''}
+          loading={loading}
+        />
         {lectureData && memoizedContent}
         <LectureDrawer
           ref={lectureDrawerRef}

@@ -6,6 +6,7 @@ import { Text } from '@/components/ui/Text';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue, runOnJS } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import { cn } from '@/lib/utils';
 
 export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
   const [isCreating, setIsCreating] = useState(lecture.creationEvent?.name !== 'DONE');
@@ -139,9 +140,9 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
   return (
     <Pressable onPress={() => {
       if (isCreating) return;
-      router.push(`/lectures/${lecture.id}`);
+      router.push(`/${lecture.id}`, { relativeToDirectory: false });
     }}>
-      <View className='flex-row px-5 py-4'>       
+      <View className='flex-row px-5 py-4'>
         <View className='flex-1'>
           {
             isCreating ? (
@@ -161,22 +162,31 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
                 </View>
               </>
             ) : (
-              <Animated.View style={contentAnimatedStyle}>
-                <View className='items-center justify-center'>
-                  <Image
-                    source={lecture.image?.webp}
-                    contentFit="contain"
-                    transition={1000}
-                    style={{
-                      flex: 1,
-                      width: 1024/5,
-                      height: 1536/5,
-                      borderRadius: 4,
-                    }}
-                  />
+              <Animated.View
+                style={contentAnimatedStyle}
+              >
+                <View
+                  className="flex-1 rounded-xl px-4 py-8"
+                  style={{
+                    backgroundColor: `${lecture.image?.color}1A`,
+                  }}
+                >
+                  <View className='items-center justify-center'>
+                    <Image
+                      source={lecture.image?.webp}
+                      contentFit="contain"
+                      transition={1000}
+                      style={{
+                        flex: 1,
+                        width: 1024 / 5,
+                        height: 1536 / 5,
+                        borderRadius: 4,
+                      }}
+                    />
+                  </View>
+                  <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text>
+                  <Text className="text-base text-gray-500 text-center" numberOfLines={2}>{lecture.topic}</Text>
                 </View>
-                <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text>
-                <Text className="text-base text-gray-500 text-center" numberOfLines={2}>{lecture.topic}</Text>
               </Animated.View>
             )
           }

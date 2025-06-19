@@ -6,15 +6,20 @@ import { router } from 'expo-router';
 
 export type RootHeaderProps = {
   onMenuPress?: () => void,
-  title: string
+  title: string,
+  showMenu?: boolean
 }
 
-export const RootHeader = ({ onMenuPress, title }: RootHeaderProps) => {
+export const RootHeader = ({ showMenu, onMenuPress, title }: RootHeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
-    <View className='w-full border-b border-gray-100' style={{ paddingTop: insets.top }}>
-      <View className="mb-3 px-3 mt-1 flex-row items-center justify-between w-full">
-        <Button sm ghost icon={{ component: 'Ionicons', name: 'menu' }} onPress={onMenuPress} />
+    <View className='w-full border-b border-gray-100 bg-white' style={{ paddingTop: insets.top }}>
+      <View className="mb-3 px-3 mt-1 flex-row items-center justify-between w-full h-[32]">
+        {
+          showMenu && (
+            <Button sm ghost icon={{ component: 'Ionicons', name: 'menu' }} onPress={onMenuPress} />
+          )
+        }
         <View className='absolute left-0 right-0 z-[-1]'>
           <Text className="w-full text-xl font-bold text-center">{title}</Text>
         </View>        

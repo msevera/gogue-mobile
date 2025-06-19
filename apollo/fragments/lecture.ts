@@ -26,6 +26,7 @@ export const LECTURE_SHORT_FRAGMENT = gql`
     }
     image {
       webp
+      color
     }
   }
 `;

@@ -3,22 +3,25 @@ import { Text } from '../ui/Text'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../ui/Button';
 import { router } from 'expo-router';
+import { cn } from '@/lib/utils';
 
 export type HeaderProps = {
   title?: string
-  loading?: boolean
+  loading?: boolean,
+  icon?: any,
+  backClassName?: string
 }
 
-export const Header = ({ title, loading }: HeaderProps) => {
+export const Header = ({ icon, title, loading, backClassName }: HeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
     <View className='w-full border-b border-gray-100 bg-white' style={{ paddingTop: insets.top }}>
       <View className="mb-3 px-3 mt-1 flex-row items-center justify-between w-full">
         <Button
           sm
-          className='p-0 left-[-7]'
+          className={cn('p-0 left-[-7]', backClassName)}
           ghost
-          icon={{ component: 'Ionicons', name: 'chevron-back', color: 'black', size: 24 }}
+          icon={icon || { component: 'Ionicons', name: 'chevron-back', color: 'black', size: 24 }}
           onPress={() => {
             router.back();
           }}

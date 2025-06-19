@@ -183,7 +183,7 @@ export default function Screen() {
       <ScreenLayout
         screenOptions={{
           headerShown: true,
-          header: () => <RootHeader title='Lectures' onMenuPress={onMenuPressHandler} />,
+          header: () => <RootHeader showMenu title='Home' onMenuPress={onMenuPressHandler} />,
         }}
         contentLoading={isLoading}
         contentEmpty={false}
@@ -209,27 +209,6 @@ export default function Screen() {
             </View>
           )
         }
-        <View className='items-center absolute bottom-0 left-0 right-0'>
-          <LinearGradient
-            colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)']}
-            locations={[0, 0.55, 1]}            
-            style={{
-              // borderWidth: 1,
-              // borderColor: 'red',
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 103,
-              zIndex: -1,
-            }}
-          />
-          <Button
-            className='px-10 mb-[30]'
-            text="Create lecture"
-            onPress={onNewLecturePressHandler}
-          />
-        </View>
       </ScreenLayout>
       <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />
       <CreateLecture visible={newLectureVisible} onClose={onNewLecturePressHandler} />
