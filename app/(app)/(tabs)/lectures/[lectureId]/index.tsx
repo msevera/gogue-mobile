@@ -232,7 +232,7 @@ export default function Screen() {
     });
   }, [deleteNote]);
 
-  const onSelectNote = useCallback((note: Note) => {    
+  const onSelectNote = useCallback((note: Note) => {
     player.seekTo(note.timestamp)
     setStatus((oldStatus) => {
       return {
@@ -269,6 +269,22 @@ export default function Screen() {
         screenOptions={{
           headerLoading: loading,
           headerShown: false,
+          animation: 'slide_from_bottom',
+          gestureDirection: 'vertical',
+          // transitionSpec: {
+          //   open: {
+          //     animation: 'timing',
+          //     config: {
+          //       duration: 2000,
+          //     },
+          //   },
+          //   close: {
+          //     animation: 'timing',
+          //     config: {
+          //       duration: 2000,
+          //     },
+          //   }
+          // }
         }}
         contentLoading={loading}
         contentEmpty={false}
@@ -292,7 +308,7 @@ export default function Screen() {
           lectureId={lectureId as string}
           onCreateNote={onCreateNote}
           onCreateNoteLoading={createNoteLoading}
-          onDeleteNoteLoading={deleteNoteLoading}          
+          onDeleteNoteLoading={deleteNoteLoading}
           onNotes={onNotes}
           onAgentCreateNote={onAgentCreateNote}
           currentNote={currentNote as Note}
