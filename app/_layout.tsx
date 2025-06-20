@@ -11,11 +11,9 @@ import {
 } from 'react-native-reanimated';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { splitLink } from '@/apollo/settings';
-import { LocationProvider } from '@/contexts/locationContext';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { PortalProvider } from '@gorhom/portal';
 import { GlobalDrawerProvider } from '@/contexts/globalDrawerContext';
-import { GenerateLectureProvider } from '@/contexts/generateLectureContext';
 import { typePolicies } from '@/apollo/settings';
 
 OneSignal.Debug.setLogLevel(LogLevel.Verbose);
@@ -51,15 +49,11 @@ export default function RootLayout() {
             messages={en}
           >
             <AuthProvider>
-              <LocationProvider>
-                <PortalProvider>
-                  <GlobalDrawerProvider>
-                    <GenerateLectureProvider>
-                      <Slot />
-                    </GenerateLectureProvider>
-                  </GlobalDrawerProvider>
-                </PortalProvider>
-              </LocationProvider>
+              <PortalProvider>
+                <GlobalDrawerProvider>
+                  <Slot />
+                </GlobalDrawerProvider>
+              </PortalProvider>
             </AuthProvider>
           </IntlProvider>
         </KeyboardProvider>

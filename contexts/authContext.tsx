@@ -174,6 +174,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [setProfileMutation] = useMutation<SetProfileMutation, SetProfileMutationVariables>(SET_PROFILE);
 
   const onAuthStateChanged = async (user: FirebaseAuthTypes.User | null) => {                    
+    console.log('onAuthStateChanged', user);
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
@@ -200,16 +201,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
     <AuthContext.Provider
       value={{       
         signInWithGoogle: async () => {
-          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-          console.log('A')
+          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });          
           const signInResult = await GoogleSignin.signIn();        
-          let idToken = signInResult.data?.idToken;          
+          let idToken = signInResult.data?.idToken;                    
           if (!idToken) {
             console.log('signInResult.data', signInResult)
             throw new Error('No ID token found 2');
           }
           const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-          await getAuth().signInWithCredential(googleCredential);
+          console.log('googleCredential', googleCredential);
+          try {
+            await getAuth().signInWithCredential(googleCredential); 
+          } catch (error) {
+            console.error('signInWithGoogle error', error);
+            throw error;
+          }
+          
         },
         signOut: async () => {
           await signOut();

@@ -51,7 +51,6 @@ export default {
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "learnbud",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff"
@@ -77,6 +76,7 @@ export default {
       },
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "package": getUniqueIdentifier('android'), "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png", "backgroundColor": "#ffffff"
       }, "googleServicesFile": process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
@@ -85,6 +85,7 @@ export default {
       "bundler": "metro", "output": "static", "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-web-browser",
       "expo-font",
       "expo-router",
       "@react-native-firebase/app",
@@ -111,23 +112,18 @@ export default {
         }
       ],
       [
-        "expo-location",
-        {
-          "locationWhenInUsePermission": `Allow ${getAppName()} to use your location.`
-        }
-      ],
-      [
         "onesignal-expo-plugin",
         {
           mode: getOneSignalEnv(),
         }
       ],
       [
-        "@config-plugins/react-native-webrtc",
+        "@daily-co/config-plugin-rn-daily-js",
         {
-          cameraPermission: `Allow ${getAppName()} to access your camera`,
-          microphonePermission: `Allow ${getAppName()} to access your microphone`,
-        },
+          "enableCamera": false,
+          "enableMicrophone": true,
+          "enableScreenShare": false
+        }
       ],
       [
         "expo-audio",
