@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/Text';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue, runOnJS } from 'react-native-reanimated';
 import { Image } from 'expo-image';
-import { cn } from '@/lib/utils';
+
 
 export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
   const [isCreating, setIsCreating] = useState(lecture.creationEvent?.name !== 'DONE');
@@ -140,7 +140,7 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
   return (
     <Pressable onPress={() => {
       if (isCreating) return;
-      router.push(`/${lecture.id}`, { relativeToDirectory: false });
+      router.push(`/lectures/${lecture.id}`);
     }}>
       <View className='flex-row px-5 py-4'>
         <View className='flex-1'>

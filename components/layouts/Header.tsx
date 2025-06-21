@@ -19,14 +19,14 @@ export const Header = ({ icon, title, loading, backClassName }: HeaderProps) => 
       <View className="mb-3 px-3 mt-1 flex-row items-center justify-between w-full">
         <Button
           sm
-          className={cn('p-0 left-[-7]', backClassName)}
+          className={cn('p-0 z-10 left-[-7]', backClassName)}
           ghost
           icon={icon || { component: 'Ionicons', name: 'chevron-back', color: 'black', size: 24 }}
           onPress={() => {
             router.back();
           }}
         />
-        <View className='absolute left-0 right-0 z-[-1]'>
+        <View className='absolute left-0 right-0'>
           {
             loading ? (
               <ActivityIndicator size='small' color="#000000" />

@@ -51,6 +51,7 @@ export default {
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "scheme": "learnbud",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff"

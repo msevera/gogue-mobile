@@ -2,7 +2,6 @@ import { View } from 'react-native'
 import { Text } from '../ui/Text'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../ui/Button';
-import { router } from 'expo-router';
 
 export type RootHeaderProps = {
   onMenuPress?: () => void,
@@ -17,10 +16,10 @@ export const RootHeader = ({ showMenu, onMenuPress, title }: RootHeaderProps) =>
       <View className="mb-3 px-3 mt-1 flex-row items-center justify-between w-full h-[32]">
         {
           showMenu && (
-            <Button sm ghost icon={{ component: 'Ionicons', name: 'menu' }} onPress={onMenuPress} />
+            <Button className='z-10' sm ghost icon={{ component: 'Ionicons', name: 'menu' }} onPress={onMenuPress} />
           )
         }
-        <View className='absolute left-0 right-0 z-[-1]'>
+        <View className='absolute left-0 right-0'>
           <Text className="w-full text-xl font-bold text-center">{title}</Text>
         </View>        
       </View>

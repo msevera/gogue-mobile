@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, ScreenProps } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, ScrollView, View } from 'react-native';
@@ -15,7 +15,7 @@ import { useGetNotes } from '@/hooks/useGetNotes';
 import { CREATE_NOTE, DELETE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
 import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
-import { S } from 'graphql-ws/dist/common-DY-PBNYy';
+import { useGetLecture } from '@/hooks/useGetLecture';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -49,20 +49,7 @@ export default function Screen() {
     console.log('onNotes');
   }, []);
 
-  const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
-    // fetchPolicy: 'network-only',
-    variables: {
-      id: lectureId as string,
-    },
-    skip: !lectureId,
-    onError: (error) => {
-      console.log('GET_LECTURE error', error);
-    }
-  });
-
-  const lectureData = lecture as Lecture;
-  console.log('lectureData', lectureId, lectureData?.id, loading);
-
+  const { lecture, loading } = useGetLecture(lectureId as string);
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
     variables: {
       lectureId: lectureId as string,
@@ -103,15 +90,15 @@ export default function Screen() {
   }, []);
 
   useEffect(() => {
-    if (lectureData) {
-      setContent(lectureData.sections.map(section => `${section.content}`).join('\n'));
-      const alignments = JSON.parse(lectureData.aligners?.mfa as string);
+    if (lecture) {
+      setContent(lecture.sections.map(section => `${section.content}`).join('\n'));
+      const alignments = JSON.parse(lecture.aligners?.mfa as string);
       setAlignments(alignments);
     }
-  }, [lectureData]);
+  }, [lecture]);
 
   const player = useAudioPlayer({
-    uri: lectureData?.audio?.stream as string
+    uri: lecture?.audio?.stream as string
   }, 1000);
 
   useEffect(() => {
@@ -243,14 +230,14 @@ export default function Screen() {
   }, [selectNote]);
 
   const memoizedContent = useMemo(() => {
-    if (!lectureData) return null;
+    if (!lecture) return null;
     return (
       <View className='flex-1'>
         <ScrollView className='px-4 pt-4' onLayout={onLayoutHandler} ref={scrollViewRef}>
           <TextHighlighter
             notes={notes as Note[]}
             text={content}
-            sections={lectureData.sections.map(section => section.title)}
+            sections={lecture.sections.map(section => section.title)}
             sentences={sentences}
             currentSentence={currentSentence as CurrentSentence}
             onSelect={onTextSelect}
@@ -261,7 +248,7 @@ export default function Screen() {
         </ScrollView>
       </View>
     );
-  }, [lectureData, notes, content, sentences, currentSentence, scrollViewHeight, onLayoutHandler, onTextSelect]);
+  }, [lecture, notes, content, sentences, currentSentence, scrollViewHeight, onLayoutHandler, onTextSelect]);
 
   return (
     <View className="flex-1">
@@ -271,20 +258,21 @@ export default function Screen() {
           headerShown: false,
           animation: 'slide_from_bottom',
           gestureDirection: 'vertical',
-          transitionSpec: {
-            open: {
-              animation: 'timing',
-              config: {
-                duration: 100,
-              },
-            },
-            close: {
-              animation: 'timing',
-              config: {
-                duration: 100,
-              },
-            }
-          }
+          // transitionSpec: {
+          //   open: {
+          //     animation: 'timing',
+          //     config: {
+          //       duration: 1000,
+          //     },
+          //   },
+          //   close: {
+          //     animation: 'timing',
+          //     config: {
+          //       duration: 1000,
+          //     },
+          //   }
+          // },
+          
         }}
         contentLoading={loading}
         contentEmpty={false}
@@ -299,13 +287,13 @@ export default function Screen() {
             color: 'black',
             size: 24
           }}
-          title={lectureData?.title || ''}
+          title={lecture?.title || ''}
           loading={loading}
         />
-        {lectureData && memoizedContent}
+        {lecture && memoizedContent}
         <LectureDrawer
           ref={lectureDrawerRef}
-          duration={lectureData?.audio?.duration as number}
+          duration={lecture?.audio?.duration as number}
           isPlaying={isPlaying}
           onPlayPause={onPlayPause}
           onSeek={onSeek}
@@ -313,7 +301,7 @@ export default function Screen() {
           onSeekStart={onSeekStart}
           sentences={sentences}
           notes={notes as Note[]}
-          notesCount={lectureData?.metadata?.notesCount as number}
+          notesCount={lecture?.metadata?.notesCount as number}
           noteId={noteId as string}
           lectureId={lectureId as string}
           onCreateNote={onCreateNote}
@@ -325,7 +313,7 @@ export default function Screen() {
           currentSentence={currentSentence as CurrentSentence}
           onDeleteNote={onDeleteNote}
           onSelectNote={onSelectNote}
-          bars={lectureData?.audio?.bars as number[]}
+          bars={lecture?.audio?.bars as number[]}
         />
       </ScreenLayout>
     </View>

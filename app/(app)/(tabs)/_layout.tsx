@@ -28,7 +28,7 @@ const TabBarButton = ({ icon, active, highlight, ...props }: ButtonProps) => {
 
 const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navigation: any }) => {
   const pathname = usePathname();
-  const isActive = (href: string) => pathname === href;
+  const isActive = (href: string) => pathname.startsWith(href);
   return <View className='h-[90] bg-white border-t border-gray-100'>
     <View className='flex-row justify-between'>
       <TabBarButton
