@@ -16,6 +16,8 @@ import { CREATE_NOTE, DELETE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/qu
 import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { useGetLecture } from '@/hooks/useGetLecture';
+import DOMComponent from '@/components/dom/LectureText';
+import { Text } from '@/components/ui/Text';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -233,7 +235,7 @@ export default function Screen() {
     if (!lecture) return null;
     return (
       <View className='flex-1'>
-        <ScrollView className='px-4 pt-4' onLayout={onLayoutHandler} ref={scrollViewRef}>
+        <View className='flex-1' onLayout={onLayoutHandler} ref={scrollViewRef}>
           <TextHighlighter
             notes={notes as Note[]}
             text={content}
@@ -244,79 +246,78 @@ export default function Screen() {
             scrollViewRef={scrollViewRef}
             scrollViewHeight={scrollViewHeight}
           />
-          <View className='h-[240]' />
-        </ScrollView>
+          {/* <View className='h-[210]' /> */}
+        </View>
       </View>
     );
   }, [lecture, notes, content, sentences, currentSentence, scrollViewHeight, onLayoutHandler, onTextSelect]);
 
-  return (
-    <View className="flex-1">
-      <ScreenLayout
-        screenOptions={{
-          headerLoading: loading,
-          headerShown: false,
-          animation: 'slide_from_bottom',
-          gestureDirection: 'vertical',
-          // transitionSpec: {
-          //   open: {
-          //     animation: 'timing',
-          //     config: {
-          //       duration: 1000,
-          //     },
-          //   },
-          //   close: {
-          //     animation: 'timing',
-          //     config: {
-          //       duration: 1000,
-          //     },
-          //   }
-          // },
-          
+  return (<View className="flex-1">
+    <ScreenLayout
+      screenOptions={{
+        headerLoading: loading,
+        headerShown: false,
+        animation: 'slide_from_bottom',
+        gestureDirection: 'vertical',
+        // transitionSpec: {
+        //   open: {
+        //     animation: 'timing',
+        //     config: {
+        //       duration: 1000,
+        //     },
+        //   },
+        //   close: {
+        //     animation: 'timing',
+        //     config: {
+        //       duration: 1000,
+        //     },
+        //   }
+        // },
+
+      }}
+      contentLoading={loading}
+      contentEmpty={false}
+      contentEmptyText='Create your first lecture'
+      bottomPadding={false}
+    >
+      <Header
+        backClassName='left-[5]'
+        showBack
+        icon={{
+          component: 'Ionicons',
+          name: 'chevron-down',
+          color: 'black',
+          size: 24
         }}
-        contentLoading={loading}
-        contentEmpty={false}
-        contentEmptyText='Create your first lecture'
-        bottomPadding={false}
-      >
-        <Header
-          backClassName='left-[5]'
-          showBack
-          icon={{
-            component: 'Ionicons',
-            name: 'chevron-down',
-            color: 'black',
-            size: 24
-          }}
-          title={lecture?.title || ''}
-          loading={loading}
-        />
-        {lecture && memoizedContent}
-        <LectureDrawer
-          ref={lectureDrawerRef}
-          duration={lecture?.audio?.duration as number}
-          isPlaying={isPlaying}
-          onPlayPause={onPlayPause}
-          onSeek={onSeek}
-          onSeekEnd={onSeekEnd}
-          onSeekStart={onSeekStart}
-          sentences={sentences}
-          notes={notes as Note[]}
-          notesCount={lecture?.metadata?.notesCount as number}
-          noteId={noteId as string}
-          lectureId={lectureId as string}
-          onCreateNote={onCreateNote}
-          onCreateNoteLoading={createNoteLoading}
-          onDeleteNoteLoading={deleteNoteLoading}
-          onNotes={onNotes}
-          onAgentCreateNote={onAgentCreateNote}
-          currentNote={currentNote as Note}
-          currentSentence={currentSentence as CurrentSentence}
-          onDeleteNote={onDeleteNote}
-          onSelectNote={onSelectNote}
-          bars={lecture?.audio?.bars as number[]}
-        />
-      </ScreenLayout>
-    </View>
+        title={lecture?.title || ''}
+        loading={loading}
+      />
+      {lecture && memoizedContent}
+      <LectureDrawer
+        ref={lectureDrawerRef}
+        duration={lecture?.audio?.duration as number}
+        isPlaying={isPlaying}
+        onPlayPause={onPlayPause}
+        onSeek={onSeek}
+        onSeekEnd={onSeekEnd}
+        onSeekStart={onSeekStart}
+        sentences={sentences}
+        notes={notes as Note[]}
+        notesCount={lecture?.metadata?.notesCount as number}
+        noteId={noteId as string}
+        lectureId={lectureId as string}
+        onCreateNote={onCreateNote}
+        onCreateNoteLoading={createNoteLoading}
+        onDeleteNoteLoading={deleteNoteLoading}
+        onNotes={onNotes}
+        onAgentCreateNote={onAgentCreateNote}
+        currentNote={currentNote as Note}
+        currentSentence={currentSentence as CurrentSentence}
+        onDeleteNote={onDeleteNote}
+        onSelectNote={onSelectNote}
+        bars={lecture?.audio?.bars as number[]}
+      />
+    </ScreenLayout>
+  </View>
   );
 }

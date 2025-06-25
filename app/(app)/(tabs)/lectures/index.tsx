@@ -9,16 +9,17 @@ import { CreateLecture } from '@/components/CreateLecture';
 import { useSubscription } from '@apollo/client';
 import { LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { LectureItem } from '@/components/LectureItem';
-import Animated, { 
+import Animated, {
   LinearTransition,
   FadeIn,
   FadeOut
 } from 'react-native-reanimated';
 import { Header } from '@/components/layouts/Header';
+import DOMComponent from '@/components/dom/LectureText';
 
 const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
   return (
-    <Animated.View 
+    <Animated.View
       layout={LinearTransition.duration(300)}
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
@@ -30,10 +31,10 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
 
 const keyExtractor = (item: Lecture) => item.id || 'temp';
 
-export default function Screen() {  
+export default function Screen() {
   const { items, isLoading, updateCreatingLectureCache } = useGetLectures();
   const [newLectureVisible, setNewLectureVisible] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);  
+  const [settingsVisible, setSettingsVisible] = useState(false);
 
   // useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
   //   onData: ({ data }) => {
@@ -54,7 +55,7 @@ export default function Screen() {
     return <AnimatedLectureItem item={item} />;
   }, []);
 
-  return (
+  return (    
     <View className='flex-1'>
       <ScreenLayout
         screenOptions={{

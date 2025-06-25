@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Text } from './ui/Text';
 import { cn } from '@/lib/utils';
-import { LayoutChangeEvent, ScrollView, View } from 'react-native';
+import { LayoutChangeEvent, ScrollView, View, TextInput, Pressable } from 'react-native';
 import { Note } from '@/apollo/__generated__/graphql';
 import { CurrentSentence } from '@/hooks/useSentence';
+import Editor from './dom/LectureText';
 
 export type SentenceType = {
   start_offset: number;
@@ -21,7 +22,7 @@ export type Alignment = {
 interface TextHighlighterProps {
   text: string;
   notes: Note[];
-  sentences: Alignment[];  
+  sentences: Alignment[];
   currentSentence: CurrentSentence;
   sections: string[];
   onSelect: (time: number) => void;
@@ -40,15 +41,18 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
   scrollViewHeight
 }) => {
   const measureViewRef = useRef<View>(null);
-  const onSentencePress = (startTime: number) => {    
+  const onSentencePress = (startTime: number) => {
     onSelect(startTime);
   }
 
   const onLayoutHandler = (event: LayoutChangeEvent) => {
+    console.log('onLayoutHandler')
     measureViewRef.current?.measure((x, y) => {
       if (!scrollViewHeight) {
         return;
       }
+
+
 
       scrollViewRef.current?.scrollTo({ y: y - (scrollViewHeight / 2), animated: true });
     });
@@ -60,6 +64,7 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
     let sectionsIndex = 0;
 
     const result: JSX.Element[] = [];
+    const resultChunks = [];
     sentences.forEach((entry, index) => {
       const { sentence, is_section_start, is_paragraph_start } = entry;
       const { start_offset, end_offset, start_time, end_time } = sentence;
@@ -71,29 +76,43 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         result.push(<Text key={`section-title-${index}`} className="text-xl font-semibold leading-8">
           {`${index === 0 ? '' : '\n\n'}${sectionTitle}\n`}
         </Text>)
+        resultChunks.push({
+          key: `section-title-${index}`,
+          text: sectionTitle,
+          isTitle: true,
+        })
         sectionsIndex++;
       } else if (is_paragraph_start) {
         result.push(<Text key={`paragraph-${index}`}>{`\n`}</Text>)
+        resultChunks.push({
+          key: `paragraph-${index}`,          
+          isParagraph: true,
+        })
       }
 
       const isHighlighted = currentSentence?.sentence.start_time === start_time;
       const sentenceWithNote = notes.find((note) => note.timestamp === start_time)
-      if (isHighlighted) {
-        const firstChar = chunk.slice(0, 1);
-        const lastPart = chunk.slice(1);
+      if (isHighlighted) {       
         result.push(<Text
           suppressHighlighting
           onPress={() => onSentencePress(start_time)}
           key={`sentence-${index}`}
           className={cn(
             sentenceWithNote && 'bg-yellow-100',
-            "text-lg leading-8 bg-blue-100 flex-row",            
+            "text-lg leading-8 bg-blue-100 flex-row",
           )}
-        >
-          {firstChar}
-          <View ref={measureViewRef} onLayout={onLayoutHandler} />
-          {lastPart}
+        >         
+          {chunk}
         </Text>)
+
+        resultChunks.push({
+          key: `sentence-${index}`,
+          text: chunk,
+          isPressable: true,
+          isHighlighted: true,
+          isNote: sentenceWithNote,
+          startTime: start_time,
+        })
       } else {
         result.push(<Text
           suppressHighlighting
@@ -106,18 +125,41 @@ export const TextHighlighter: React.FC<TextHighlighterProps> = ({
         >
           {chunk}
         </Text>)
+
+        resultChunks.push({
+          key: `sentence-${index}`,
+          text: chunk,
+          isPressable: true,
+          startTime: start_time,
+          isNote: sentenceWithNote
+        })
       }
 
       result.push(<Text key={`sentence-${index}-space`}> </Text>)
+      resultChunks.push({
+        key: `sentence-${index}-space`,
+        text: ' '
+      })
     })
 
-    return result
+    return resultChunks
 
   }, [text, sentences, notes, currentSentence, sections]);
 
-  return <View className='pt-[2]'>
-    <Text>
+ 
+
+  return <View className='flex-1'>
+    <View className='flex-1'>
+      <Editor
+        chunk={renderText as any}
+        onSentencePress={onSentencePress}              
+        dom={{
+          matchContents: true,
+          scrollEnabled: false,       
+        } as any} />
+    </View>
+    {/* <Text>
       {renderText}
-    </Text>
+    </Text> */}
   </View>;
 };

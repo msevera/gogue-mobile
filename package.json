@@ -22,11 +22,12 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.1",
+    "@daily-co/config-plugin-rn-daily-js": "^0.0.9",
     "@daily-co/react-native-daily-js": "^0.77.0",
     "@daily-co/react-native-webrtc": "^118.0.3-daily.3",
-    "@daily-co/config-plugin-rn-daily-js": "^0.0.9",
     "@gorhom/portal": "^1.0.14",
     "@graphql-typed-document-node/core": "^3.2.0",
+    "@lexical/react": "^0.32.1",
     "@pipecat-ai/client-js": "^0.3.5",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-firebase/app": "^22.2.1",
@@ -58,6 +59,7 @@
     "fuse.js": "^7.1.0",
     "graphql": "^16.10.0",
     "graphql-ws": "^6.0.4",
+    "lexical": "^0.32.1",
     "nativewind": "^4.1.23",
     "onesignal-expo-plugin": "^2.0.3",
     "react": "19.0.0",
@@ -71,10 +73,12 @@
     "react-native-onesignal": "^5.2.9",
     "react-native-reanimated": "~3.18.0",
     "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
+    "react-native-web": "^0.20.0",
+    "react-native-webview": "13.13.5",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss": "^3.4.17",
-    "react-native-screens": "~4.11.1"
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@apollo/client-devtools-vscode": "^4.19.6",
