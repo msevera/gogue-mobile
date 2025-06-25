@@ -36,13 +36,6 @@ export default function Screen() {
   const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
-  // useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
-  //   onData: ({ data }) => {
-  //     const lecture = data.data?.lectureCreating as Lecture;
-  //     updateCreatingLectureCache(lecture);
-  //   }
-  // });
-
   const onMenuPressHandler = useCallback(() => {
     setSettingsVisible(!settingsVisible);
   }, [settingsVisible]);
