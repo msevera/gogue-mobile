@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { RootHeader } from '@/components/layouts/RootHeader';
+import { Header } from '@/components/layouts/Header';
 
 export default function Screen() {
   return (
@@ -9,7 +10,7 @@ export default function Screen() {
       <ScreenLayout
         screenOptions={{
           headerShown: true,
-          header: () => <RootHeader title='Library' />,
+          header: () => <Header title='Library' />,
         }}
         contentLoading={false}
         contentEmpty={false}        

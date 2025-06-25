@@ -1,9 +1,8 @@
 import { Lecture } from '@/apollo/__generated__/graphql';
-import { GET_LECTURE } from '@/apollo/queries/lectures';
-import { useQuery } from '@apollo/client';
+import { DocumentNode, useQuery } from '@apollo/client';
 
-export const useGetLecture = (lectureId: string) => {
-  const { data: { lecture } = {}, loading } = useQuery(GET_LECTURE, {
+export const useGetLecture = (lectureId: string, query: DocumentNode) => {
+  const { data: { lecture } = {}, loading } = useQuery(query, {
     variables: {
       id: lectureId as string,
     },

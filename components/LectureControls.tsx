@@ -104,7 +104,7 @@ export const LectureControls = React.memo(forwardRef<LectureControlsRef, {
           bars={bars}
         />
         <View className='flex-row items-center justify-between px-4 gap-4 mt-5'>
-          <Button
+          {/* <Button
             icon={{
               component: 'MaterialIcons',
               name: 'star-outline',
@@ -116,7 +116,8 @@ export const LectureControls = React.memo(forwardRef<LectureControlsRef, {
             sm
             className='bg-gray-100'
             textClassName='text-gray-800'
-          />
+          /> */}
+          <View />
           <View className='absolute left-0 right-0 top-0 bottom-0 items-center justify-center'>
             <Button
               sm

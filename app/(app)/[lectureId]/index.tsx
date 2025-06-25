@@ -2,7 +2,7 @@ import { useLocalSearchParams, ScreenProps } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, ScrollView, View } from 'react-native';
-import { GET_LECTURE } from '@/apollo/queries/lectures';
+import { GET_LECTURE, GET_LECTURE_DETAILS } from '@/apollo/queries/lectures';
 import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
 import { PLAYBACK_STATUS_UPDATE, useAudioPlayer, useAudioPlayerStatus, createAudioPlayer, AudioPlayer, AudioStatus } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -49,7 +49,7 @@ export default function Screen() {
     console.log('onNotes');
   }, []);
 
-  const { lecture, loading } = useGetLecture(lectureId as string);
+  const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_DETAILS);
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
     variables: {
       lectureId: lectureId as string,
@@ -80,10 +80,10 @@ export default function Screen() {
     createNote({
       variables: {
         lectureId: lectureId as string,
-        timestamp: status.currentTime
+        timestamp: currentSentence?.sentence.start_time || 0
       }
     });
-  }, [lectureId, status.currentTime, createNote]);
+  }, [lectureId, currentSentence, createNote]);
 
   const onAgentCreateNote = useCallback((noteId: string) => {
     setNoteId(noteId);
@@ -281,6 +281,7 @@ export default function Screen() {
       >
         <Header
           backClassName='left-[5]'
+          showBack
           icon={{
             component: 'Ionicons',
             name: 'chevron-down',

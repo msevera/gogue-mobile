@@ -36,6 +36,7 @@ export const useGetLectures = ({ skip }: { skip?: boolean } = {}) => {
         data?.lectures?.items?.map((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined ? newLecture : lecture) :
         [newLecture, ...data?.lectures?.items];
 
+      console.log('items', JSON.stringify(items))
       return {
         ...data,
         lectures: {

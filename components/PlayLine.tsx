@@ -91,8 +91,9 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       const startPosition = timeToPosition(sentenceToHighlight?.sentence.start_time);
       const endPosition = timeToPosition(sentenceToHighlight?.sentence.end_time);
       const width = timeToPosition(sentenceToHighlight?.sentence.end_time) - timeToPosition(sentenceToHighlight?.sentence.start_time);
+      console.log('width', note.timestamp);
       return {
-        startTime: sentenceToHighlight?.sentence.start_time,
+        startTime: sentenceToHighlight,
         endTime: sentenceToHighlight?.sentence.end_time,
         startPosition,
         endPosition,
@@ -176,7 +177,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
                 style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
               >
                 {
-                  highlightNotes.map((note) => {
+                  highlightNotes.map((note,) => {
                     return <View
                       key={note.note.id}
                       className='bg-yellow-500 h-10 absolute w-[50%] z-10 left-0'
@@ -185,7 +186,6 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
                   })
                 }
               </Animated.View>
-
             </View>
           </MaskedView>
           {/* <Animated.View
