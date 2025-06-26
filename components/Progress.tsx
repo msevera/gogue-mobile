@@ -5,9 +5,7 @@ interface ProgressProps {
   current: number
 }
 
-export const Progress = ({ total, current }: ProgressProps) => {
-  console.log('total', total)
-  console.log('current', current)
+export const Progress = ({ total, current }: ProgressProps) => {  
   const progressPercentage = Math.min(Math.max((current / total) * 100, 0), 100)
 
   return (
