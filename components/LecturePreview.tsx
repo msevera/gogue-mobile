@@ -1,3 +1,4 @@
+import React from 'react';
 import { Platform, ScrollView, SectionList, View, StyleSheet, Animated as RNAnimated, UIManager, findNodeHandle, ActivityIndicator } from 'react-native';
 import { Text } from './ui/Text';
 import { Link, router, useLocalSearchParams } from 'expo-router';
@@ -11,6 +12,7 @@ import { Topics } from './Topics';
 import { coverBGHex, formatTime } from '@/lib/utils';
 import { Button } from './ui/Button';
 import { GET_LECTURE_PREVIEW } from '@/apollo/queries/lectures';
+import { Progress } from './Progress';
 
 const tabs = [{ text: 'Overview', value: 'overview' }, { text: 'Sections', value: 'sections' }, { text: 'Sources', value: 'sources' }]
 
@@ -60,7 +62,7 @@ export const LecturePreview = () => {
     const allAnnotations = lecture?.sections?.reduce((acc, section) => {
       return acc.concat(section.annotations || []);
     }, [] as any[]) || [];
-    
+
     // Filter to only unique URLs
     const uniqueUrls = new Set();
     return allAnnotations.filter(annotation => {
@@ -70,6 +72,14 @@ export const LecturePreview = () => {
       uniqueUrls.add(annotation.url);
       return true;
     });
+  }, [lecture])
+
+  const leftTime = useMemo(() => {
+    let timeLeft = lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!      
+    return {
+      time: formatTime(timeLeft, true, true),
+      percentage: Math.round(100 - (lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!) * 100 / lecture?.audio?.duration!)
+    }
   }, [lecture])
 
   return (
@@ -108,7 +118,6 @@ export const LecturePreview = () => {
                     contentFit="scale-down"
                     transition={1000}
                     style={{
-                      // flex: 1,
                       width: 1024 / 6,
                       height: 1536 / 6,
                       borderRadius: 4,
@@ -132,29 +141,45 @@ export const LecturePreview = () => {
               </View>
               <View className='bg-white rounded-t-3xl'>
                 <View className='pt-4'>
-                  <View className='flex-row items-center justify-between px-4 mb-4'>
-                    <View className='flex-row items-center'>
-                      <Text className='text-gray-500 text-sm'>{formatTime(lecture?.audio?.duration!, true)}min</Text>
-                      <Text className='text-gray-500 ml-1 mr-1'>•</Text>
-                      <Text className='text-gray-500 text-sm'>{lecture?.sections?.length} sections</Text>
+                  <View className='flex-row items-center justify-between px-4 mb-6'>
+                    <View>
+                      <View className='flex-row items-center'>
+                        <Text className='text-gray-500 text-sm'>{formatTime(lecture?.audio?.duration!, true)}min</Text>
+                        <Text className='text-gray-500 ml-1 mr-1'>•</Text>
+                        <Text className='text-gray-500 text-sm'>{lecture?.sections?.length} sections</Text>
+                      </View>
                     </View>
                     <View className='flex-row items-center gap-2'>
                       <Button secondary sm text="Add to library" />
-                      <Button
-                        sm
-                        text="Start"
-                        icon={{ component: 'Ionicons', name: 'play' }}
-                        onPress={() => {
-                          router.push(`/${lectureId}`);
-                        }}
-                      />
+                      <View>
+                        <Button
+                          sm
+                          text={lecture?.metadata?.status === 'IN_PROGRESS' ? 'Continue' : 'Start'}
+                          icon={{ component: 'Ionicons', name: 'play' }}
+                          onPress={() => {
+                            router.push(`/${lectureId}`);
+                          }}
+                        />
+                        {
+                          lecture?.metadata?.status === 'IN_PROGRESS' && (
+                            <View className='absolute left-0 right-0 bottom-[-18]'>
+                              <Text className='text-blue-500 text-xs text-center top-[2]'>
+                                {leftTime.time}min left
+                              </Text>
+                            </View>
+                          )
+                        }
+                      </View>
                     </View>
                   </View>
+                  {/* <View className='w-[150]'>
+                    <Progress total={lecture?.audio?.duration} current={lecture?.metadata?.playbackTimestamp} />
+                  </View>                   */}
                   <View className='bg-white px-4'>
                     <Text className='text-2xl text-gray-950 font-semibold'>
                       {lecture?.title}
                     </Text>
-                    <Text className='text-lg mt-2 text-gray-800'>
+                    <Text className='text-lg mt-1 text-gray-800'>
                       {lecture?.topic}
                     </Text>
                   </View>
@@ -220,7 +245,7 @@ export const LecturePreview = () => {
                     </View>
                   )
                 }
-                  {
+                {
                   activeTab === 'sources' && (
                     <View className='bg-white px-4'>
                       {

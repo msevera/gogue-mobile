@@ -14,7 +14,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n": typeof types.LectureListItemFragmentDoc,
+    "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n      bars\n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n      status\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n": typeof types.LectureListItemFragmentDoc,
     "\n  fragment LecturePreview on Lecture {\n    ...LectureListItem\n    overview     \n    sections {     \n      title\n      overview\n      annotations {\n        title\n        url\n      }\n    }       \n    categories {\n      category {\n        id\n        name\n      }\n    }\n  }\n  \n": typeof types.LecturePreviewFragmentDoc,
     "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n": typeof types.LectureDetailsFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    timestamp    \n  }\n": typeof types.NoteFragmentDoc,
@@ -28,6 +28,8 @@ type Documents = {
     "\n  query GetLectureAgent($id: ID!) {\n    lectureAgent(id: $id) {\n      config\n    }\n  }\n": typeof types.GetLectureAgentDocument,
     "\n  subscription LectureCreating {\n    lectureCreating {\n      ...LectureListItem\n    }\n  }\n  \n": typeof types.LectureCreatingDocument,
     "\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n": typeof types.CreateLectureAsyncDocument,
+    "\n  mutation SetPlaybackTimestamp($id: ID!, $timestamp: Float!) {\n    setPlaybackTimestamp(id: $id, timestamp: $timestamp) {\n      id\n      playbackTimestamp\n      status\n    }\n  }\n": typeof types.SetPlaybackTimestampDocument,
+    "\n  mutation SetStatus($id: ID!, $status: LectureMetadataStatus!) {\n    setStatus(id: $id, status: $status) {\n      id\n      status\n    }\n  }\n": typeof types.SetStatusDocument,
     "\n  query GetNoteMessages($noteId: ID!, $pagination: PaginationInput) {\n    noteMessages(input: { noteId: $noteId }, pagination: $pagination) {\n      items {\n        ...NoteMessage       \n      },\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": typeof types.GetNoteMessagesDocument,
     "\n  query GetNotes($lectureId: ID!, $pagination: PaginationInput) {\n    notes(input: { lectureId: $lectureId }, pagination: $pagination) {\n      items {\n        ...Note       \n      }\n    }    \n  }\n  \n": typeof types.GetNotesDocument,
     "\n  query GetNote($id: ID!) {\n    note(id: $id) {\n      ...Note\n    }\n  }\n  \n": typeof types.GetNoteDocument,
@@ -40,7 +42,7 @@ type Documents = {
     "\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      ...User\n    }\n  }\n  \n": typeof types.GetUserDocument,
 };
 const documents: Documents = {
-    "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n": types.LectureListItemFragmentDoc,
+    "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n      bars\n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n      status\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n": types.LectureListItemFragmentDoc,
     "\n  fragment LecturePreview on Lecture {\n    ...LectureListItem\n    overview     \n    sections {     \n      title\n      overview\n      annotations {\n        title\n        url\n      }\n    }       \n    categories {\n      category {\n        id\n        name\n      }\n    }\n  }\n  \n": types.LecturePreviewFragmentDoc,
     "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n": types.LectureDetailsFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    timestamp    \n  }\n": types.NoteFragmentDoc,
@@ -54,6 +56,8 @@ const documents: Documents = {
     "\n  query GetLectureAgent($id: ID!) {\n    lectureAgent(id: $id) {\n      config\n    }\n  }\n": types.GetLectureAgentDocument,
     "\n  subscription LectureCreating {\n    lectureCreating {\n      ...LectureListItem\n    }\n  }\n  \n": types.LectureCreatingDocument,
     "\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n": types.CreateLectureAsyncDocument,
+    "\n  mutation SetPlaybackTimestamp($id: ID!, $timestamp: Float!) {\n    setPlaybackTimestamp(id: $id, timestamp: $timestamp) {\n      id\n      playbackTimestamp\n      status\n    }\n  }\n": types.SetPlaybackTimestampDocument,
+    "\n  mutation SetStatus($id: ID!, $status: LectureMetadataStatus!) {\n    setStatus(id: $id, status: $status) {\n      id\n      status\n    }\n  }\n": types.SetStatusDocument,
     "\n  query GetNoteMessages($noteId: ID!, $pagination: PaginationInput) {\n    noteMessages(input: { noteId: $noteId }, pagination: $pagination) {\n      items {\n        ...NoteMessage       \n      },\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": types.GetNoteMessagesDocument,
     "\n  query GetNotes($lectureId: ID!, $pagination: PaginationInput) {\n    notes(input: { lectureId: $lectureId }, pagination: $pagination) {\n      items {\n        ...Note       \n      }\n    }    \n  }\n  \n": types.GetNotesDocument,
     "\n  query GetNote($id: ID!) {\n    note(id: $id) {\n      ...Note\n    }\n  }\n  \n": types.GetNoteDocument,
@@ -83,7 +87,7 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n"): (typeof documents)["\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n"];
+export function gql(source: "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n      bars\n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n      status\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n"): (typeof documents)["\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n      bars\n    }\n    metadata {\n      id\n      notesCount\n      playbackTimestamp\n      status\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -136,6 +140,14 @@ export function gql(source: "\n  subscription LectureCreating {\n    lectureCrea
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n"): (typeof documents)["\n  mutation CreateLectureAsync($input: CreateLectureInput!) {\n    createLectureAsync(input: $input)\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation SetPlaybackTimestamp($id: ID!, $timestamp: Float!) {\n    setPlaybackTimestamp(id: $id, timestamp: $timestamp) {\n      id\n      playbackTimestamp\n      status\n    }\n  }\n"): (typeof documents)["\n  mutation SetPlaybackTimestamp($id: ID!, $timestamp: Float!) {\n    setPlaybackTimestamp(id: $id, timestamp: $timestamp) {\n      id\n      playbackTimestamp\n      status\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation SetStatus($id: ID!, $status: LectureMetadataStatus!) {\n    setStatus(id: $id, status: $status) {\n      id\n      status\n    }\n  }\n"): (typeof documents)["\n  mutation SetStatus($id: ID!, $status: LectureMetadataStatus!) {\n    setStatus(id: $id, status: $status) {\n      id\n      status\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

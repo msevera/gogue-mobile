@@ -1,23 +1,19 @@
-import { useLocalSearchParams, ScreenProps } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { useMutation, useQuery, useSubscription } from '@apollo/client';
-import { LayoutChangeEvent, ScrollView, View } from 'react-native';
-import { GET_LECTURE, GET_LECTURE_DETAILS } from '@/apollo/queries/lectures';
-import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
-import { PLAYBACK_STATUS_UPDATE, useAudioPlayer, useAudioPlayerStatus, createAudioPlayer, AudioPlayer, AudioStatus } from 'expo-audio';
+import { useMutation, useSubscription } from '@apollo/client';
+import { LayoutChangeEvent, View } from 'react-native';
+import { GET_LECTURE_DETAILS, SET_PLAYBACK_STATUS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
+import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
+import { PLAYBACK_STATUS_UPDATE, useAudioPlayer } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
 import { Header } from '@/components/layouts/Header';
-import { Button } from '@/components/ui/Button';
-import { useVoiceAgent } from '@/hooks/useVoiceAgent';
 import { useGetNotes } from '@/hooks/useGetNotes';
 import { CREATE_NOTE, DELETE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
 import { CurrentSentence, useSentence } from '@/hooks/useSentence';
-import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { useGetLecture } from '@/hooks/useGetLecture';
-import DOMComponent from '@/components/dom/LectureText';
-import { Text } from '@/components/ui/Text';
+import useDebounce from '@/hooks/useDebounce';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -26,8 +22,9 @@ export default function Screen() {
   const [wasPlaying, setWasPlaying] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
-  const textSelectedRef = useRef(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const [savingPlaybackIsReady, setSavingPlaybackIsReady] = useState(false);
+  const [firstPlaybackStatusUpdateSkipped, setFirstPlaybackStatusUpdateSkipped] = useState(false);
+
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [status, setStatus] = useState<{
     playing: boolean;
@@ -37,14 +34,35 @@ export default function Screen() {
   }>({ playing: false, didJustFinish: false, duration: 0, currentTime: 0 })
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
   const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
+
+
+  const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {
+    onError: (error) => {
+      console.log('SET_PLAYBACK_TIMESTAMP error', JSON.stringify(error, null, 2));
+    }
+  });
+
+  const debouncedOnSentenceChange = useDebounce((playbackTimmestamp: number) => {
+    setPlaybackTimestamp({
+      variables: {
+        id: lectureId as string,
+        timestamp: playbackTimmestamp
+      }
+    })
+  }, 1000);
+
   const { sentences, currentNote, currentSentence, selectNote } = useSentence({
     alignments,
     notes: notes as Note[],
     content,
     currentTime: status.currentTime,
-    onSentenceChange: useCallback(() => {
+    onSentenceChange: useCallback((sentenceIndex: number, sentenceStartTime: number) => {
       setNoteId(undefined);
-    }, [])
+      if (savingPlaybackIsReady) {
+        console.log('savingPlaybackIsReady', savingPlaybackIsReady, sentenceStartTime);
+        debouncedOnSentenceChange(sentenceStartTime)
+      }
+    }, [savingPlaybackIsReady])
   });
 
   const onNotes = useCallback(() => {
@@ -62,6 +80,23 @@ export default function Screen() {
     }
   });
 
+
+  useEffect(() => {
+    if (lecture?.id) {
+      console.log('useEffect', lecture.metadata?.playbackTimestamp);
+      lectureDrawerRef.current?.setPlayLineCurrentTime(lecture.metadata?.playbackTimestamp || 0);
+      player.seekTo(lecture.metadata?.playbackTimestamp || 0)
+      setStatus((oldStatus) => {
+        return {
+          ...oldStatus,
+          currentTime: lecture.metadata?.playbackTimestamp || 0
+        }
+      })
+
+      setSavingPlaybackIsReady(true);
+    }
+  }, [lecture?.id])
+
   const [createNote, { loading: createNoteLoading }] = useMutation<CreateNoteMutation, CreateNoteMutationVariables>(CREATE_NOTE, {
     onError: (error) => {
       console.log('CREATE_NOTE error', JSON.stringify(error, null, 2));
@@ -75,6 +110,12 @@ export default function Screen() {
     update: (cache, result, { variables }) => {
       const { id } = variables || {};
       updateDeleteNoteCache(id as string);
+    }
+  });
+
+  const [setLectureStatus] = useMutation<SetStatusMutation, SetStatusMutationVariables>(SET_STATUS, {
+    onError: (error) => {
+      console.log('SET_STATUS error', JSON.stringify(error, null, 2));
     }
   });
 
@@ -104,13 +145,19 @@ export default function Screen() {
   }, 1000);
 
   useEffect(() => {
-    if (!player) return;
+    if (!player || !savingPlaybackIsReady) return;
 
     const listener = (status: any) => {
       setStatus((oldStatus) => {
         let statusChanged = false;
         const time = Number(status.currentTime.toFixed(2));
+        console.log('BEFORE onPlaybackStatusUpdate', time, status.currentTime);
         if (time !== oldStatus.currentTime) {
+          if (!firstPlaybackStatusUpdateSkipped) {
+            setFirstPlaybackStatusUpdateSkipped(true);
+            return oldStatus;
+          }
+          console.log('onPlaybackStatusUpdate', time, status.currentTime);
           lectureDrawerRef.current?.setPlayLineCurrentTime(time);
           statusChanged = true;
         }
@@ -146,7 +193,7 @@ export default function Screen() {
     return () => {
       player.removeAllListeners(PLAYBACK_STATUS_UPDATE)
     }
-  }, [player?.id])
+  }, [player?.id, savingPlaybackIsReady, firstPlaybackStatusUpdateSkipped])
 
   useEffect(() => {
     setIsPlaying(status.playing)
@@ -155,10 +202,17 @@ export default function Screen() {
   useEffect(() => {
     if (status.didJustFinish) {
       setIsPlaying(false)
+      setLectureStatus({
+        variables: {
+          id: lectureId as string,
+          status: 'COMPLETED' as LectureMetadataStatus
+        }
+      })
     }
   }, [status.didJustFinish])
 
   const onSeek = useCallback((time: number) => {
+    console.log('onSeek', time);
     setStatus((oldStatus) => {
       return {
         ...oldStatus,
@@ -170,6 +224,7 @@ export default function Screen() {
   }, []);
 
   const onSeekEnd = useCallback((time: number) => {
+    console.log('onSeekEnd', time);
     setStatus((oldStatus) => {
       return {
         ...oldStatus,
@@ -188,6 +243,7 @@ export default function Screen() {
   }, [player]);
 
   const onTextSelect = useCallback((time: number) => {
+    console.log('onTextSelect', time);
     lectureDrawerRef.current?.setPlayLineCurrentTime(time);
     player.seekTo(time)
     setStatus((oldStatus) => {
@@ -196,7 +252,6 @@ export default function Screen() {
         currentTime: time
       }
     })
-    textSelectedRef.current = true;
   }, [player]);
 
   const onLayoutHandler = useCallback((event: LayoutChangeEvent) => {
@@ -222,6 +277,7 @@ export default function Screen() {
   }, [deleteNote]);
 
   const onSelectNote = useCallback((note: Note) => {
+    console.log('onSelectNote', note.timestamp);
     player.seekTo(note.timestamp)
     setStatus((oldStatus) => {
       return {
@@ -235,7 +291,7 @@ export default function Screen() {
     if (!lecture) return null;
     return (
       <View className='flex-1'>
-        <View className='flex-1' onLayout={onLayoutHandler} ref={scrollViewRef}>
+        <View className='flex-1' onLayout={onLayoutHandler}>
           <TextHighlighter
             notes={notes as Note[]}
             text={content}
@@ -243,10 +299,7 @@ export default function Screen() {
             sentences={sentences}
             currentSentence={currentSentence as CurrentSentence}
             onSelect={onTextSelect}
-            scrollViewRef={scrollViewRef}
-            scrollViewHeight={scrollViewHeight}
           />
-          {/* <View className='h-[210]' /> */}
         </View>
       </View>
     );
@@ -259,21 +312,6 @@ export default function Screen() {
         headerShown: false,
         animation: 'slide_from_bottom',
         gestureDirection: 'vertical',
-        // transitionSpec: {
-        //   open: {
-        //     animation: 'timing',
-        //     config: {
-        //       duration: 1000,
-        //     },
-        //   },
-        //   close: {
-        //     animation: 'timing',
-        //     config: {
-        //       duration: 1000,
-        //     },
-        //   }
-        // },
-
       }}
       contentLoading={loading}
       contentEmpty={false}

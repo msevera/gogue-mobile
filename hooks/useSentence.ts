@@ -46,7 +46,7 @@ export const useSentence = ({
     });
 
 
-    setCurrentSentence((old) => {
+    setCurrentSentence((old) => {      
       if (old.index !== sentenceIndex) {
         const currentSentence = sentences[sentenceIndex];
         if (!currentSentence) {

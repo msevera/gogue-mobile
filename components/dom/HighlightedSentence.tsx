@@ -4,8 +4,28 @@ export const HighlightedSentence = ({ text, onMount }: { text: string, onMount: 
   const ref = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
-    if (ref.current && onMount) {      
-      onMount(ref.current?.offsetTop);
+    if (ref.current && onMount) {
+      let attempts = 0;
+      const maxAttempts = 5;
+      let timeoutId: number | null = null;
+      
+      const tryGetOffsetTop = () => {
+        if (ref.current?.offsetTop) {
+          onMount(ref.current.offsetTop);
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          timeoutId = setTimeout(tryGetOffsetTop, 500);
+        }
+      };
+      
+      tryGetOffsetTop();
+      
+      // Cleanup function to clear timeout
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
     }
   }, []);
 

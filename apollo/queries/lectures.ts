@@ -61,3 +61,23 @@ export const CREATE_LECTURE_ASYNC = gql`
     createLectureAsync(input: $input)
   }
 `;
+
+export const SET_PLAYBACK_TIMESTAMP = gql`
+  mutation SetPlaybackTimestamp($id: ID!, $timestamp: Float!) {
+    setPlaybackTimestamp(id: $id, timestamp: $timestamp) {
+      id
+      playbackTimestamp
+      status
+    }
+  }
+`;
+
+
+export const SET_STATUS = gql`
+  mutation SetStatus($id: ID!, $status: LectureMetadataStatus!) {
+    setStatus(id: $id, status: $status) {
+      id
+      status
+    }
+  }
+`;

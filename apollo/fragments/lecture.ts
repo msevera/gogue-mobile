@@ -18,11 +18,13 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
       stream
       wav
       duration      
+      bars
     }
     metadata {
       id
       notesCount
       playbackTimestamp
+      status
     }
     image {
       webp

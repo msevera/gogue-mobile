@@ -1,18 +1,18 @@
 "use dom";
 
 import { HighlightedSentence } from './HighlightedSentence';
-import { useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-type Chunk = {
+export type Chunk = {
   key: string;
-  text: string;
-  isParagraph: boolean;
-  isTitle: boolean;
-  isHighlighted: boolean;
-  isPressable: boolean;
-  startTime: number;
-  isNote: boolean;
-  title: boolean;
+  text?: string;
+  isParagraph?: boolean;
+  isTitle?: boolean;
+  isHighlighted?: boolean;
+  isPressable?: boolean;
+  startTime?: number;
+  isNote?: boolean;
+  title?: boolean;
 }
 
 export default function LectureText({
@@ -22,15 +22,54 @@ export default function LectureText({
   chunk: Chunk[];
   onSentencePress: (time: number) => void;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const [sentenceOffsetTop, setSentenceOffsetTop] = useState(null);
 
-  const divRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (ref.current) {
+      let attempts = 0;
+      const maxAttempts = 5;
+      let timeoutId: number | null = null;
+
+      const tryGetOffsetTop = () => {
+        const { height } = ref?.current?.getBoundingClientRect() || {};
+        if (height) {
+          setScrollViewHeight(height);
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          timeoutId = setTimeout(tryGetOffsetTop, 500);
+        }
+      };
+
+      tryGetOffsetTop();
+
+      // Cleanup function to clear timeout
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sentenceOffsetTop && scrollViewHeight) {
+      ref.current?.scroll({
+        top: sentenceOffsetTop - (scrollViewHeight! / 2),
+        behavior: 'smooth'
+      });
+    }
+  }, [sentenceOffsetTop, scrollViewHeight])
+
+
   return (
     <div
-      ref={divRef}
+      ref={ref}
       style={{
         whiteSpace: 'pre-wrap',
         height: 'calc(100vh - 180px)',
-        maxHeight: '100%',        
+        maxHeight: '100%',
         overflowY: 'auto',
         padding: '12px'
       }}
@@ -57,14 +96,22 @@ export default function LectureText({
           }
 
           if (chunk.isHighlighted) {
-            return <HighlightedSentence key={chunk.key} onMount={(y) => {
-              const { height: scrollViewHeight } = divRef?.current?.getBoundingClientRect() || {};
-              divRef.current?.scroll({
-                top: y - (scrollViewHeight! / 2),
-                behavior: 'smooth'
-              });
-            }}
-              text={chunk.text}
+            return <HighlightedSentence
+              key={chunk.key}
+              onMount={(y) => {
+                if (typeof y === 'number') {
+                  if (sentenceOffsetTop === null) {
+                    setSentenceOffsetTop(y);
+                  }
+                  if (typeof scrollViewHeight === 'number') {
+                    ref.current?.scroll({
+                      top: y - (scrollViewHeight! / 2),
+                      behavior: 'smooth'
+                    });
+                  }
+                }
+              }}
+              text={chunk.text as string}
             />
           }
 

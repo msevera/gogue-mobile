@@ -91,7 +91,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
       const startPosition = timeToPosition(sentenceToHighlight?.sentence.start_time);
       const endPosition = timeToPosition(sentenceToHighlight?.sentence.end_time);
       const width = timeToPosition(sentenceToHighlight?.sentence.end_time) - timeToPosition(sentenceToHighlight?.sentence.start_time);
-      console.log('width', note.timestamp);
+      
       return {
         startTime: sentenceToHighlight,
         endTime: sentenceToHighlight?.sentence.end_time,
