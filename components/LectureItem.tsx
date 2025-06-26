@@ -6,18 +6,13 @@ import { Text } from '@/components/ui/Text';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { Image } from 'expo-image';
 import { coverBGHex, formatTime } from '@/lib/utils';
+import * as VectorIcons from '@expo/vector-icons';
 
-export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
-  const leftTime = useMemo(() => {
-    let timeLeft = lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!
-    return {
-      time: formatTime(timeLeft, true, true),
-      percentage: Math.round(100 - (lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!) * 100 / lecture?.audio?.duration!)
-    }
-  }, [lecture])
+
+export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentPath: '/lectures' | '/library' }) => { 
   return (
     <Pressable onPress={() => {
-      router.push(`/lectures/${lecture.id}`);
+      router.push(`${parentPath}/${lecture.id}`);
     }}>
       <View className='flex-row px-4 mb-4'>
         <View className='flex-1'>
@@ -43,13 +38,24 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
             <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text>
             <Text className="text-base text-gray-800 text-center" numberOfLines={2}>{lecture.topic}</Text>
             <View className='mt-6 flex-row items-center justify-between'>
-              <View className='flex-row items-center px-2 py-1 rounded-full'
-                style={{
-                  backgroundColor: `${lecture.image?.color}4D`,
-                }}>
-                <Text className='text-gray-800 text-xs'>{formatTime(lecture?.audio?.duration!, true)}min</Text>
-                <Text className='text-gray-800 ml-1 mr-1 text-xs'>•</Text>
-                <Text className='text-gray-800 text-xs'>{lecture?.sections?.length} sections</Text>
+              <View className='flex-row items-center gap-2'>
+                <View className='flex-row items-center px-2 py-1 rounded-full'
+                  style={{
+                    backgroundColor: `${lecture.image?.color}4D`,
+                  }}>
+                  <Text className='text-gray-800 text-xs'>{formatTime(lecture?.audio?.duration!, true)}min</Text>                 
+                </View>
+                {
+                  lecture?.metadata?.addedToLibrary && (
+                    <View className='flex-row items-center px-2 py-1 rounded-full justify-center'
+                      style={{
+                        backgroundColor: `${lecture.image?.color}4D`,
+                      }}>
+                      <VectorIcons.MaterialIcons name="done" size={16} color="#1f2937" />
+                      <Text className='text-gray-950 text-xs ml-1'>In library</Text>
+                    </View>
+                  )
+                }
               </View>
               {
                 lecture?.metadata?.status === 'IN_PROGRESS' && (
@@ -57,7 +63,7 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
                     style={{
                       backgroundColor: `${lecture.image?.color}4D`,
                     }}>
-                    <Text className='text-gray-950 text-xs'>{leftTime.time}min left</Text>
+                    <Text className='text-gray-950 text-xs'>Continue</Text>
                   </View>
                 )
               }

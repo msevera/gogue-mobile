@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Platform, ScrollView, SectionList, View, StyleSheet, Animated as RNAnimated, UIManager, findNodeHandle, ActivityIndicator } from 'react-native';
 import { Text } from './ui/Text';
 import { Link, router, useLocalSearchParams } from 'expo-router';
@@ -11,8 +11,10 @@ import { Tabs } from './Tabs';
 import { Topics } from './Topics';
 import { coverBGHex, formatTime } from '@/lib/utils';
 import { Button } from './ui/Button';
-import { GET_LECTURE_PREVIEW } from '@/apollo/queries/lectures';
-import { Progress } from './Progress';
+import { ADD_TO_LIBRARY, GET_LECTURE_PREVIEW, REMOVE_FROM_LIBRARY } from '@/apollo/queries/lectures';
+import { AddToLibraryMutation, AddToLibraryMutationVariables, RemoveFromLibraryMutation, RemoveFromLibraryMutationVariables } from '@/apollo/__generated__/graphql';
+import { useMutation } from '@apollo/client';
+import { useAddToLibrary } from '@/hooks/useAddToLibrary';
 
 const tabs = [{ text: 'Overview', value: 'overview' }, { text: 'Sections', value: 'sections' }, { text: 'Sources', value: 'sources' }]
 
@@ -23,11 +25,10 @@ export const LecturePreview = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { lectureId } = useLocalSearchParams();
   const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_PREVIEW);
-
-
   const stickyRef = useRef<View>(null);
-  const [offsetTop, setOffsetTop] = useState(0); // element’s top position
+  const [offsetTop, setOffsetTop] = useState(0);
 
+  const { handleToggleLibrary, loading: toggleLibraryLoading } = useAddToLibrary({ lecture });
 
   const opacityInterpolation = rnScrollY.interpolate({
     inputRange: [200, 300],
@@ -75,9 +76,9 @@ export const LecturePreview = () => {
   }, [lecture])
 
   const leftTime = useMemo(() => {
-    let timeLeft = lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!      
+    let timeLeft = lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!
     return {
-      time: formatTime(timeLeft, true, true),
+      time: formatTime(timeLeft, true),
       percentage: Math.round(100 - (lecture?.audio?.duration! - lecture?.metadata?.playbackTimestamp!) * 100 / lecture?.audio?.duration!)
     }
   }, [lecture])
@@ -107,12 +108,8 @@ export const LecturePreview = () => {
                 extrapolate: 'clamp',
               })
             }}>
-
-
               <View className='h-[400] pt-24 flex-row items-center justify-center'>
-                <View
-
-                >
+                <View>
                   <Image
                     source={lecture?.image?.webp}
                     contentFit="scale-down"
@@ -136,8 +133,25 @@ export const LecturePreview = () => {
               })()}
               scrollEventThrottle={16}
             >
-              <View className='h-[400]'>
-
+              <View className='h-[400]'>                
+                {
+                  (lecture?.metadata?.status === 'IN_PROGRESS' || lecture?.metadata?.status === 'COMPLETED') && (
+                    <RNAnimated.View className='absolute right-4 bottom-4 px-2 py-1 rounded-full bg-white/50'
+                      style={{
+                        backgroundColor: `${lecture.image?.color}4D`,
+                        opacity: rnScrollY.interpolate({
+                          inputRange: [0, 50],
+                          outputRange: [1, 0],
+                          extrapolate: 'clamp',
+                        })
+                      }}
+                    >
+                      <Text className='text-gray-950 text-xs text-center'>                        
+                        {lecture?.metadata?.status === 'IN_PROGRESS' ? `${leftTime.time}min left` : 'Done'}
+                      </Text>
+                    </RNAnimated.View>
+                  )
+                }
               </View>
               <View className='bg-white rounded-t-3xl'>
                 <View className='pt-4'>
@@ -150,7 +164,16 @@ export const LecturePreview = () => {
                       </View>
                     </View>
                     <View className='flex-row items-center gap-2'>
-                      <Button secondary sm text="Add to library" />
+                      <Button
+                        secondary={!lecture?.metadata?.addedToLibrary}
+                        ghost={lecture?.metadata?.addedToLibrary}
+                        sm
+                        text={lecture?.metadata?.addedToLibrary ? 'In library' : 'Add to library'}
+                        onPress={handleToggleLibrary}
+                        loading={toggleLibraryLoading}
+                        icon={lecture?.metadata?.addedToLibrary && { component: 'MaterialIcons', name: 'done', color: '#3b82f6' }}
+                        textClassName={lecture?.metadata?.addedToLibrary && 'text-blue-500'}
+                      />
                       <View>
                         <Button
                           sm
@@ -160,21 +183,18 @@ export const LecturePreview = () => {
                             router.push(`/${lectureId}`);
                           }}
                         />
-                        {
+                        {/* {
                           lecture?.metadata?.status === 'IN_PROGRESS' && (
                             <View className='absolute left-0 right-0 bottom-[-18]'>
                               <Text className='text-blue-500 text-xs text-center top-[2]'>
-                                {leftTime.time}min left
+                                99% completed
                               </Text>
                             </View>
                           )
-                        }
+                        } */}
                       </View>
                     </View>
                   </View>
-                  {/* <View className='w-[150]'>
-                    <Progress total={lecture?.audio?.duration} current={lecture?.metadata?.playbackTimestamp} />
-                  </View>                   */}
                   <View className='bg-white px-4'>
                     <Text className='text-2xl text-gray-950 font-semibold'>
                       {lecture?.title}

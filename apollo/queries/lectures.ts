@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 import { LECTURE_DETAILS_FRAGMENT, LECTURE_LIST_ITEM_FRAGMENT, LECTURE_PREVIEW_FRAGMENT } from "../fragments/lecture";
 
 export const GET_LECTURES = gql`
-  query GetLectures($pagination: PaginationInput) {
-    lectures(pagination: $pagination) {
+  query GetLectures($input: FindLecturesInput, $pagination: PaginationInput) {
+    lectures(input: $input, pagination: $pagination) {
       items {
         ...LectureListItem       
       }
@@ -81,3 +81,25 @@ export const SET_STATUS = gql`
     }
   }
 `;
+
+export const ADD_TO_LIBRARY = gql`
+  mutation AddToLibrary($id: ID!) {
+    addToLibrary(id: $id) {
+      id
+      addedToLibrary
+      addedToLibraryAt
+    }
+  }
+`;
+
+export const REMOVE_FROM_LIBRARY = gql`
+  mutation RemoveFromLibrary($id: ID!) {
+    removeFromLibrary(id: $id) {
+      id
+      addedToLibrary
+      addedToLibraryAt
+    }
+  }
+`;
+
+

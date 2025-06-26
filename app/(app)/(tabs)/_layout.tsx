@@ -9,8 +9,8 @@ import { Lecture, LectureCreatingSubscription, LectureCreatingSubscriptionVariab
 import { useQuery, useSubscription } from '@apollo/client';
 import { GET_PENDING_LECTURE, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { useGetLectures } from '@/hooks/useGetLectures';
-import { useGetLecture } from '@/hooks/useGetLecture';
 import { PendingLecture } from '@/components/PendingLecture';
+import { useAddToLibrary } from '@/hooks/useAddToLibrary';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -56,7 +56,7 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
         }}
       />
       <TabBarButton
-        text='Your library'
+        text='Your Library'
         icon={{ component: 'MaterialCommunityIcons', name: 'bookshelf' }}
         active={isActive('/library')}
         onPress={() => {
@@ -91,7 +91,7 @@ export default function TabsLayout() {
     }
   });
 
-
+  const { updateLectureCache } = useAddToLibrary();
   useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
     onData: ({ data }) => {
       const lecture = data.data?.lectureCreating as Lecture;
@@ -100,6 +100,9 @@ export default function TabsLayout() {
         setNewLecture(lecture);
         setTimeout(() => {
           updateCreatingLectureCache(lecture);
+          if (lecture.metadata?.addedToLibrary) {
+            updateLectureCache(lecture, true);
+          }
         }, 2000);
       } else {
         setNewLecture(lecture);

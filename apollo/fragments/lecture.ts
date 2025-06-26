@@ -25,6 +25,8 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
       notesCount
       playbackTimestamp
       status
+      addedToLibrary
+      addedToLibraryAt
     }
     image {
       webp

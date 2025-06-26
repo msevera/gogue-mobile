@@ -2,12 +2,10 @@ import { View, FlatList } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useCallback, useState } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { Lecture, LectureCreatingSubscription, LectureCreatingSubscriptionVariables, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
+import { Lecture } from '@/apollo/__generated__/graphql';
 import { useGetLectures } from '@/hooks/useGetLectures';
 import { RootSettings } from '@/components/RootSettings';
 import { CreateLecture } from '@/components/CreateLecture';
-import { useSubscription } from '@apollo/client';
-import { LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { LectureItem } from '@/components/LectureItem';
 import Animated, {
   LinearTransition,
@@ -15,7 +13,7 @@ import Animated, {
   FadeOut
 } from 'react-native-reanimated';
 import { Header } from '@/components/layouts/Header';
-import DOMComponent from '@/components/dom/LectureText';
+
 
 const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
   return (
@@ -24,15 +22,15 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
     >
-      <LectureItem lecture={item} />
+      <LectureItem lecture={item} parentPath='/lectures' />
     </Animated.View>
   );
 };
 
-const keyExtractor = (item: Lecture) => item.id || 'temp';
+const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
-  const { items, isLoading, updateCreatingLectureCache } = useGetLectures();
+  const { items, isLoading } = useGetLectures();
   const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
