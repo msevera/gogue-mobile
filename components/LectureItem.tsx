@@ -22,7 +22,7 @@ export const LectureItem = ({ lecture }: { lecture: Lecture }) => {
       <View className='flex-row px-4 mb-4'>
         <View className='flex-1'>
           <View
-            className="rounded-xl px-4 py-4"
+            className="rounded-xl px-4 pt-10 py-4"
             style={{
               backgroundColor: coverBGHex(lecture.image?.color),
             }}
