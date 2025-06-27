@@ -16,8 +16,27 @@ import { useGetLecturesSearch } from '@/hooks/useGetLecturesSearch';
 import { Button } from '@/components/ui/Button';
 import { useNewLecture } from '@/hooks/useNewLecture';
 
+// Define proper types for section data
+interface SearchSection {
+  search: boolean;
+  data: Lecture[];
+}
+
+interface ResultsSection {
+  title: string;
+  data: Lecture[];
+  results: boolean;
+}
+
+interface LatestSection {
+  title: string;
+  data: Lecture[];
+}
+
+type SectionData = SearchSection | ResultsSection | LatestSection;
+
 const keyExtractor = (item: Lecture) => {
-  console.log('keyExtractor', item)
+  // console.log('keyExtractor', item.id)
   return item.id;
 }
 
@@ -33,6 +52,8 @@ export default function Screen() {
   const stickyRef = useRef<View>(null);
   const [offsetTop, setOffsetTop] = useState(0);
   const translateYValue = useRef(new RNAnimated.Value(0)).current;
+  const searchOpacityValue = useRef(new RNAnimated.Value(1)).current;
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     if (isSearchActive) {
@@ -41,12 +62,25 @@ export default function Screen() {
   }, [search, isSearchActive]);
 
   useEffect(() => {
+    let offset = Math.min(lastScrollY.current, 60);
+    if (isSearchActive) {
+       translateYValue.setValue(offset * -1)
+    }
+
     RNAnimated.timing(translateYValue, {
-      toValue: isSearchActive ? -50 : 0,
+      toValue: isSearchActive ? -60 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
   }, [isSearchActive, translateYValue]);
+
+  useEffect(() => {
+    RNAnimated.timing(searchOpacityValue, {
+      toValue: isSearchActive ? 0 : 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [isSearchActive, searchOpacityValue]);
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <View className='mr-5'>
@@ -55,46 +89,52 @@ export default function Screen() {
   }, []);
 
   const data = useMemo(() => {
-    const result = [{
+    const result: SectionData[] = [{
       search: true,
-      data: searchItems as Lecture[],    
+      data: searchItems as Lecture[],
     }]
 
     if (isSearchActive) {
       result.push({
         title: 'Results',
-        data: searchItems as Lecture[],        
-        results: true,       
+        data: searchItems as Lecture[],
+        results: true,
       })
     } else {
       result.push({
         title: 'Latest',
-        data: items as Lecture[],       
+        data: items as Lecture[],
       })
     }
 
     return result;
   }, [items, searchItems, isSearchActive, search]);
 
-
-  // const topValue = useSharedValue(0);
-  // const opacityValue = useSharedValue(1);
-  // useDerivedValue(() => {
-  //   topValue.value = withTiming(isSearchActive ? -50 : 1, { duration: 200 });
-  //   opacityValue.value = withTiming(isSearchActive ? 0 : 1, { duration: 200 });
-  // }, [isSearchActive])
-
-  // const layoutAnimatedStyle = useAnimatedStyle(() => {
-  //   return {
-  //     top: topValue.value
-  //   }
-  // })
-
-  // const headerAnimatedStyle = useAnimatedStyle(() => {
-  //   return {
-  //     opacity: opacityValue.value
-  //   }
-  // })
+  // Create a continuous translateY animation that preserves scroll position
+  const getTranslateYAnimation = useCallback(() => {
+    if (isSearchActive) {
+      // When search is active, always follow the scroll position
+      return rnScrollY.interpolate({
+        inputRange: [0, Number.MAX_SAFE_INTEGER],
+        outputRange: [0, Number.MAX_SAFE_INTEGER],
+        extrapolate: 'clamp',
+      });
+    } else {
+      // When search is not active, use the original sticky behavior
+      return RNAnimated.add(
+        rnScrollY.interpolate({
+          inputRange: [0, 60],
+          outputRange: [0, 0],
+          extrapolate: 'clamp',
+        }),
+        rnScrollY.interpolate({
+          inputRange: [60, Number.MAX_SAFE_INTEGER],
+          outputRange: [0, Number.MAX_SAFE_INTEGER - 60],
+          extrapolate: 'clamp',
+        })
+      );
+    }
+  }, [isSearchActive, rnScrollY]);
 
   return (
     <RNAnimated.View className='flex-1'
@@ -112,23 +152,21 @@ export default function Screen() {
         contentEmpty={false}
         bottomPadding={false}
       >
-
         <RNAnimated.SectionList
-
           stickySectionHeadersEnabled={false}
-          // ListHeaderComponent={
-          //   <RNAnimated.View className="mb-4">
-          //     <Header title='Search' />
-          //   </RNAnimated.View>
-          // }   
           onScroll={RNAnimated.event(
             [{ nativeEvent: { contentOffset: { y: rnScrollY } } }],
-            { useNativeDriver: true }
+            {
+              useNativeDriver: true,
+              listener: (event: any) => {
+                lastScrollY.current = event.nativeEvent.contentOffset.y;
+              }
+            }
           )}
           keyboardShouldPersistTaps="handled"
           sections={data}
           renderItem={({ item, section, index }) => {
-            if (section.search || section.results && search.length <= 2 || section.results && isSearchLoading) {
+            if ((section as SearchSection).search || ((section as ResultsSection).results && search.length <= 2) || ((section as ResultsSection).results && isSearchLoading)) {
               return null;
             }
 
@@ -136,8 +174,8 @@ export default function Screen() {
           }}
           renderSectionHeader={
             ({ section }) => {
-              if (section.search) {
-                return <RNAnimated.View className='px-4 pb-4 bg-white z-10'
+              if ((section as SearchSection).search) {
+                return <RNAnimated.View className='pb-4 bg-white z-10'
                   ref={stickyRef}
                   onLayout={() => {
                     stickyRef.current?.measure((_x, _y, _w, _h, _pageX, pageY) => {
@@ -146,24 +184,13 @@ export default function Screen() {
                   }}
                   style={{
                     transform: [{
-                      translateY: RNAnimated.add(
-                        rnScrollY.interpolate({
-                          inputRange: [0, 60],
-                          outputRange: [0, 0],
-                          extrapolate: 'clamp',
-                        }),
-                        rnScrollY.interpolate({
-                          inputRange: [60, Number.MAX_SAFE_INTEGER],
-                          outputRange: [0, Number.MAX_SAFE_INTEGER - 60],
-                          extrapolate: 'clamp',
-                        })
-                      )
+                      translateY: getTranslateYAnimation()
                     }]
                   }}
                 >
                   <RNAnimated.View className="mb-4"
                     style={{
-                      opacity: rnScrollY.interpolate({
+                      opacity: isSearchActive ? searchOpacityValue : rnScrollY.interpolate({
                         inputRange: [0, 60],
                         outputRange: [1, 0],
                         extrapolate: 'clamp',
@@ -172,21 +199,21 @@ export default function Screen() {
                   >
                     <Header title='Search' />
                   </RNAnimated.View>
-                  <SearchInput value={search} setValue={setSearch} onActive={setIsSearchActive} />
+                  <View className='px-4'>
+                    <SearchInput value={search} setValue={setSearch} onActive={setIsSearchActive} />
+                  </View>
                 </RNAnimated.View>
               }
 
-              if (section.results && search.length <= 2) {
-                return <View className='px-4 mb-4 flex-1 mt-10' key="searchEmpty">
+              if ((section as ResultsSection).results && search.length <= 2) {
+                return <View className='px-4 mb-4 mt-10' key="searchEmpty">
                   <Text className='text-gray-800 font-semibold text-xl text-center'>Learn what you like</Text>
                   <Text className='text-gray-800 text-base text-center'>Search for titles, topics, and more</Text>
                 </View>;
-
-                return null;
               }
 
-              if (section.results && isSearchLoading) {
-                return <View className='px-4 mb-4 flex-1 mt-10'>
+              if ((section as ResultsSection).results && isSearchLoading) {
+                return <View className='px-4 mb-4 mt-10'>
                   <View className='flex-row items-center justify-center mb-2'>
                     <ActivityIndicator size="small" color="#000000" />
                   </View>
@@ -195,8 +222,8 @@ export default function Screen() {
                 </View>;
               }
 
-              if (section.results && !isSearchLoading && section.data.length === 0) {
-                return <View className='px-4 mb-4 flex-1 mt-10 items-center'>
+              if ((section as ResultsSection).results && !isSearchLoading && section.data.length === 0) {
+                return <View className='px-4 mb-4 mt-10 items-center'>
                   <Text className='text-gray-800 font-semibold text-xl text-center mb-2'>Don't see the lecture you want?</Text>
                   <Text className='text-gray-800 text-base text-center w-60'>The good news is, you can create any lecture</Text>
                   <Button sm className='mt-4' text='Create Lecture' onPress={() => {
@@ -212,7 +239,7 @@ export default function Screen() {
               return (
                 <View>
                   <View className="px-4 mb-2">
-                    <Text className='text-gray-800 font-bold text-2xl'>{section.title}</Text>
+                    <Text className='text-gray-800 font-bold text-2xl'>{(section as LatestSection | ResultsSection).title}</Text>
                   </View>
                 </View>
               )
