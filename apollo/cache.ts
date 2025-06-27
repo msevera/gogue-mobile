@@ -26,7 +26,7 @@ const buildSortingKey = variables => {
   }
 };
 
-export const mergeReadObjectByPagination = (keys = []) => {
+export const mergeReadObjectByPagination = (keys: string[] = []) => {
   return {
     // eslint-disable-next-line
     keyArgs: variables => {
@@ -58,11 +58,11 @@ export const mergeReadObjectByPagination = (keys = []) => {
       }
     },
     merge(existing, incoming, { mergeObjects, readField, args }) {
-      if (args.pagination && !args.pagination.cursorNext) {
+      if (args.pagination && !args.pagination.next) {
         return incoming;
       }
 
-      const merged = mergeUnique(existing?.items, incoming.items, { mergeObjects, readField });
+      const merged = mergeUnique(existing?.items, incoming.items, { mergeObjects, readField });      
 
       return {
         __typename: incoming.__typename,

@@ -1,49 +1,46 @@
-import { FindLecturesInput, GetLecturesQuery, GetLecturesQueryVariables, Lecture } from '@/apollo/__generated__/graphql';
+import { GetLecturesQuery, GetLecturesQueryVariables, Lecture } from '@/apollo/__generated__/graphql';
 import { SortOrder } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES } from '@/apollo/queries/lectures';
 import { useApolloClient, useQuery } from "@apollo/client";
+import { useAuth } from './useAuth';
 
-export const useGetLectures = ({ skip, input }: { skip?: boolean, input?: FindLecturesInput } = {}) => {
+export const useGetLectures = ({ skip }: { skip?: boolean } = {}) => {
   const apolloClient = useApolloClient();
-  const { data: { lectures: { items = [] } = { items: [] } } = {}, loading: isLoading } = useQuery<GetLecturesQuery, GetLecturesQueryVariables>(GET_LECTURES, {
-    variables: {
-      input,
-      pagination: {
-        sort: [{
-          by: 'createdAt',
-          order: SortOrder.Desc
-        }]
-      }
+  const { authUser } = useAuth();
+  const variables = {
+    input: {
+      skipUserId: authUser?.id
     },
-    skip,
-    onError: (error) => {
-      console.log('error', error)
+    pagination: {
+      limit: 15,
+      sort: [{
+        by: 'createdAt',
+        order: SortOrder.Desc
+      }]
     }
-  });
+  }
+
+  const { data: { lectures: { items = [] } = { items: [] } } = {}, loading: isLoading } =
+    useQuery<GetLecturesQuery, GetLecturesQueryVariables>(GET_LECTURES, {
+      variables,
+      skip,
+      onError: (error) => {
+        console.log('error', JSON.stringify(error, null, 2))
+      }
+    });
 
   const handleCache = (newLecture: Lecture) => {
-    const buildQueryParams = (params?: any) => {
-      return {
-        ...params,
-        pagination: {
-          sort: [{
-            by: 'createdAt',
-            order: SortOrder.Desc
-          }]
-        }
-      }
-    }
-
     const updateFn = (data: any) => {
-      const doesLectureExist = data?.lectures?.items?.some((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined);
+      const lectures = data?.lectures;
+      const doesLectureExist = lectures?.items?.some((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined);
       const items = doesLectureExist ?
-        data?.lectures?.items?.map((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined ? newLecture : lecture) :
-        [newLecture, ...data?.lectures?.items];
+        lectures?.items?.map((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined ? newLecture : lecture) :
+        [newLecture, ...lectures?.items];
 
       return {
         ...data,
         lectures: {
-          ...data?.lectures,
+          ...lectures,
           items: [...items].filter(Boolean)
         }
       }
@@ -52,7 +49,7 @@ export const useGetLectures = ({ skip, input }: { skip?: boolean, input?: FindLe
     apolloClient.cache.updateQuery<GetLecturesQuery, GetLecturesQueryVariables>(
       {
         query: GET_LECTURES,
-        variables: buildQueryParams()
+        variables
       },
       (data) => updateFn(data)
     );

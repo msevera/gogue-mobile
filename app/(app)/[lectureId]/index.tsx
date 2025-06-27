@@ -3,7 +3,7 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useMutation, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GET_LECTURE_DETAILS, SET_PLAYBACK_STATUS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
-import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
+import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
 import { PLAYBACK_STATUS_UPDATE, useAudioPlayer } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
@@ -14,6 +14,7 @@ import { CREATE_NOTE, DELETE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/qu
 import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 import { useGetLecture } from '@/hooks/useGetLecture';
 import useDebounce from '@/hooks/useDebounce';
+import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -35,8 +36,12 @@ export default function Screen() {
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
   const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
 
-
-  const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {
+  const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_DETAILS);
+  const { updateRecentlyPlayedLectureCache } = useGetLecturesRecentlyPlayed({ skip: true });
+  const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {    
+    update: () => {
+      updateRecentlyPlayedLectureCache(lecture as Lecture);
+    },
     onError: (error) => {
       console.log('SET_PLAYBACK_TIMESTAMP error', JSON.stringify(error, null, 2));
     }
@@ -69,7 +74,7 @@ export default function Screen() {
     console.log('onNotes');
   }, []);
 
-  const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_DETAILS);
+  
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
     variables: {
       lectureId: lectureId as string,
@@ -208,6 +213,8 @@ export default function Screen() {
           status: 'COMPLETED' as LectureMetadataStatus
         }
       })
+
+      updateRecentlyPlayedLectureCache(lecture as Lecture, true);
     }
   }, [status.didJustFinish])
 

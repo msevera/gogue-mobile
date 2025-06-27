@@ -1,9 +1,34 @@
 import { gql } from "@apollo/client";
-import { LECTURE_DETAILS_FRAGMENT, LECTURE_LIST_ITEM_FRAGMENT, LECTURE_PREVIEW_FRAGMENT } from "../fragments/lecture";
+import { LECTURE_DETAILS_FRAGMENT, LECTURE_LIST_ITEM_FRAGMENT, LECTURE_METADATA_FRAGMENT, LECTURE_PREVIEW_FRAGMENT } from "../fragments/lecture";
 
 export const GET_LECTURES = gql`
   query GetLectures($input: FindLecturesInput, $pagination: PaginationInput) {
     lectures(input: $input, pagination: $pagination) {
+      items {
+        ...LectureListItem       
+      }
+    }    
+  }
+  ${LECTURE_LIST_ITEM_FRAGMENT}
+`;
+
+export const GET_LECTURES_ADDED_TO_LIBRARY = gql`
+  query GetLecturesAddedToLibrary($pagination: PaginationInput) {
+    lecturesAddedToLibrary(pagination: $pagination) {
+      items {
+        ...LectureListItem       
+      }
+      pageInfo {
+        next
+      }
+    }    
+  }
+  ${LECTURE_LIST_ITEM_FRAGMENT}
+`;
+
+export const GET_LECTURES_RECENTLY_PLAYED = gql`
+  query GetLecturesRecentlyPlayed($pagination: PaginationInput) {
+    lecturesRecentlyPlayed(pagination: $pagination) {
       items {
         ...LectureListItem       
       }
@@ -39,14 +64,6 @@ export const GET_PENDING_LECTURE = gql`
   ${LECTURE_LIST_ITEM_FRAGMENT}
 `;
 
-export const GET_LECTURE_AGENT = gql`
-  query GetLectureAgent($id: ID!) {
-    lectureAgent(id: $id) {
-      config
-    }
-  }
-`;
-
 export const LECTURE_CREATING_SUBSCRIPTION = gql`
   subscription LectureCreating {
     lectureCreating {
@@ -65,11 +82,10 @@ export const CREATE_LECTURE_ASYNC = gql`
 export const SET_PLAYBACK_TIMESTAMP = gql`
   mutation SetPlaybackTimestamp($id: ID!, $timestamp: Float!) {
     setPlaybackTimestamp(id: $id, timestamp: $timestamp) {
-      id
-      playbackTimestamp
-      status
+      ...LectureMetadata
     }
   }
+  ${LECTURE_METADATA_FRAGMENT}
 `;
 
 
@@ -85,21 +101,31 @@ export const SET_STATUS = gql`
 export const ADD_TO_LIBRARY = gql`
   mutation AddToLibrary($id: ID!) {
     addToLibrary(id: $id) {
-      id
-      addedToLibrary
-      addedToLibraryAt
+      ...LectureMetadata
+      lecture {
+        id
+        metadata {
+          id
+        }
+      }
     }
   }
+  ${LECTURE_METADATA_FRAGMENT}
 `;
 
 export const REMOVE_FROM_LIBRARY = gql`
   mutation RemoveFromLibrary($id: ID!) {
     removeFromLibrary(id: $id) {
-      id
-      addedToLibrary
-      addedToLibraryAt
+      ...LectureMetadata
+      lecture {
+        id
+        metadata {
+          id
+        }
+      }
     }
   }
+  ${LECTURE_METADATA_FRAGMENT}
 `;
 
 

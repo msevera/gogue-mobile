@@ -1,4 +1,4 @@
-import { View, FlatList } from 'react-native';
+import { View, FlatList, SectionList } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useCallback, useState } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
@@ -13,6 +13,8 @@ import Animated, {
   FadeOut
 } from 'react-native-reanimated';
 import { Header } from '@/components/layouts/Header';
+import { LectureItemSmall } from '@/components/LectureItemSmall';
+import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 
 
 const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
@@ -21,8 +23,9 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
       layout={LinearTransition.duration(300)}
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
+      className='mr-5'
     >
-      <LectureItem lecture={item} parentPath='/lectures' />
+      <LectureItemSmall lecture={item} parentPath='/lectures' />
     </Animated.View>
   );
 };
@@ -30,6 +33,7 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
 const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
+  const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
   const { items, isLoading } = useGetLectures();
   const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -46,7 +50,17 @@ export default function Screen() {
     return <AnimatedLectureItem item={item} />;
   }, []);
 
-  return (    
+  const data = [{
+    title: 'Jump back in',
+    horizontal: true,
+    data: itemsRecentlyPlayed as Lecture[]
+  },
+  {
+    title: 'You might also like',
+    data: items as Lecture[]
+  }]
+
+  return (
     <View className='flex-1'>
       <ScreenLayout
         screenOptions={{
@@ -58,24 +72,45 @@ export default function Screen() {
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
       >
-        {
-          items.length > 0 ? (
-            <FlatList
-              keyExtractor={keyExtractor}
-              contentInsetAdjustmentBehavior="automatic"
-              data={items as Lecture[]}
-              renderItem={renderItem}
-              // ListFooterComponent={() => <View className='h-2 w-full' />}              
-              ListHeaderComponent={() => <View className='h-4 w-full' />}              
-            />
-          ) : (
-            <View className='flex-1 justify-center items-center px-4'>
-              <View className='flex-1 justify-center items-center'>
-                <Text className='text-gray-500 text-lg top-[-40]'>You don't have any lectures yet.</Text>
+        <SectionList
+          className='pt-4'
+          stickySectionHeadersEnabled={false}
+          sections={data}
+          renderItem={({ item, section }) => {
+            if (section.horizontal) {
+              return null;
+            }
+            return <LectureItem lecture={item} parentPath='/lectures' />;
+          }}
+          renderSectionHeader={({ section }) => {
+            if (section.data.length === 0) {
+              return null;
+            }
+
+            return (
+              <View>
+                <View className="px-4 mb-4">
+                  <Text className='text-gray-800 font-bold text-2xl'>{section.title}</Text>
+                </View>
+                {section.horizontal ? (
+                  <View className='mb-6'>
+                    <FlatList
+                      horizontal
+                      keyExtractor={keyExtractor}
+                      contentInsetAdjustmentBehavior="automatic"
+                      data={section.data as Lecture[]}
+                      renderItem={renderItem}
+                      showsHorizontalScrollIndicator={false}
+                      ListHeaderComponent={() => <View className='w-4' />}
+                    />
+                  </View>
+
+                ) : null}
               </View>
-            </View>
-          )
-        }
+            )
+          }}
+          keyExtractor={keyExtractor}
+        />
       </ScreenLayout>
       <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />
       <CreateLecture visible={newLectureVisible} onClose={onNewLecturePressHandler} />

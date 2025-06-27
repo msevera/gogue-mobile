@@ -32,7 +32,7 @@ export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentP
                   width: 1024 / 5,
                   height: 1536 / 5,
                   borderRadius: 4,
-                }}
+                }}                
               />
             </View>
             <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text>

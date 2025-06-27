@@ -1,5 +1,16 @@
 import { gql } from "@apollo/client";
 
+export const LECTURE_METADATA_FRAGMENT = gql`
+  fragment LectureMetadata on LectureMetadata {
+    id
+    notesCount
+    playbackTimestamp
+    status
+    addedToLibrary
+    addedToLibraryAt
+  }
+`;
+
 export const LECTURE_LIST_ITEM_FRAGMENT = gql`
   fragment LectureListItem on Lecture {
     id
@@ -21,12 +32,7 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
       bars
     }
     metadata {
-      id
-      notesCount
-      playbackTimestamp
-      status
-      addedToLibrary
-      addedToLibraryAt
+      ...LectureMetadata
     }
     image {
       webp
@@ -36,6 +42,7 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
       duration
     }
   }
+  ${LECTURE_METADATA_FRAGMENT}
 `;
 
 export const LECTURE_PREVIEW_FRAGMENT = gql`

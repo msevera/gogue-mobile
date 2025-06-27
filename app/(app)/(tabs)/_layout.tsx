@@ -10,7 +10,7 @@ import { useQuery, useSubscription } from '@apollo/client';
 import { GET_PENDING_LECTURE, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { useGetLectures } from '@/hooks/useGetLectures';
 import { PendingLecture } from '@/components/PendingLecture';
-import { useAddToLibrary } from '@/hooks/useAddToLibrary';
+import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -91,7 +91,7 @@ export default function TabsLayout() {
     }
   });
 
-  const { updateLectureCache } = useAddToLibrary();
+  const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });
   useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
     onData: ({ data }) => {
       const lecture = data.data?.lectureCreating as Lecture;

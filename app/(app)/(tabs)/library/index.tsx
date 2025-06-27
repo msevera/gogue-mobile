@@ -2,11 +2,11 @@ import { FlatList, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Header } from '@/components/layouts/Header';
-import { useGetLectures } from '@/hooks/useGetLectures';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useCallback } from 'react';
-import { LectureItemSmall } from '@/components/LectureItemSmall';
+import { LectureItemLibrary } from '@/components/LectureItemLibrary';
+import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
 
 const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
   return (
@@ -15,7 +15,7 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
     >
-      <LectureItemSmall lecture={item} parentPath='/library' />
+      <LectureItemLibrary lecture={item} parentPath='/library' />
     </Animated.View>
   );
 };
@@ -23,7 +23,7 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
 const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
-  const { items, isLoading } = useGetLectures({ input: { addedToLibrary: true } });
+  const { items, isLoading, fetchMore } = useGetLecturesAddedToLibrary();
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <AnimatedLectureItem item={item} />;
@@ -38,8 +38,7 @@ export default function Screen() {
         contentLoading={isLoading}
         contentEmpty={false}
         bottomPadding={false}        
-      >
-
+      >        
         {
           items.length > 0 ? (
             <FlatList
@@ -47,8 +46,8 @@ export default function Screen() {
               contentInsetAdjustmentBehavior="automatic"
               data={items as Lecture[]}
               renderItem={renderItem}
-              // ListFooterComponent={() => <View className='h-2 w-full' />}              
               ListHeaderComponent={() => <View className='h-4 w-full' />}
+              onEndReached={fetchMore}
             />
           ) : (
             <View className='flex-1 justify-center items-center px-4'>

@@ -11,9 +11,7 @@ import { Tabs } from './Tabs';
 import { Topics } from './Topics';
 import { coverBGHex, formatTime } from '@/lib/utils';
 import { Button } from './ui/Button';
-import { ADD_TO_LIBRARY, GET_LECTURE_PREVIEW, REMOVE_FROM_LIBRARY } from '@/apollo/queries/lectures';
-import { AddToLibraryMutation, AddToLibraryMutationVariables, RemoveFromLibraryMutation, RemoveFromLibraryMutationVariables } from '@/apollo/__generated__/graphql';
-import { useMutation } from '@apollo/client';
+import { GET_LECTURE_PREVIEW } from '@/apollo/queries/lectures';
 import { useAddToLibrary } from '@/hooks/useAddToLibrary';
 
 const tabs = [{ text: 'Overview', value: 'overview' }, { text: 'Sections', value: 'sections' }, { text: 'Sources', value: 'sources' }]

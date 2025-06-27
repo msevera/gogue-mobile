@@ -59,7 +59,8 @@ export const getAuthHeaders = async () => {
 export const typePolicies = {
   Query: {
     fields: {
-      noteMessages: mergeReadObjectByPagination(['noteId']),      
+      noteMessages: mergeReadObjectByPagination(['noteId']),
+      lecturesAddedToLibrary: mergeReadObjectByPagination(),
     },
   },
 }
