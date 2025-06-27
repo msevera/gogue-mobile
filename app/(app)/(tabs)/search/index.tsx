@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, SectionList, View } from 'react-native';
+import { ActivityIndicator, FlatList, SectionList, View, Animated as RNAnimated } from 'react-native';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Header } from '@/components/layouts/Header';
 import { Input } from '@/components/ui/Input';
@@ -6,29 +6,47 @@ import { Lecture } from '@/apollo/__generated__/graphql';
 import { useGetLectures } from '@/hooks/useGetLectures';
 import { Text } from '@/components/ui/Text';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LectureItemSearch } from '@/components/LectureItemSearch';
 import { SearchInput } from '@/components/SearchInput';
 import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { transform } from '@babel/core';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGetLecturesSearch } from '@/hooks/useGetLecturesSearch';
 import { Button } from '@/components/ui/Button';
 import { useNewLecture } from '@/hooks/useNewLecture';
 
-const keyExtractor = (item: Lecture) => item.id;
+const keyExtractor = (item: Lecture) => {
+  console.log('keyExtractor', item)
+  return item.id;
+}
 
 export default function Screen() {
+  const insets = useSafeAreaInsets();
+  const top = insets.top;
+  const rnScrollY = useRef(new RNAnimated.Value(0)).current;
   const [search, setSearch] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const { items, isLoading, fetchMore } = useGetLectures({});
   const { setNewLectureVisible } = useNewLecture();
   const { items: searchItems, isLoading: isSearchLoading, search: searchLectures } = useGetLecturesSearch();
+  const stickyRef = useRef<View>(null);
+  const [offsetTop, setOffsetTop] = useState(0);
+  const translateYValue = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
     if (isSearchActive) {
       searchLectures(search);
     }
   }, [search, isSearchActive]);
+
+  useEffect(() => {
+    RNAnimated.timing(translateYValue, {
+      toValue: isSearchActive ? -50 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [isSearchActive, translateYValue]);
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <View className='mr-5'>
@@ -38,53 +56,54 @@ export default function Screen() {
 
   const data = useMemo(() => {
     const result = [{
-      title: '',
       search: true,
-      data: searchItems as Lecture[],
-      results: false
+      data: searchItems as Lecture[],    
     }]
 
     if (isSearchActive) {
       result.push({
         title: 'Results',
-        data: searchItems as Lecture[],
-        search: false,
-        results: true
+        data: searchItems as Lecture[],        
+        results: true,       
       })
     } else {
       result.push({
         title: 'Latest',
-        data: items as Lecture[],
-        search: false,
-        results: false
+        data: items as Lecture[],       
       })
     }
 
     return result;
-  }, [items, searchItems, isSearchActive]);
+  }, [items, searchItems, isSearchActive, search]);
 
 
-  const topValue = useSharedValue(0);
-  const opacityValue = useSharedValue(1);
-  useDerivedValue(() => {
-    topValue.value = withTiming(isSearchActive ? -50 : 1, { duration: 200 });
-    opacityValue.value = withTiming(isSearchActive ? 0 : 1, { duration: 200 });
-  }, [isSearchActive])
+  // const topValue = useSharedValue(0);
+  // const opacityValue = useSharedValue(1);
+  // useDerivedValue(() => {
+  //   topValue.value = withTiming(isSearchActive ? -50 : 1, { duration: 200 });
+  //   opacityValue.value = withTiming(isSearchActive ? 0 : 1, { duration: 200 });
+  // }, [isSearchActive])
 
-  const layoutAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      top: topValue.value
-    }
-  })
+  // const layoutAnimatedStyle = useAnimatedStyle(() => {
+  //   return {
+  //     top: topValue.value
+  //   }
+  // })
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacityValue.value
-    }
-  })
+  // const headerAnimatedStyle = useAnimatedStyle(() => {
+  //   return {
+  //     opacity: opacityValue.value
+  //   }
+  // })
 
   return (
-    <Animated.View className='flex-1' style={[layoutAnimatedStyle]}>
+    <RNAnimated.View className='flex-1'
+      style={{
+        transform: [{
+          translateY: translateYValue
+        }]
+      }}
+    >
       <ScreenLayout
         screenOptions={{
           headerShown: false,
@@ -93,71 +112,116 @@ export default function Screen() {
         contentEmpty={false}
         bottomPadding={false}
       >
-        <Animated.View style={[headerAnimatedStyle]}>
-          <Header title='Search' />
-        </Animated.View>
-        <SectionList
-          keyboardShouldPersistTaps="handled"
-          className='pt-4'
+
+        <RNAnimated.SectionList
+
           stickySectionHeadersEnabled={false}
+          // ListHeaderComponent={
+          //   <RNAnimated.View className="mb-4">
+          //     <Header title='Search' />
+          //   </RNAnimated.View>
+          // }   
+          onScroll={RNAnimated.event(
+            [{ nativeEvent: { contentOffset: { y: rnScrollY } } }],
+            { useNativeDriver: true }
+          )}
+          keyboardShouldPersistTaps="handled"
           sections={data}
-          renderItem={({ item, section }) => {
+          renderItem={({ item, section, index }) => {
             if (section.search || section.results && search.length <= 2 || section.results && isSearchLoading) {
               return null;
             }
 
-            return renderItem({ item });
+            return renderItem({ item, index });
           }}
-          renderSectionHeader={({ section }) => {
-            if (section.search) {
-              return <View className='px-4 mb-4'>
-                <SearchInput value={search} setValue={setSearch} onActive={setIsSearchActive} />
-              </View>;
-            }
+          renderSectionHeader={
+            ({ section }) => {
+              if (section.search) {
+                return <RNAnimated.View className='px-4 pb-4 bg-white z-10'
+                  ref={stickyRef}
+                  onLayout={() => {
+                    stickyRef.current?.measure((_x, _y, _w, _h, _pageX, pageY) => {
+                      setOffsetTop(pageY - top); // element's absolute Y minus desired 50px
+                    });
+                  }}
+                  style={{
+                    transform: [{
+                      translateY: RNAnimated.add(
+                        rnScrollY.interpolate({
+                          inputRange: [0, 60],
+                          outputRange: [0, 0],
+                          extrapolate: 'clamp',
+                        }),
+                        rnScrollY.interpolate({
+                          inputRange: [60, Number.MAX_SAFE_INTEGER],
+                          outputRange: [0, Number.MAX_SAFE_INTEGER - 60],
+                          extrapolate: 'clamp',
+                        })
+                      )
+                    }]
+                  }}
+                >
+                  <RNAnimated.View className="mb-4"
+                    style={{
+                      opacity: rnScrollY.interpolate({
+                        inputRange: [0, 60],
+                        outputRange: [1, 0],
+                        extrapolate: 'clamp',
+                      })
+                    }}
+                  >
+                    <Header title='Search' />
+                  </RNAnimated.View>
+                  <SearchInput value={search} setValue={setSearch} onActive={setIsSearchActive} />
+                </RNAnimated.View>
+              }
 
-            if (section.results && search.length <= 2) {
-              return <View className='px-4 mb-4 flex-1 mt-10'>
-                <Text className='text-gray-800 font-semibold text-xl text-center'>Learn what you like</Text>
-                <Text className='text-gray-800 text-base text-center'>Search for titles, topics, and more</Text>
-              </View>;
-            }
+              if (section.results && search.length <= 2) {
+                return <View className='px-4 mb-4 flex-1 mt-10' key="searchEmpty">
+                  <Text className='text-gray-800 font-semibold text-xl text-center'>Learn what you like</Text>
+                  <Text className='text-gray-800 text-base text-center'>Search for titles, topics, and more</Text>
+                </View>;
 
-            if (section.results && isSearchLoading) {
-              return <View className='px-4 mb-4 flex-1 mt-10'>
-                <View className='flex-row items-center justify-center mb-2'>
-                  <ActivityIndicator size="small" color="#000000" />
+                return null;
+              }
+
+              if (section.results && isSearchLoading) {
+                return <View className='px-4 mb-4 flex-1 mt-10'>
+                  <View className='flex-row items-center justify-center mb-2'>
+                    <ActivityIndicator size="small" color="#000000" />
+                  </View>
+                  <Text className='text-gray-800 font-semibold text-xl text-center'>Searching...</Text>
+                  <Text className='text-gray-800 text-base text-center'>Hold tight, we're searching for lectures</Text>
+                </View>;
+              }
+
+              if (section.results && !isSearchLoading && section.data.length === 0) {
+                return <View className='px-4 mb-4 flex-1 mt-10 items-center'>
+                  <Text className='text-gray-800 font-semibold text-xl text-center mb-2'>Don't see the lecture you want?</Text>
+                  <Text className='text-gray-800 text-base text-center w-60'>The good news is, you can create any lecture</Text>
+                  <Button sm className='mt-4' text='Create Lecture' onPress={() => {
+                    setNewLectureVisible(true)
+                  }} />
+                </View>;
+              }
+
+              if (section.data.length === 0) {
+                return null;
+              }
+
+              return (
+                <View>
+                  <View className="px-4 mb-2">
+                    <Text className='text-gray-800 font-bold text-2xl'>{section.title}</Text>
+                  </View>
                 </View>
-                <Text className='text-gray-800 font-semibold text-xl text-center'>Searching...</Text>
-                <Text className='text-gray-800 text-base text-center'>Hold tight, we're searching for lectures</Text>
-              </View>;
+              )
             }
-
-            if (section.results && !isSearchLoading && section.data.length === 0) {
-              return <View className='px-4 mb-4 flex-1 mt-10 items-center'>
-                <Text className='text-gray-800 font-semibold text-xl text-center mb-2'>Don't see the lecture you want?</Text>
-                <Text className='text-gray-800 text-base text-center w-60'>The good news is, you can create any lecture</Text>
-                <Button sm className='mt-4' text='Create Lecture' onPress={() => {
-                  setNewLectureVisible(true)
-                }} />
-              </View>;
-            }
-
-            if (section.data.length === 0) {
-              return null;
-            }
-
-            return (
-              <View>
-                <View className="px-4 mb-2">
-                  <Text className='text-gray-800 font-bold text-2xl'>{section.title}</Text>
-                </View>
-              </View>
-            )
-          }}
+          }
           keyExtractor={keyExtractor}
           onEndReached={fetchMore}
         />
       </ScreenLayout>
-    </Animated.View>
+    </RNAnimated.View>
   )
 }
