@@ -7,10 +7,11 @@ import { cn } from '@/lib/utils';
 import { CreateLecture } from '@/components/CreateLecture';
 import { Lecture, LectureCreatingSubscription, LectureCreatingSubscriptionVariables } from '@/apollo/__generated__/graphql';
 import { useQuery, useSubscription } from '@apollo/client';
-import { GET_PENDING_LECTURE, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
+import { GET_LECTURE_DETAILS, GET_PENDING_LECTURE, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { useGetLectures } from '@/hooks/useGetLectures';
 import { PendingLecture } from '@/components/PendingLecture';
 import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
+import { useGetLecture } from '@/hooks/useGetLecture';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -34,15 +35,25 @@ const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { te
   />
 }
 
+const rootPaths = {
+  lectures: '/lectures',
+  search: '/search',
+  library: '/library'
+}
+
+const rootPathArray = Object.values(rootPaths);
+
+
+
 const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navigation: any }) => {
   const pathname = usePathname();
-  const isActive = (href: string) => pathname.startsWith(href);
+  const isActive = (rootPath: string) => pathname.startsWith(rootPath);
   return <View className='h-[90] z-[11] bg-white border-t border-gray-100'>
     <View className='flex-row justify-between'>
       <TabBarButton
         text='Home'
         icon={{ component: 'MaterialCommunityIcons', name: 'home-variant' }}
-        active={isActive('/lectures')}
+        active={isActive(rootPaths.lectures)}
         onPress={() => {
           navigation.navigate('lectures');
         }}
@@ -50,7 +61,7 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
       <TabBarButton
         text='Search'
         icon={{ component: 'Ionicons', name: 'search-outline' }}
-        active={isActive('/search')}
+        active={isActive(rootPaths.search)}
         onPress={() => {
           navigation.navigate('search');
         }}
@@ -58,7 +69,7 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
       <TabBarButton
         text='Your Library'
         icon={{ component: 'MaterialCommunityIcons', name: 'bookshelf' }}
-        active={isActive('/library')}
+        active={isActive(rootPaths.library)}
         onPress={() => {
           navigation.navigate('library');
         }}
@@ -99,7 +110,6 @@ export default function TabsLayout() {
       if (lecture.creationEvent?.name === 'DONE') {
         setNewLecture(lecture);
         setTimeout(() => {
-          updateCreatingLectureCache(lecture);
           if (lecture.metadata?.addedToLibrary) {
             updateLectureCache(lecture, true);
           }
@@ -123,7 +133,7 @@ export default function TabsLayout() {
   //           "__typename": "LectureCreationEvent",
   //         }
   //       }
-       
+
   //       setNewLecture(updatedLecture);
   //       updateCreatingLectureCache(updatedLecture);
 
@@ -137,97 +147,97 @@ export default function TabsLayout() {
   //   }
   // }, [newLecture?.creationEvent?.name])
 
-  // const { lecture } = useGetLecture('685b9e892421cf949fa14e63' || '', GET_PENDING_LECTURE);
+  // const { lecture } = useGetLecture('685aa30c1dd5623fccff2150' || '', GET_LECTURE_DETAILS);
   // useEffect(() => {
   //   const states = [
-  //     {
-  //       name: 'INIT',
-  //       sections: []
-  //     },
-  //     {
-  //       name: 'NORMALIZING_TOPIC',
-  //       sections: []
-  //     },
-  //     {
-  //       name: 'GENERATING_PLAN',
-  //       title: 'Advanced microlearning',
-  //       sections: []
-  //     },
-  //     {
-  //       name: 'GENERATING_CONTENT',
-  //       sections: [
-  //         {
-  //           title: 'Section 1 very very long title which does not stop here',
-  //           hasContent: false
-  //         }, {
-  //           title: 'Section 2',
-  //           hasContent: false
-  //         }, {
-  //           title: 'Section 3',
-  //           hasContent: false
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       name: 'GENERATING_CONTENT',
-  //       sections: [
-  //         {
-  //           title: 'Section 1',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 2',
-  //           hasContent: false
-  //         }, {
-  //           title: 'Section 3',
-  //           hasContent: false
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       name: 'GENERATING_CONTENT',
-  //       sections: [
-  //         {
-  //           title: 'Section 1',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 2',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 3',
-  //           hasContent: false
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       name: 'GENERATING_OVERVIEW',
-  //       sections: [
-  //         {
-  //           title: 'Section 1',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 2',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 3',
-  //           hasContent: false
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       name: 'GENERATING_CATEGORIES',
-  //       sections: [
-  //         {
-  //           title: 'Section 1',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 2',
-  //           hasContent: true
-  //         }, {
-  //           title: 'Section 3',
-  //           hasContent: false
-  //         }
-  //       ]
-  //     },
+  //     // {
+  //     //   name: 'INIT',
+  //     //   sections: []
+  //     // },
+  //     // {
+  //     //   name: 'NORMALIZING_TOPIC',
+  //     //   sections: []
+  //     // },
+  //     // {
+  //     //   name: 'GENERATING_PLAN',
+  //     //   title: 'Advanced microlearning',
+  //     //   sections: []
+  //     // },
+  //     // {
+  //     //   name: 'GENERATING_CONTENT',
+  //     //   sections: [
+  //     //     {
+  //     //       title: 'Section 1 very very long title which does not stop here',
+  //     //       hasContent: false
+  //     //     }, {
+  //     //       title: 'Section 2',
+  //     //       hasContent: false
+  //     //     }, {
+  //     //       title: 'Section 3',
+  //     //       hasContent: false
+  //     //     }
+  //     //   ]
+  //     // },
+  //     // {
+  //     //   name: 'GENERATING_CONTENT',
+  //     //   sections: [
+  //     //     {
+  //     //       title: 'Section 1',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 2',
+  //     //       hasContent: false
+  //     //     }, {
+  //     //       title: 'Section 3',
+  //     //       hasContent: false
+  //     //     }
+  //     //   ]
+  //     // },
+  //     // {
+  //     //   name: 'GENERATING_CONTENT',
+  //     //   sections: [
+  //     //     {
+  //     //       title: 'Section 1',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 2',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 3',
+  //     //       hasContent: false
+  //     //     }
+  //     //   ]
+  //     // },
+  //     // {
+  //     //   name: 'GENERATING_OVERVIEW',
+  //     //   sections: [
+  //     //     {
+  //     //       title: 'Section 1',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 2',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 3',
+  //     //       hasContent: false
+  //     //     }
+  //     //   ]
+  //     // },
+  //     // {
+  //     //   name: 'GENERATING_CATEGORIES',
+  //     //   sections: [
+  //     //     {
+  //     //       title: 'Section 1',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 2',
+  //     //       hasContent: true
+  //     //     }, {
+  //     //       title: 'Section 3',
+  //     //       hasContent: false
+  //     //     }
+  //     //   ]
+  //     // },
   //     {
   //       name: 'FINALIZING',
   //       sections: [
@@ -277,7 +287,7 @@ export default function TabsLayout() {
   //         creationEvent: {
   //           name: state.name,
   //         },
-  //         sections: state.sections
+  //         sections: state.sections,
   //       },
   //     );
 
@@ -289,9 +299,12 @@ export default function TabsLayout() {
   //   return () => clearInterval(interval);
   // }, [lecture]);
 
+  const pathname = usePathname();
+  const rootPath = rootPathArray.find(rootPath => pathname.startsWith(rootPath));
+
   return (
     <View className='flex-1'>
-      <PendingLecture tabHeight={90} lecture={newLecture} />
+      <PendingLecture tabHeight={90} lecture={newLecture!} parentPath={rootPath!} />
       <Tabs
         screenOptions={{
           headerShown: false,

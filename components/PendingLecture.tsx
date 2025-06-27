@@ -5,8 +5,10 @@ import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
+import { Button } from './ui/Button';
+import { cn } from '@/lib/utils';
 
-export const PendingLecture = ({ lecture, tabHeight }: { lecture?: Lecture, tabHeight: number }) => {
+export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: Lecture, tabHeight: number, parentPath: string }) => {
   const [isCreating, setIsCreating] = useState(!!lecture && lecture?.creationEvent?.name !== 'DONE');
   const progressAnim = useSharedValue(0);
   const [status, setStatus] = useState<{ event: string, lecture: Lecture }>();
@@ -56,6 +58,11 @@ export const PendingLecture = ({ lecture, tabHeight }: { lecture?: Lecture, tabH
     };
   });
 
+  const handleOpenLecture = () => {
+    setIsCreating(false);
+    router.push(`${parentPath}/${lecture?.id}`);
+  }
+
   const getStatusComponent = (state: { event: string, lecture: Lecture }) => {
     switch (state?.event) {
       case 'NORMALIZING_TOPIC': {
@@ -100,7 +107,10 @@ export const PendingLecture = ({ lecture, tabHeight }: { lecture?: Lecture, tabH
         return <Text className='text-gray-500 text-sm'>Generating audio...</Text>;
       }
       case 'DONE': {
-        return <Text className='text-gray-500 text-sm'>Finalizing...</Text>;
+        return <Pressable className='flex-row justify-between' onPress={handleOpenLecture}>
+          <Text className='text-gray-500 text-sm'>Hurray! Lecture <Text className='text-sm font-bold'>{lecture?.title}</Text> is ready</Text>
+          <Button onPress={handleOpenLecture} text="Open" sm ghost className='py-0 px-0' />
+        </Pressable>;
       }
       default: {
         return <Text className='text-gray-500 text-sm'>Creating lecture...</Text>;
@@ -114,7 +124,7 @@ export const PendingLecture = ({ lecture, tabHeight }: { lecture?: Lecture, tabH
       if (state?.event === 'DONE') {
         setTimeout(() => {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-          setIsCreating(false);
+          // setIsCreating(false);
         }, 1000);
       }
 
@@ -168,13 +178,17 @@ export const PendingLecture = ({ lecture, tabHeight }: { lecture?: Lecture, tabH
           <View className='flex-1'>
             <View className='mt-2'>
               <View className='flex-row justify-between'>
-                <View className='flex-1 mr-2'>
+                <View className={cn('flex-1', status?.event !== 'DONE' && 'mr-2')}>
                   {getStatusComponent(status!)}
                 </View>
                 <View className='flex-row justify-end items-center'>
-                  <ActivityIndicator size="small" color="#6b7280" style={{
-                    transform: [{ scale: 0.7 }]
-                  }} />
+                  {
+                    status?.event !== 'DONE' && (
+                      <ActivityIndicator size="small" color="#6b7280" style={{
+                        transform: [{ scale: 0.7 }]
+                      }} />
+                    )
+                  }
                 </View>
               </View>
               <View className="w-full h-1 bg-gray-100 rounded-full mb-2 mt-2">
