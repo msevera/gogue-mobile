@@ -78,7 +78,8 @@
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "use-debounce": "^10.0.5"
   },
   "devDependencies": {
     "@apollo/client-devtools-vscode": "^4.19.6",

@@ -4,13 +4,10 @@ import { GET_LECTURES } from '@/apollo/queries/lectures';
 import { useApolloClient, useQuery } from "@apollo/client";
 import { useAuth } from './useAuth';
 
-export const useGetLectures = ({ skip }: { skip?: boolean } = {}) => {
-  const apolloClient = useApolloClient();
-  const { authUser } = useAuth();
+export const useGetLectures = ({ skip, input}: { skip?: boolean, input?: GetLecturesQueryVariables['input'] } = {}) => {
+  const apolloClient = useApolloClient();  
   const variables = {
-    input: {
-      skipUserId: authUser?.id
-    },
+    input,
     pagination: {
       limit: 15,
       sort: [{
@@ -20,7 +17,7 @@ export const useGetLectures = ({ skip }: { skip?: boolean } = {}) => {
     }
   }
 
-  const { data: { lectures: { items = [] } = { items: [] } } = {}, loading: isLoading } =
+  const { data: { lectures: { items = [], pageInfo } = { items: [], pageInfo: { next: null } } } = {}, loading: isLoading, fetchMore } =
     useQuery<GetLecturesQuery, GetLecturesQueryVariables>(GET_LECTURES, {
       variables,
       skip,
@@ -55,9 +52,25 @@ export const useGetLectures = ({ skip }: { skip?: boolean } = {}) => {
     );
   }
 
+  const fetchMoreLectures = async () => {
+    if (!pageInfo?.next) {
+      return;
+    }
+
+    await fetchMore({
+      variables: {
+        pagination: {
+          ...variables.pagination,
+          next: pageInfo?.next
+        }
+      }
+    });
+  }
+
   return {
     items,
     isLoading,
-    updateCreatingLectureCache: handleCache
+    updateCreatingLectureCache: handleCache,
+    fetchMore: fetchMoreLectures
   };
 };

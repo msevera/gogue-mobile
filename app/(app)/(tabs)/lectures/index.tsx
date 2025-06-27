@@ -7,34 +7,17 @@ import { useGetLectures } from '@/hooks/useGetLectures';
 import { RootSettings } from '@/components/RootSettings';
 import { CreateLecture } from '@/components/CreateLecture';
 import { LectureItem } from '@/components/LectureItem';
-import Animated, {
-  LinearTransition,
-  FadeIn,
-  FadeOut
-} from 'react-native-reanimated';
 import { Header } from '@/components/layouts/Header';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
-
-
-const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
-  return (
-    <Animated.View
-      layout={LinearTransition.duration(300)}
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(300)}
-      className='mr-5'
-    >
-      <LectureItemSmall lecture={item} parentPath='/lectures' />
-    </Animated.View>
-  );
-};
+import { useAuth } from '@/hooks/useAuth';
 
 const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
   const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
-  const { items, isLoading } = useGetLectures();
+  const { authUser } = useAuth();
+  const { items, isLoading } = useGetLectures({ input: { skipUserId: authUser?.id } });
   const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
@@ -47,7 +30,9 @@ export default function Screen() {
   }, [newLectureVisible]);
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
-    return <AnimatedLectureItem item={item} />;
+    return <View className='mr-5'>
+      <LectureItemSmall lecture={item} parentPath='/lectures' />
+    </View>;
   }, []);
 
   const data = [{

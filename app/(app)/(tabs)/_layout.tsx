@@ -12,6 +12,7 @@ import { useGetLectures } from '@/hooks/useGetLectures';
 import { PendingLecture } from '@/components/PendingLecture';
 import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
 import { useGetLecture } from '@/hooks/useGetLecture';
+import { useNewLecture } from '@/hooks/useNewLecture';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -85,13 +86,12 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
 }
 
 export default function TabsLayout() {
-  const [newLecture, setNewLecture] = useState<Lecture | null>(null);
-  const [newLectureVisible, setNewLectureVisible] = useState(false);
+  const [newLecture, setNewLecture] = useState<Lecture | null>(null);  
+  const { newLectureVisible, setNewLectureVisible } = useNewLecture();
   const onNewLecturePressHandler = useCallback(() => {
     setNewLectureVisible(!newLectureVisible);
   }, [newLectureVisible]);
 
-  const { updateCreatingLectureCache } = useGetLectures({ skip: true });
   useQuery(GET_PENDING_LECTURE, {
     fetchPolicy: 'network-only',
     onError: (error) => {

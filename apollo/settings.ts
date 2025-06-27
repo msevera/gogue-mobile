@@ -61,6 +61,7 @@ export const typePolicies = {
     fields: {
       noteMessages: mergeReadObjectByPagination(['noteId']),
       lecturesAddedToLibrary: mergeReadObjectByPagination(),
+      lectures: mergeReadObjectByPagination(['skipUserId']),
     },
   },
 }

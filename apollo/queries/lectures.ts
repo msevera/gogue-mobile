@@ -7,6 +7,20 @@ export const GET_LECTURES = gql`
       items {
         ...LectureListItem       
       }
+      pageInfo {
+        next
+      }
+    }    
+  }
+  ${LECTURE_LIST_ITEM_FRAGMENT}
+`;
+
+export const GET_LECTURES_SEARCH = gql`
+  query GetLecturesSearch($input: SearchLecturesInput) {
+    lecturesSearch(input: $input) {
+      items {
+        ...LectureListItem       
+      }      
     }    
   }
   ${LECTURE_LIST_ITEM_FRAGMENT}

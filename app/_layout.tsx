@@ -15,6 +15,7 @@ import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { PortalProvider } from '@gorhom/portal';
 import { GlobalDrawerProvider } from '@/contexts/globalDrawerContext';
 import { typePolicies } from '@/apollo/settings';
+import { NewLectureProvider } from '@/contexts/newLectureContext';
 
 OneSignal.Debug.setLogLevel(LogLevel.Verbose);
 OneSignal.initialize(process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID!);
@@ -51,7 +52,9 @@ export default function RootLayout() {
             <AuthProvider>
               <PortalProvider>
                 <GlobalDrawerProvider>
-                  <Slot />
+                  <NewLectureProvider>
+                    <Slot />
+                  </NewLectureProvider>
                 </GlobalDrawerProvider>
               </PortalProvider>
             </AuthProvider>

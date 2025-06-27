@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useMutation, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, View } from 'react-native';
-import { GET_LECTURE_DETAILS, SET_PLAYBACK_STATUS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
+import { GET_LECTURE_DETAILS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
 import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
 import { PLAYBACK_STATUS_UPDATE, useAudioPlayer } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -13,7 +13,7 @@ import { useGetNotes } from '@/hooks/useGetNotes';
 import { CREATE_NOTE, DELETE_NOTE, NOTE_CREATED_SUBSCRIPTION } from '@/apollo/queries/notes';
 import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 import { useGetLecture } from '@/hooks/useGetLecture';
-import useDebounce from '@/hooks/useDebounce';
+import { useDebouncedCallback } from 'use-debounce';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 
 export default function Screen() {
@@ -47,7 +47,7 @@ export default function Screen() {
     }
   });
 
-  const debouncedOnSentenceChange = useDebounce((playbackTimmestamp: number) => {
+  const debouncedOnSentenceChange = useDebouncedCallback((playbackTimmestamp: number) => {
     setPlaybackTimestamp({
       variables: {
         id: lectureId as string,

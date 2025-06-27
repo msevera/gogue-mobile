@@ -22,7 +22,7 @@ export const useGetLecturesRecentlyPlayed = ({ skip }: { skip?: boolean } = {}) 
     });
 
 
-  const handleCache = (lecture: Lecture, isCompleted: boolean) => {
+  const handleCache = (lecture: Lecture, isCompleted?: boolean) => {
     const updateFn = (data: any) => {    
       const lectures = data?.lecturesRecentlyPlayed;
       let items: Lecture[] = [];
