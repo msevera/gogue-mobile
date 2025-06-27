@@ -36,7 +36,7 @@ export const SearchInput = ({ value, setValue, onActive }: { value: string, setV
       <Input
         placeholder='What would you like to learn?'
         containerClassName='flex-1'
-        componentClassName={cn('px-4 pr-2 rounded-4xl', value.length > 0 && 'p-3 px-4 pr-2')}
+        componentClassName={cn('px-4 pr-2 rounded-4xl', value.length > 0 && 'p-2.5 px-4 pr-2')}
         returnKeyType='search'
         value={value}
         onChangeText={setValue}
