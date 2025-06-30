@@ -2,7 +2,6 @@ import { GetLecturesQuery, GetLecturesQueryVariables, Lecture } from '@/apollo/_
 import { SortOrder } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES } from '@/apollo/queries/lectures';
 import { useApolloClient, useQuery } from "@apollo/client";
-import { useAuth } from './useAuth';
 
 export const useGetLectures = ({ skip, input}: { skip?: boolean, input?: GetLecturesQueryVariables['input'] } = {}) => {
   const apolloClient = useApolloClient();  
