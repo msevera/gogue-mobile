@@ -14,6 +14,7 @@ const { width: screenWidth } = Dimensions.get('window');
 const barWidth = 2;
 const barGap = 1;
 const markerPosition = screenWidth / 2;
+const barHeight = 18;
 
 interface PlayLineProps {
   duration: number;
@@ -157,14 +158,14 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
             style={{ left: markerPosition, transform: [{ translateX: -4 }] }}
           />
           <MaskedView
-            style={{ top: -11 }}
+            style={{ top: (barHeight - 1) * -1 }}
             maskElement={
               <Animated.View
                 className="h-full absolute top-[0]"
                 style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
               >
                 <View className='absolute top-[0] left-0'>
-                  <AudioWave barWidth={barWidth} barGap={barGap} bars={bars} />
+                  <AudioWave barHeight={barHeight} barWidth={barWidth} barGap={barGap} bars={bars} />
                 </View>
               </Animated.View>
             }
@@ -187,15 +188,7 @@ export const PlayLine = forwardRef<PlayLineRef, PlayLineProps>(({
                 }
               </Animated.View>
             </View>
-          </MaskedView>
-          {/* <Animated.View
-                className="h-full absolute top-[0]"
-                style={[{ width: LINE_WIDTH }, progressHighlightStyle]}
-              >
-                <View className='absolute top-[-11] left-0'>
-                  <AudioWave barWidth={barWidth} barGap={barGap} bars={bars} />
-                </View>
-              </Animated.View> */}
+          </MaskedView>         
         </View>
         <View className="flex-row items-center justify-center mt-2">
           <Text className="text-xs text-blue-400">

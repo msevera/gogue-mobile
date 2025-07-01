@@ -4,7 +4,7 @@ import { useMutation, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GET_LECTURE_DETAILS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
 import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
-import { PLAYBACK_STATUS_UPDATE, useAudioPlayer } from 'expo-audio';
+import { PLAYBACK_STATUS_UPDATE, useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
@@ -15,6 +15,7 @@ import { CurrentSentence, useSentence } from '@/hooks/useSentence';
 import { useGetLecture } from '@/hooks/useGetLecture';
 import { useDebouncedCallback } from 'use-debounce';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -43,7 +44,7 @@ export default function Screen() {
       updateRecentlyPlayedLectureCache(lecture as Lecture);
     },
     onError: (error) => {
-      console.log('SET_PLAYBACK_TIMESTAMP error', JSON.stringify(error, null, 2));
+      // console.log('SET_PLAYBACK_TIMESTAMP error', JSON.stringify(error, null, 2));
     }
   });
 
@@ -150,6 +151,21 @@ export default function Screen() {
   }, 1000);
 
   useEffect(() => {
+   const fetchAudioMode = async () => {
+    await setAudioModeAsync({
+      shouldPlayInBackground: true,
+      playsInSilentMode: true,
+      interruptionMode: 'duckOthers',     
+      shouldRouteThroughEarpiece: false,
+    });
+
+    console.log('audioMode set');
+   }
+
+   fetchAudioMode();
+  }, [player?.id])
+
+  useEffect(() => {
     if (!player || !savingPlaybackIsReady) return;
 
     const listener = (status: any) => {
@@ -219,7 +235,7 @@ export default function Screen() {
   }, [status.didJustFinish])
 
   const onSeek = useCallback((time: number) => {
-    console.log('onSeek', time);
+    // console.log('onSeek', time);
     setStatus((oldStatus) => {
       return {
         ...oldStatus,
@@ -231,7 +247,7 @@ export default function Screen() {
   }, []);
 
   const onSeekEnd = useCallback((time: number) => {
-    console.log('onSeekEnd', time);
+    // console.log('onSeekEnd', time);
     setStatus((oldStatus) => {
       return {
         ...oldStatus,
@@ -294,18 +310,25 @@ export default function Screen() {
     })
   }, [selectNote]);
 
+
+  const onAnnotation = useCallback(async (url: string) => {
+    await WebBrowser.openBrowserAsync(url);
+  }, []);
+
   const memoizedContent = useMemo(() => {
     if (!lecture) return null;
+    
     return (
       <View className='flex-1'>
         <View className='flex-1' onLayout={onLayoutHandler}>
           <TextHighlighter
             notes={notes as Note[]}
             text={content}
-            sections={lecture.sections.map(section => section.title)}
+            sections={lecture.sections}
             sentences={sentences}
             currentSentence={currentSentence as CurrentSentence}
             onSelect={onTextSelect}
+            onAnnotation={onAnnotation}
           />
         </View>
       </View>

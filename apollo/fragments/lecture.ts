@@ -73,6 +73,12 @@ export const LECTURE_DETAILS_FRAGMENT = gql`
     sections {
       title
       content
+      annotations {
+        title
+        url
+        startIndex
+        endIndex
+      }
     }
     aligners {
       mfa
