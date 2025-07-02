@@ -18,5 +18,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "hooks/useValidation.js", "codegen.ts"  ]
+, "hooks/useValidation.js", "codegen.ts", "index.js"  ]
 }

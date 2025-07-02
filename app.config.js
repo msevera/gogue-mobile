@@ -72,11 +72,12 @@ export default {
             ]
           }
         ],
-        "UIBackgroundModes": ["voip"],
+        "UIBackgroundModes": ["voip", "audio"],
         "bitcode": false
       },
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "package": getUniqueIdentifier('android'), "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png", "backgroundColor": "#ffffff"
       }, "googleServicesFile": process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
@@ -85,6 +86,7 @@ export default {
       "bundler": "metro", "output": "static", "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-web-browser",
       "expo-font",
       "expo-router",
       "@react-native-firebase/app",
@@ -95,11 +97,13 @@ export default {
           "iosUrlScheme": "com.googleusercontent.apps.learnbud"
         }
       ],
-      ["expo-build-properties", {
-        "ios": {
-          "useFrameworks": "static"
+      [
+        "expo-build-properties", {
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
-      }],
+      ],
       [
         "expo-speech-recognition",
         {
@@ -109,30 +113,19 @@ export default {
         }
       ],
       [
-        "expo-location",
-        {
-          "locationWhenInUsePermission": `Allow ${getAppName()} to use your location.`
-        }
-      ],
-      [
         "onesignal-expo-plugin",
         {
           mode: getOneSignalEnv(),
         }
       ],
-      "@config-plugins/react-native-webrtc",
-      "@daily-co/config-plugin-rn-daily-js",
-      // [
-      //   "expo-build-properties",
-      //   {
-      //     "android": {
-      //       "minSdkVersion": 24
-      //     },
-      //     "ios": {
-      //       "deploymentTarget": "13.4"
-      //     }
-      //   }
-      // ]
+      [
+        "@daily-co/config-plugin-rn-daily-js",
+        {
+          "enableCamera": false,
+          "enableMicrophone": true,
+          "enableScreenShare": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

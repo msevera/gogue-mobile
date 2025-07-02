@@ -14,31 +14,30 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
+  DateTime: { input: any; output: any; }
 };
 
-export type ChatMessage = {
-  __typename?: 'ChatMessage';
-  content: Scalars['String']['output'];
-  id: Scalars['String']['output'];
-  type: Scalars['String']['output'];
+export type Aligners = {
+  __typename?: 'Aligners';
+  mfa?: Maybe<Scalars['String']['output']>;
+  text?: Maybe<Scalars['String']['output']>;
 };
 
-export type CollaboratorItem = {
-  __typename?: 'CollaboratorItem';
-  user: User;
-  userId: Scalars['ID']['output'];
-  workspace: Workspace;
-  workspaceId: Scalars['ID']['output'];
+export type Audio = {
+  __typename?: 'Audio';
+  bars?: Maybe<Array<Scalars['Float']['output']>>;
+  duration?: Maybe<Scalars['Float']['output']>;
+  folder?: Maybe<Scalars['String']['output']>;
+  stream?: Maybe<Scalars['String']['output']>;
+  wav?: Maybe<Scalars['String']['output']>;
 };
 
-export type CollaboratorsInvite = {
-  __typename?: 'CollaboratorsInvite';
-  code: Scalars['String']['output'];
-};
-
-export type CreateItemInput = {
-  listId: Scalars['ID']['input'];
-  name: Scalars['String']['input'];
+export type Category = {
+  __typename?: 'Category';
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  nameEmbeddings: Array<Scalars['Float']['output']>;
 };
 
 export type CreateLectureInput = {
@@ -46,90 +45,52 @@ export type CreateLectureInput = {
   input: Scalars['String']['input'];
 };
 
-export type CreateListInput = {
-  name: Scalars['String']['input'];
+export type CreateNoteInput = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  lectureId: Scalars['ID']['input'];
+  timestamp: Scalars['Float']['input'];
 };
 
-export type FindItemsInput = {
-  completed?: InputMaybe<Scalars['Boolean']['input']>;
-  listId?: InputMaybe<Scalars['ID']['input']>;
+export type FindLecturesInput = {
+  skipUserId?: InputMaybe<Scalars['ID']['input']>;
 };
 
-export type GetListByInviteInput = {
-  code: Scalars['String']['input'];
+export type FindNoteMessagesInput = {
+  noteId: Scalars['ID']['input'];
 };
 
-export type Item = {
-  __typename?: 'Item';
-  collaborators: Array<CollaboratorItem>;
-  completed: Scalars['Boolean']['output'];
-  context?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
-  list: List;
-  listId: Scalars['ID']['output'];
-  name: Scalars['String']['output'];
-  previewMessage?: Maybe<Scalars['String']['output']>;
-  user: User;
-  userId: Scalars['ID']['output'];
-  workspace: Workspace;
-  workspaceId: Scalars['ID']['output'];
+export type FindNotesInput = {
+  lectureId: Scalars['ID']['input'];
 };
 
-export type ItemChat = {
-  __typename?: 'ItemChat';
-  actions: Array<ItemChatAction>;
-  messages: Array<ChatMessage>;
-};
-
-export type ItemChatAction = {
-  __typename?: 'ItemChatAction';
-  emoji: Scalars['String']['output'];
-  prompt: Scalars['String']['output'];
-  title: Scalars['String']['output'];
-};
-
-export type ItemChatEvent = {
-  __typename?: 'ItemChatEvent';
-  message?: Maybe<ItemChatMessage>;
-  name: Scalars['String']['output'];
-};
-
-export type ItemChatInput = {
-  date?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
-  message?: InputMaybe<Scalars['String']['input']>;
-  messageId?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type ItemChatMessage = {
-  __typename?: 'ItemChatMessage';
-  content?: Maybe<Scalars['String']['output']>;
-  id?: Maybe<Scalars['String']['output']>;
-  name?: Maybe<Scalars['String']['output']>;
-  type?: Maybe<Scalars['String']['output']>;
-};
-
-export type ItemsCursor = {
-  __typename?: 'ItemsCursor';
-  items: Array<Item>;
-  pageInfo?: Maybe<PageInfo>;
-};
-
-export type JoinListByInviteInput = {
-  code: Scalars['String']['input'];
+export type Image = {
+  __typename?: 'Image';
+  color?: Maybe<Scalars['String']['output']>;
+  folder?: Maybe<Scalars['String']['output']>;
+  height?: Maybe<Scalars['Float']['output']>;
+  prompt?: Maybe<Scalars['String']['output']>;
+  webp?: Maybe<Scalars['String']['output']>;
+  width?: Maybe<Scalars['Float']['output']>;
 };
 
 export type Lecture = {
   __typename?: 'Lecture';
-  checkpoint?: Maybe<Scalars['String']['output']>;
+  aligners?: Maybe<Aligners>;
+  audio?: Maybe<Audio>;
+  categories?: Maybe<Array<LectureCategory>>;
   creationEvent?: Maybe<LectureCreationEvent>;
   duration: Scalars['Float']['output'];
   emoji?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  image?: Maybe<Image>;
   input: Scalars['String']['output'];
+  isPublic: Scalars['Boolean']['output'];
+  metadata?: Maybe<LectureMetadata>;
+  overview?: Maybe<Scalars['String']['output']>;
   sections: Array<LectureSection>;
   title?: Maybe<Scalars['String']['output']>;
   topic?: Maybe<Scalars['String']['output']>;
+  topicEmbeddings?: Maybe<Array<Scalars['Float']['output']>>;
   user: User;
   userId: Scalars['ID']['output'];
   workspace: Workspace;
@@ -141,16 +102,55 @@ export type LectureAgent = {
   config: Scalars['String']['output'];
 };
 
+export type LectureCategory = {
+  __typename?: 'LectureCategory';
+  category: Category;
+  categoryId: Scalars['ID']['output'];
+};
+
 export type LectureCreationEvent = {
   __typename?: 'LectureCreationEvent';
   name: Scalars['String']['output'];
 };
 
+export type LectureMetadata = {
+  __typename?: 'LectureMetadata';
+  addedToLibrary: Scalars['Boolean']['output'];
+  addedToLibraryAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  lastPlaybackAt?: Maybe<Scalars['DateTime']['output']>;
+  lecture: Lecture;
+  lectureId: Scalars['ID']['output'];
+  notesCount: Scalars['Float']['output'];
+  playbackTimestamp: Scalars['Float']['output'];
+  status: LectureMetadataStatus;
+  userId: Scalars['ID']['output'];
+  workspace: Workspace;
+  workspaceId: Scalars['ID']['output'];
+};
+
+export enum LectureMetadataStatus {
+  Completed = 'COMPLETED',
+  InProgress = 'IN_PROGRESS',
+  NotStarted = 'NOT_STARTED'
+}
+
 export type LectureSection = {
   __typename?: 'LectureSection';
+  annotations?: Maybe<Array<LectureSectionAnnotation>>;
   content?: Maybe<Scalars['String']['output']>;
   hasContent: Scalars['Boolean']['output'];
+  overview?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
+};
+
+export type LectureSectionAnnotation = {
+  __typename?: 'LectureSectionAnnotation';
+  endIndex: Scalars['Float']['output'];
+  startIndex: Scalars['Float']['output'];
+  title: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+  url: Scalars['String']['output'];
 };
 
 export type LecturesCursor = {
@@ -159,59 +159,23 @@ export type LecturesCursor = {
   pageInfo?: Maybe<PageInfo>;
 };
 
-export type List = {
-  __typename?: 'List';
-  collaborators: Array<CollaboratorItem>;
-  collaboratorsInvite: CollaboratorsInvite;
-  context?: Maybe<Scalars['String']['output']>;
-  generateSuggestions: Scalars['Boolean']['output'];
-  id: Scalars['ID']['output'];
-  isCollaborator: Scalars['Boolean']['output'];
-  name: Scalars['String']['output'];
-  previewItems: Array<PreviewItem>;
-  showCompleted: Scalars['Boolean']['output'];
-  user: User;
-  userId: Scalars['ID']['output'];
-  workspace: Workspace;
-  workspaceId: Scalars['ID']['output'];
-};
-
-export type ListChat = {
-  __typename?: 'ListChat';
-  messages: Array<ChatMessage>;
-};
-
-export type ListSuggestion = {
-  __typename?: 'ListSuggestion';
-  context: Scalars['String']['output'];
-  name: Scalars['String']['output'];
-};
-
-export type ListsCursor = {
-  __typename?: 'ListsCursor';
-  items: Array<List>;
-  pageInfo?: Maybe<PageInfo>;
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
-  createItems?: Maybe<Array<Item>>;
+  addToLibrary: LectureMetadata;
   createLectureAsync: Scalars['Boolean']['output'];
-  createList: List;
-  deleteItem?: Maybe<Scalars['Boolean']['output']>;
+  createNote: Note;
   deleteLecture: Scalars['Boolean']['output'];
-  deleteNote: Scalars['Boolean']['output'];
-  generateCollaboratorsInvite: List;
-  joinList: List;
-  sendItemMessage?: Maybe<Scalars['String']['output']>;
+  deleteNote: Note;
+  generateAudio: Scalars['Boolean']['output'];
+  removeFromLibrary: LectureMetadata;
+  setPlaybackTimestamp: LectureMetadata;
   setProfile?: Maybe<User>;
-  updateItem?: Maybe<Item>;
-  updateList: List;
+  setStatus: LectureMetadata;
 };
 
 
-export type MutationCreateItemsArgs = {
-  input: Array<CreateItemInput>;
+export type MutationAddToLibraryArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -220,13 +184,8 @@ export type MutationCreateLectureAsyncArgs = {
 };
 
 
-export type MutationCreateListArgs = {
-  input: CreateListInput;
-};
-
-
-export type MutationDeleteItemArgs = {
-  id: Scalars['ID']['input'];
+export type MutationCreateNoteArgs = {
+  input: CreateNoteInput;
 };
 
 
@@ -240,20 +199,19 @@ export type MutationDeleteNoteArgs = {
 };
 
 
-export type MutationGenerateCollaboratorsInviteArgs = {
+export type MutationGenerateAudioArgs = {
   id: Scalars['ID']['input'];
 };
 
 
-export type MutationJoinListArgs = {
+export type MutationRemoveFromLibraryArgs = {
   id: Scalars['ID']['input'];
-  input: JoinListByInviteInput;
 };
 
 
-export type MutationSendItemMessageArgs = {
+export type MutationSetPlaybackTimestampArgs = {
   id: Scalars['ID']['input'];
-  input: ItemChatInput;
+  timestamp: Scalars['Float']['input'];
 };
 
 
@@ -262,23 +220,17 @@ export type MutationSetProfileArgs = {
 };
 
 
-export type MutationUpdateItemArgs = {
+export type MutationSetStatusArgs = {
   id: Scalars['ID']['input'];
-  input: UpdateItemInput;
-};
-
-
-export type MutationUpdateListArgs = {
-  id: Scalars['ID']['input'];
-  input: UpdateListInput;
+  status: LectureMetadataStatus;
 };
 
 export type Note = {
   __typename?: 'Note';
-  content: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   lecture: Lecture;
   lectureId: Scalars['ID']['output'];
+  timestamp: Scalars['Float']['output'];
   title: Scalars['String']['output'];
   user: User;
   userId: Scalars['ID']['output'];
@@ -289,6 +241,28 @@ export type Note = {
 export type NoteAgent = {
   __typename?: 'NoteAgent';
   config: Scalars['String']['output'];
+};
+
+export type NoteMessage = {
+  __typename?: 'NoteMessage';
+  content: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  lecture: Lecture;
+  lectureId: Scalars['ID']['output'];
+  note: Note;
+  noteId: Scalars['ID']['output'];
+  role: Scalars['String']['output'];
+  timestamp: Scalars['DateTime']['output'];
+  user: User;
+  userId: Scalars['ID']['output'];
+  workspace: Workspace;
+  workspaceId: Scalars['ID']['output'];
+};
+
+export type NoteMessagesCursor = {
+  __typename?: 'NoteMessagesCursor';
+  items: Array<NoteMessage>;
+  pageInfo?: Maybe<PageInfo>;
 };
 
 export type NotesCursor = {
@@ -312,46 +286,21 @@ export type PaginationInput = {
   sort?: InputMaybe<Array<SortInput>>;
 };
 
-export type PreviewItem = {
-  __typename?: 'PreviewItem';
-  item: Item;
-  itemId: Scalars['ID']['output'];
-};
-
 export type Query = {
   __typename?: 'Query';
-  item?: Maybe<Item>;
-  itemChat: ItemChat;
-  items: ItemsCursor;
   lecture?: Maybe<Lecture>;
   lectureAgent: LectureAgent;
   lectures: LecturesCursor;
-  list?: Maybe<List>;
-  listByInvite?: Maybe<List>;
-  listChat: ListChat;
-  listSuggestions: Array<ListSuggestion>;
-  lists: ListsCursor;
+  lecturesAddedToLibrary: LecturesCursor;
+  lecturesRecentlyPlayed: LecturesCursor;
+  lecturesSearch: LecturesCursor;
   note?: Maybe<Note>;
   noteAgent: NoteAgent;
+  noteMessages: NoteMessagesCursor;
   notes: NotesCursor;
+  pendingLecture?: Maybe<Lecture>;
   signIn?: Maybe<User>;
   user?: Maybe<User>;
-};
-
-
-export type QueryItemArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryItemChatArgs = {
-  itemId: Scalars['ID']['input'];
-};
-
-
-export type QueryItemsArgs = {
-  input?: InputMaybe<FindItemsInput>;
-  pagination?: InputMaybe<PaginationInput>;
 };
 
 
@@ -366,32 +315,23 @@ export type QueryLectureAgentArgs = {
 
 
 export type QueryLecturesArgs = {
+  input?: InputMaybe<FindLecturesInput>;
   pagination?: InputMaybe<PaginationInput>;
 };
 
 
-export type QueryListArgs = {
-  id: Scalars['ID']['input'];
+export type QueryLecturesAddedToLibraryArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
-export type QueryListByInviteArgs = {
-  id: Scalars['ID']['input'];
-  input: GetListByInviteInput;
+export type QueryLecturesRecentlyPlayedArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
-export type QueryListChatArgs = {
-  listId: Scalars['ID']['input'];
-};
-
-
-export type QueryListSuggestionsArgs = {
-  listId: Scalars['ID']['input'];
-};
-
-
-export type QueryListsArgs = {
+export type QueryLecturesSearchArgs = {
+  input?: InputMaybe<SearchLecturesInput>;
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -406,7 +346,14 @@ export type QueryNoteAgentArgs = {
 };
 
 
+export type QueryNoteMessagesArgs = {
+  input: FindNoteMessagesInput;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
 export type QueryNotesArgs = {
+  input: FindNotesInput;
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -424,6 +371,10 @@ export enum Role {
   Admin = 'ADMIN',
   Consumer = 'CONSUMER'
 }
+
+export type SearchLecturesInput = {
+  query?: InputMaybe<Scalars['String']['input']>;
+};
 
 export type SetProfileInput = {
   firstName: Scalars['String']['input'];
@@ -446,32 +397,13 @@ export enum SortOrder {
 
 export type Subscription = {
   __typename?: 'Subscription';
-  itemChatMessageUpdated: ItemChatEvent;
-  itemUpdated: Item;
-  itemsAdded: Array<Item>;
   lectureCreating: Lecture;
-  listUpdated: List;
   noteCreated: Note;
 };
 
 
-export type SubscriptionItemChatMessageUpdatedArgs = {
-  itemId: Scalars['ID']['input'];
-};
-
-
-export type SubscriptionItemsAddedArgs = {
-  listId: Scalars['ID']['input'];
-};
-
-export type UpdateItemInput = {
-  completed?: InputMaybe<Scalars['Boolean']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type UpdateListInput = {
-  name?: InputMaybe<Scalars['String']['input']>;
-  showCompleted?: InputMaybe<Scalars['Boolean']['input']>;
+export type SubscriptionNoteCreatedArgs = {
+  lectureId: Scalars['ID']['input'];
 };
 
 export type User = {
@@ -500,52 +432,106 @@ export type WorkspaceItem = {
   workspaceId: Scalars['ID']['output'];
 };
 
-export type LectureShortFragment = { __typename?: 'Lecture', id: string, topic?: string | null, title?: string | null, userId: string, emoji?: string | null, checkpoint?: string | null, creationEvent?: { __typename?: 'LectureCreationEvent', name: string } | null, sections: Array<{ __typename?: 'LectureSection', title: string, hasContent: boolean }> } & { ' $fragmentName'?: 'LectureShortFragment' };
+export type LectureMetadataFragment = { __typename?: 'LectureMetadata', id: string, notesCount: number, playbackTimestamp: number, status: LectureMetadataStatus, addedToLibrary: boolean, addedToLibraryAt?: any | null } & { ' $fragmentName'?: 'LectureMetadataFragment' };
 
-export type LectureFullFragment = (
-  { __typename?: 'Lecture', sections: Array<{ __typename?: 'LectureSection', title: string, content?: string | null }> }
-  & { ' $fragmentRefs'?: { 'LectureShortFragment': LectureShortFragment } }
-) & { ' $fragmentName'?: 'LectureFullFragment' };
+export type LectureListItemFragment = { __typename?: 'Lecture', id: string, topic?: string | null, title?: string | null, userId: string, emoji?: string | null, creationEvent?: { __typename?: 'LectureCreationEvent', name: string } | null, sections: Array<{ __typename?: 'LectureSection', title: string, hasContent: boolean }>, audio?: { __typename?: 'Audio', stream?: string | null, wav?: string | null, duration?: number | null, bars?: Array<number> | null } | null, metadata?: (
+    { __typename?: 'LectureMetadata' }
+    & { ' $fragmentRefs'?: { 'LectureMetadataFragment': LectureMetadataFragment } }
+  ) | null, image?: { __typename?: 'Image', webp?: string | null, color?: string | null } | null } & { ' $fragmentName'?: 'LectureListItemFragment' };
 
-export type NoteFragment = { __typename?: 'Note', id: string, title: string, content: string, lecture: { __typename?: 'Lecture', id: string, title?: string | null, emoji?: string | null } } & { ' $fragmentName'?: 'NoteFragment' };
+export type LecturePreviewFragment = (
+  { __typename?: 'Lecture', overview?: string | null, sections: Array<{ __typename?: 'LectureSection', title: string, overview?: string | null, annotations?: Array<{ __typename?: 'LectureSectionAnnotation', title: string, url: string }> | null }>, categories?: Array<{ __typename?: 'LectureCategory', category: { __typename?: 'Category', id: string, name: string } }> | null }
+  & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
+) & { ' $fragmentName'?: 'LecturePreviewFragment' };
+
+export type LectureDetailsFragment = (
+  { __typename?: 'Lecture', sections: Array<{ __typename?: 'LectureSection', title: string, content?: string | null }>, aligners?: { __typename?: 'Aligners', mfa?: string | null } | null, audio?: { __typename?: 'Audio', stream?: string | null, wav?: string | null, duration?: number | null, bars?: Array<number> | null } | null }
+  & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
+) & { ' $fragmentName'?: 'LectureDetailsFragment' };
+
+export type NoteFragment = { __typename?: 'Note', id: string, title: string, timestamp: number } & { ' $fragmentName'?: 'NoteFragment' };
+
+export type NoteMessageFragment = { __typename?: 'NoteMessage', id: string, role: string, content: string, timestamp: any } & { ' $fragmentName'?: 'NoteMessageFragment' };
 
 export type AuthUserFragment = { __typename?: 'User', id: string, firstName: string, lastName: string, email: string, pfp?: string | null, phone?: string | null, workspaces: Array<{ __typename?: 'WorkspaceItem', workspaceId: string }> } & { ' $fragmentName'?: 'AuthUserFragment' };
 
 export type UserFragment = { __typename?: 'User', id: string, firstName: string, lastName: string, pfp?: string | null } & { ' $fragmentName'?: 'UserFragment' };
 
 export type GetLecturesQueryVariables = Exact<{
+  input?: InputMaybe<FindLecturesInput>;
   pagination?: InputMaybe<PaginationInput>;
 }>;
 
 
 export type GetLecturesQuery = { __typename?: 'Query', lectures: { __typename?: 'LecturesCursor', items: Array<(
       { __typename?: 'Lecture' }
-      & { ' $fragmentRefs'?: { 'LectureShortFragment': LectureShortFragment } }
+      & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
+    )>, pageInfo?: { __typename?: 'PageInfo', next?: number | null } | null } };
+
+export type GetLecturesSearchQueryVariables = Exact<{
+  input?: InputMaybe<SearchLecturesInput>;
+}>;
+
+
+export type GetLecturesSearchQuery = { __typename?: 'Query', lecturesSearch: { __typename?: 'LecturesCursor', items: Array<(
+      { __typename?: 'Lecture' }
+      & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
     )> } };
 
-export type GetLectureQueryVariables = Exact<{
+export type GetLecturesAddedToLibraryQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type GetLecturesAddedToLibraryQuery = { __typename?: 'Query', lecturesAddedToLibrary: { __typename?: 'LecturesCursor', items: Array<(
+      { __typename?: 'Lecture' }
+      & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
+    )>, pageInfo?: { __typename?: 'PageInfo', next?: number | null } | null } };
+
+export type GetLecturesRecentlyPlayedQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type GetLecturesRecentlyPlayedQuery = { __typename?: 'Query', lecturesRecentlyPlayed: { __typename?: 'LecturesCursor', items: Array<(
+      { __typename?: 'Lecture' }
+      & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
+    )> } };
+
+export type GetLectureDetailsQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetLectureQuery = { __typename?: 'Query', lecture?: (
+export type GetLectureDetailsQuery = { __typename?: 'Query', lecture?: (
     { __typename?: 'Lecture' }
-    & { ' $fragmentRefs'?: { 'LectureFullFragment': LectureFullFragment } }
+    & { ' $fragmentRefs'?: { 'LectureDetailsFragment': LectureDetailsFragment } }
   ) | null };
 
-export type GetLectureAgentQueryVariables = Exact<{
+export type GetLecturePreviewQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetLectureAgentQuery = { __typename?: 'Query', lectureAgent: { __typename?: 'LectureAgent', config: string } };
+export type GetLecturePreviewQuery = { __typename?: 'Query', lecture?: (
+    { __typename?: 'Lecture' }
+    & { ' $fragmentRefs'?: { 'LecturePreviewFragment': LecturePreviewFragment } }
+  ) | null };
+
+export type GetPendingLectureQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPendingLectureQuery = { __typename?: 'Query', pendingLecture?: (
+    { __typename?: 'Lecture' }
+    & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
+  ) | null };
 
 export type LectureCreatingSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LectureCreatingSubscription = { __typename?: 'Subscription', lectureCreating: (
     { __typename?: 'Lecture' }
-    & { ' $fragmentRefs'?: { 'LectureFullFragment': LectureFullFragment } }
+    & { ' $fragmentRefs'?: { 'LectureListItemFragment': LectureListItemFragment } }
   ) };
 
 export type CreateLectureAsyncMutationVariables = Exact<{
@@ -555,7 +541,58 @@ export type CreateLectureAsyncMutationVariables = Exact<{
 
 export type CreateLectureAsyncMutation = { __typename?: 'Mutation', createLectureAsync: boolean };
 
+export type SetPlaybackTimestampMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  timestamp: Scalars['Float']['input'];
+}>;
+
+
+export type SetPlaybackTimestampMutation = { __typename?: 'Mutation', setPlaybackTimestamp: (
+    { __typename?: 'LectureMetadata' }
+    & { ' $fragmentRefs'?: { 'LectureMetadataFragment': LectureMetadataFragment } }
+  ) };
+
+export type SetStatusMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  status: LectureMetadataStatus;
+}>;
+
+
+export type SetStatusMutation = { __typename?: 'Mutation', setStatus: { __typename?: 'LectureMetadata', id: string, status: LectureMetadataStatus } };
+
+export type AddToLibraryMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type AddToLibraryMutation = { __typename?: 'Mutation', addToLibrary: (
+    { __typename?: 'LectureMetadata', lecture: { __typename?: 'Lecture', id: string, metadata?: { __typename?: 'LectureMetadata', id: string } | null } }
+    & { ' $fragmentRefs'?: { 'LectureMetadataFragment': LectureMetadataFragment } }
+  ) };
+
+export type RemoveFromLibraryMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveFromLibraryMutation = { __typename?: 'Mutation', removeFromLibrary: (
+    { __typename?: 'LectureMetadata', lecture: { __typename?: 'Lecture', id: string, metadata?: { __typename?: 'LectureMetadata', id: string } | null } }
+    & { ' $fragmentRefs'?: { 'LectureMetadataFragment': LectureMetadataFragment } }
+  ) };
+
+export type GetNoteMessagesQueryVariables = Exact<{
+  noteId: Scalars['ID']['input'];
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type GetNoteMessagesQuery = { __typename?: 'Query', noteMessages: { __typename?: 'NoteMessagesCursor', items: Array<(
+      { __typename?: 'NoteMessage' }
+      & { ' $fragmentRefs'?: { 'NoteMessageFragment': NoteMessageFragment } }
+    )>, pageInfo?: { __typename?: 'PageInfo', next?: number | null } | null } };
+
 export type GetNotesQueryVariables = Exact<{
+  lectureId: Scalars['ID']['input'];
   pagination?: InputMaybe<PaginationInput>;
 }>;
 
@@ -582,13 +619,33 @@ export type GetNoteAgentQueryVariables = Exact<{
 
 export type GetNoteAgentQuery = { __typename?: 'Query', noteAgent: { __typename?: 'NoteAgent', config: string } };
 
-export type NoteCreatedSubscriptionVariables = Exact<{ [key: string]: never; }>;
+export type CreateNoteMutationVariables = Exact<{
+  lectureId: Scalars['ID']['input'];
+  timestamp: Scalars['Float']['input'];
+}>;
+
+
+export type CreateNoteMutation = { __typename?: 'Mutation', createNote: (
+    { __typename?: 'Note', lecture: { __typename?: 'Lecture', id: string, metadata?: { __typename?: 'LectureMetadata', id: string, notesCount: number } | null } }
+    & { ' $fragmentRefs'?: { 'NoteFragment': NoteFragment } }
+  ) };
+
+export type NoteCreatedSubscriptionVariables = Exact<{
+  lectureId: Scalars['ID']['input'];
+}>;
 
 
 export type NoteCreatedSubscription = { __typename?: 'Subscription', noteCreated: (
-    { __typename?: 'Note' }
+    { __typename?: 'Note', lecture: { __typename?: 'Lecture', id: string, metadata?: { __typename?: 'LectureMetadata', id: string, notesCount: number } | null } }
     & { ' $fragmentRefs'?: { 'NoteFragment': NoteFragment } }
   ) };
+
+export type DeleteNoteMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteNoteMutation = { __typename?: 'Mutation', deleteNote: { __typename?: 'Note', id: string, lecture: { __typename?: 'Lecture', id: string, metadata?: { __typename?: 'LectureMetadata', id: string, notesCount: number } | null } } };
 
 export type SignInQueryVariables = Exact<{
   idToken: Scalars['String']['input'];
@@ -621,20 +678,34 @@ export type GetUserQuery = { __typename?: 'Query', user?: (
     & { ' $fragmentRefs'?: { 'UserFragment': UserFragment } }
   ) | null };
 
-export const LectureShortFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureShort"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"checkpoint"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}}]}}]} as unknown as DocumentNode<LectureShortFragment, unknown>;
-export const LectureFullFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureFull"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureShort"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureShort"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"checkpoint"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}}]}}]} as unknown as DocumentNode<LectureFullFragment, unknown>;
-export const NoteFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}}]}}]}}]} as unknown as DocumentNode<NoteFragment, unknown>;
+export const LectureMetadataFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}}]} as unknown as DocumentNode<LectureMetadataFragment, unknown>;
+export const LectureListItemFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}}]} as unknown as DocumentNode<LectureListItemFragment, unknown>;
+export const LecturePreviewFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LecturePreview"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}},{"kind":"Field","name":{"kind":"Name","value":"overview"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"overview"}},{"kind":"Field","name":{"kind":"Name","value":"annotations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"categories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"category"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<LecturePreviewFragment, unknown>;
+export const LectureDetailsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureDetails"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}},{"kind":"Field","name":{"kind":"Name","value":"aligners"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"mfa"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<LectureDetailsFragment, unknown>;
+export const NoteFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<NoteFragment, unknown>;
+export const NoteMessageFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NoteMessage"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NoteMessage"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<NoteMessageFragment, unknown>;
 export const AuthUserFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AuthUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"pfp"}},{"kind":"Field","name":{"kind":"Name","value":"phone"}},{"kind":"Field","name":{"kind":"Name","value":"workspaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspaceId"}}]}}]}}]} as unknown as DocumentNode<AuthUserFragment, unknown>;
 export const UserFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"User"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"pfp"}}]}}]} as unknown as DocumentNode<UserFragment, unknown>;
-export const GetLecturesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLectures"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lectures"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureShort"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureShort"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"checkpoint"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}}]}}]} as unknown as DocumentNode<GetLecturesQuery, GetLecturesQueryVariables>;
-export const GetLectureDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLecture"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lecture"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureFull"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureShort"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"checkpoint"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureFull"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureShort"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}}]}}]} as unknown as DocumentNode<GetLectureQuery, GetLectureQueryVariables>;
-export const GetLectureAgentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLectureAgent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lectureAgent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"config"}}]}}]}}]} as unknown as DocumentNode<GetLectureAgentQuery, GetLectureAgentQueryVariables>;
-export const LectureCreatingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"LectureCreating"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lectureCreating"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureFull"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureShort"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"checkpoint"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureFull"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureShort"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}}]}}]} as unknown as DocumentNode<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>;
+export const GetLecturesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLectures"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"FindLecturesInput"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lectures"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}},{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"next"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<GetLecturesQuery, GetLecturesQueryVariables>;
+export const GetLecturesSearchDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLecturesSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"SearchLecturesInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lecturesSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<GetLecturesSearchQuery, GetLecturesSearchQueryVariables>;
+export const GetLecturesAddedToLibraryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLecturesAddedToLibrary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lecturesAddedToLibrary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"next"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<GetLecturesAddedToLibraryQuery, GetLecturesAddedToLibraryQueryVariables>;
+export const GetLecturesRecentlyPlayedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLecturesRecentlyPlayed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lecturesRecentlyPlayed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<GetLecturesRecentlyPlayedQuery, GetLecturesRecentlyPlayedQueryVariables>;
+export const GetLectureDetailsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLectureDetails"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lecture"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureDetails"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureDetails"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}},{"kind":"Field","name":{"kind":"Name","value":"aligners"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"mfa"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}}]}}]} as unknown as DocumentNode<GetLectureDetailsQuery, GetLectureDetailsQueryVariables>;
+export const GetLecturePreviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLecturePreview"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lecture"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LecturePreview"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LecturePreview"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}},{"kind":"Field","name":{"kind":"Name","value":"overview"}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"overview"}},{"kind":"Field","name":{"kind":"Name","value":"annotations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"categories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"category"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]} as unknown as DocumentNode<GetLecturePreviewQuery, GetLecturePreviewQueryVariables>;
+export const GetPendingLectureDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPendingLecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pendingLecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<GetPendingLectureQuery, GetPendingLectureQueryVariables>;
+export const LectureCreatingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"LectureCreating"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lectureCreating"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureListItem"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureListItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Lecture"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"topic"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}},{"kind":"Field","name":{"kind":"Name","value":"creationEvent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"hasContent"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stream"}},{"kind":"Field","name":{"kind":"Name","value":"wav"}},{"kind":"Field","name":{"kind":"Name","value":"duration"}},{"kind":"Field","name":{"kind":"Name","value":"bars"}}]}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"webp"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"duration"}}]}}]}}]} as unknown as DocumentNode<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>;
 export const CreateLectureAsyncDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateLectureAsync"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateLectureInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createLectureAsync"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<CreateLectureAsyncMutation, CreateLectureAsyncMutationVariables>;
-export const GetNotesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetNotes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"notes"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}}]}}]}}]} as unknown as DocumentNode<GetNotesQuery, GetNotesQueryVariables>;
-export const GetNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"note"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}}]}}]}}]} as unknown as DocumentNode<GetNoteQuery, GetNoteQueryVariables>;
+export const SetPlaybackTimestampDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetPlaybackTimestamp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timestamp"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setPlaybackTimestamp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"timestamp"},"value":{"kind":"Variable","name":{"kind":"Name","value":"timestamp"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}}]} as unknown as DocumentNode<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>;
+export const SetStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadataStatus"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<SetStatusMutation, SetStatusMutationVariables>;
+export const AddToLibraryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddToLibrary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addToLibrary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}}]} as unknown as DocumentNode<AddToLibraryMutation, AddToLibraryMutationVariables>;
+export const RemoveFromLibraryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RemoveFromLibrary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeFromLibrary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LectureMetadata"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LectureMetadata"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"LectureMetadata"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}},{"kind":"Field","name":{"kind":"Name","value":"playbackTimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibrary"}},{"kind":"Field","name":{"kind":"Name","value":"addedToLibraryAt"}}]}}]} as unknown as DocumentNode<RemoveFromLibraryMutation, RemoveFromLibraryMutationVariables>;
+export const GetNoteMessagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetNoteMessages"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"noteId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteMessages"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"noteId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"noteId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NoteMessage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"next"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NoteMessage"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NoteMessage"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<GetNoteMessagesQuery, GetNoteMessagesQueryVariables>;
+export const GetNotesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetNotes"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lectureId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"notes"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"lectureId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lectureId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<GetNotesQuery, GetNotesQueryVariables>;
+export const GetNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"note"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<GetNoteQuery, GetNoteQueryVariables>;
 export const GetNoteAgentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetNoteAgent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteAgent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"config"}}]}}]}}]} as unknown as DocumentNode<GetNoteAgentQuery, GetNoteAgentQueryVariables>;
-export const NoteCreatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"NoteCreated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteCreated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}}]}}]}}]} as unknown as DocumentNode<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>;
+export const CreateNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lectureId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timestamp"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"lectureId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lectureId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"timestamp"},"value":{"kind":"Variable","name":{"kind":"Name","value":"timestamp"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<CreateNoteMutation, CreateNoteMutationVariables>;
+export const NoteCreatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"NoteCreated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lectureId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteCreated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"lectureId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lectureId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Note"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Note"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Note"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}}]}}]} as unknown as DocumentNode<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>;
+export const DeleteNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lecture"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"notesCount"}}]}}]}}]}}]}}]} as unknown as DocumentNode<DeleteNoteMutation, DeleteNoteMutationVariables>;
 export const SignInDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SignIn"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"idToken"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signIn"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"idToken"},"value":{"kind":"Variable","name":{"kind":"Name","value":"idToken"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AuthUser"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AuthUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"pfp"}},{"kind":"Field","name":{"kind":"Name","value":"phone"}},{"kind":"Field","name":{"kind":"Name","value":"workspaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspaceId"}}]}}]}}]} as unknown as DocumentNode<SignInQuery, SignInQueryVariables>;
 export const SetProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"firstName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lastName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setProfile"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"firstName"},"value":{"kind":"Variable","name":{"kind":"Name","value":"firstName"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"lastName"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lastName"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AuthUser"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AuthUser"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"pfp"}},{"kind":"Field","name":{"kind":"Name","value":"phone"}},{"kind":"Field","name":{"kind":"Name","value":"workspaces"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspaceId"}}]}}]}}]} as unknown as DocumentNode<SetProfileMutation, SetProfileMutationVariables>;
 export const GetUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUser"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"User"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"User"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"pfp"}}]}}]} as unknown as DocumentNode<GetUserQuery, GetUserQueryVariables>;

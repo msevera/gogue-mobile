@@ -17,6 +17,7 @@ const slideDuration = 300;
 type BottomSheetProps = {
   customBackground?: boolean,
   title?: string,
+  headerLeft?: React.ReactNode,
   backdropClassName?: string,
   headerBorder?: boolean,
   headerContainerClassName?: string,
@@ -40,6 +41,7 @@ type BottomSheetProps = {
 export const BottomSheet = ({
   customBackground,
   title,
+  headerLeft,
   headerBorder,
   gesturesEnabled,
   onIndexChanged,
@@ -271,7 +273,7 @@ export const BottomSheet = ({
         style={[
           backdropStyles
         ]}
-        className={cn('absolute top-0 left-0 right-0 bottom-0 bg-gray-950/65', backdropClassName)}
+        className={cn('absolute top-[-1] left-0 right-0 bottom-0 bg-gray-950/65', backdropClassName)}
       >
         <Pressable className="absolute top-0 left-0 right-0 bottom-0" onPress={onBackdropPressHandler} />
       </Animated.View>
@@ -300,7 +302,7 @@ export const BottomSheet = ({
                         headerContentClassName
                       )}
                     >
-                      <View className='h-6 w-6' />
+                      {headerLeft || <View className='h-6 w-6' />}
                       <Text className="text-lg font-medium">
                         {title}
                       </Text>

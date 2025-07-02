@@ -3,34 +3,34 @@ import { SortOrder } from '@/apollo/__generated__/graphql';
 import { GET_NOTES } from '@/apollo/queries/notes';
 import { useApolloClient, useQuery } from "@apollo/client";
 
-export const useGetNotes = ({ skip }: { skip?: boolean } = {}) => {
+export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
   const apolloClient = useApolloClient();
+
+  const pagination = {
+    limit: 30,
+    sort: [{
+      by: 'timestamp',
+      order: SortOrder.Asc
+    }]
+  }
 
   const { data: { notes: { items = [] } = { items: [] } } = {}, loading: isLoading } = useQuery<GetNotesQuery, GetNotesQueryVariables>(GET_NOTES, {
     variables: {
-      pagination: {
-        sort: [{
-          by: 'createdAt',
-          order: SortOrder.Desc
-        }]
-      }
+      lectureId,
+      pagination
     },
-    skip,
+    skip: !lectureId,
     onError: (error) => {
       console.error('Error fetching notes', error);
     }
   });
 
-  const handleCache = (newNote: Note) => {
+  const handleAddCache = (newNote: Note) => {
     const buildQueryParams = (params?: any) => {
       return {
         ...params,
-        pagination: {
-          sort: [{
-            by: 'createdAt',
-            order: SortOrder.Desc
-          }]
-        }
+        lectureId,
+        pagination
       }
     }
 
@@ -53,9 +53,38 @@ export const useGetNotes = ({ skip }: { skip?: boolean } = {}) => {
     );
   }
 
+  const handleDeleteCache = (id: string) => {
+    const buildQueryParams = (params?: any) => {
+      return {
+        ...params,
+        lectureId,
+        pagination
+      }
+    }
+
+    const updateFn = (data: any) => {
+      return {
+        ...data,
+        notes: {
+          ...data?.notes,
+          items: data?.notes?.items?.filter((item: Note) => item.id !== id)
+        }
+      }
+    }
+
+    apolloClient.cache.updateQuery<GetNotesQuery, GetNotesQueryVariables>(
+      {
+        query: GET_NOTES,
+        variables: buildQueryParams()
+      },
+      (data) => updateFn(data)
+    );
+  }
+
   return {
     items,
     isLoading,
-    updateCreateNoteCache: handleCache
+    updateCreateNoteCache: handleAddCache,
+    updateDeleteNoteCache: handleDeleteCache
   };
 };

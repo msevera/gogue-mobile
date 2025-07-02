@@ -5,6 +5,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { getAuth } from '@react-native-firebase/auth';
+import { mergeReadObjectByPagination } from '@/apollo/cache';
 
 export const authLink = setContext(async (_, { headers }) => {
   return {
@@ -53,5 +54,15 @@ export const getAuthHeaders = async () => {
     authorization: token ? `Bearer ${token}` : "",
     'x-tenant-id': workspaceId || ""
   }
+}
+
+export const typePolicies = {
+  Query: {
+    fields: {
+      noteMessages: mergeReadObjectByPagination(['noteId']),
+      lecturesAddedToLibrary: mergeReadObjectByPagination(),
+      lectures: mergeReadObjectByPagination(['skipUserId']),
+    },
+  },
 }
 

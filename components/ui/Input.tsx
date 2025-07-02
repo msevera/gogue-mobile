@@ -17,7 +17,7 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, TextInputProp
       value,
       ref,
       className: cn(
-        'text-base font-medium font-gray-950 placeholder:text-gray-400 w-full top-[-2] p-0 m-0',
+        'text-base font-gray-950 placeholder:text-gray-400 w-full leading-[1.2]',
         inputClassName
       ),
       editable: props.editable,
@@ -80,7 +80,8 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, TextInputProp
             <Button
               secondary
               className={cn(
-                `absolute right-[12] bottom-[12]  ${recordingActive ? 'bg-red-100' : 'bg-gray-100'}`,
+                `absolute right-[12] bottom-[12]`,
+                recordingActive ? 'bg-red-100' : 'bg-gray-100',
               )}
               sm
               icon={{ component: 'Ionicons', name: 'mic', color: recordingActive ? '#ef4444' : '#374151' }}
@@ -121,6 +122,6 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, TextInputProp
   }
 );
 
-Input.displayName = 'InputV2';
+Input.displayName = 'Input';
 
 export { Input };

@@ -11,11 +11,18 @@ import {
 } from 'react-native-reanimated';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { splitLink } from '@/apollo/settings';
-import { LocationProvider } from '@/contexts/locationContext';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { PortalProvider } from '@gorhom/portal';
 import { GlobalDrawerProvider } from '@/contexts/globalDrawerContext';
-import { GenerateLectureProvider } from '@/contexts/generateLectureContext';
+import { typePolicies } from '@/apollo/settings';
+import { NewLectureProvider } from '@/contexts/newLectureContext';
+import TrackPlayer from 'react-native-track-player';
+import { PlaybackService } from '@/components/player/PlaybackService';
+import { SetupService } from '@/components/player/SetupService';
+import { useEffect } from 'react';
+
+TrackPlayer.registerPlaybackService(() => PlaybackService);
+
 
 OneSignal.Debug.setLogLevel(LogLevel.Verbose);
 OneSignal.initialize(process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID!);
@@ -28,7 +35,9 @@ configureReanimatedLogger({
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache({
+    typePolicies,
+  }),
 });
 
 // connectApolloClientToVSCodeDevTools(
@@ -38,6 +47,20 @@ const client = new ApolloClient({
 // );
 
 export default function RootLayout() {
+
+  console.log('RootLayout');
+
+  useEffect(() => {
+    const fetchPlaybackState = async () => {  
+      try {       
+        await SetupService()
+      } catch (error) {
+        console.log('fetchPlaybackState error', error);
+      }
+    }
+    fetchPlaybackState();
+  }, []);
+
   return (
     <ApolloProvider client={client}>
       <GestureHandlerRootView>
@@ -48,15 +71,13 @@ export default function RootLayout() {
             messages={en}
           >
             <AuthProvider>
-              <LocationProvider>
-                <PortalProvider>
-                  <GlobalDrawerProvider>
-                    <GenerateLectureProvider>
-                      <Slot />
-                    </GenerateLectureProvider>
-                  </GlobalDrawerProvider>
-                </PortalProvider>
-              </LocationProvider>
+              <PortalProvider>
+                <GlobalDrawerProvider>
+                  <NewLectureProvider>
+                    <Slot />
+                  </NewLectureProvider>
+                </GlobalDrawerProvider>
+              </PortalProvider>
             </AuthProvider>
           </IntlProvider>
         </KeyboardProvider>

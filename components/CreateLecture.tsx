@@ -1,17 +1,14 @@
 import { TextInput, View } from 'react-native'
 import { Text } from '@/components/ui/Text';
 import { GlobalDrawer } from './globalDrawer/GlobalDrawer'
-import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/Button';
-import { useAuth } from '@/hooks/useAuth';
 import { Input } from './ui/Input';
 import { Keyboard } from 'react-native';
 import Slider from './Slider';
 import { limitCharsTo, required } from '@/lib/validationRules';
 import { useIntl } from 'react-intl';
 import useValidation from '@/hooks/useValidation';
-import { router } from 'expo-router';
-import { useGenerateLecture } from '@/hooks/useGenerateLecture';
 import { useRecording } from '@/hooks/useRecording';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
 
@@ -72,7 +69,7 @@ export const CreateLecture = ({ visible, onClose }: { visible: boolean, onClose:
             multiline
             staticHeight
             placeholder='Describe your goal and topic'
-            inputClassName="h-[150]"
+            inputClassName="h-[100]"
             containerClassName='mb-8'
             onChangeText={(text) => {
               remove('description');

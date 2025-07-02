@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuth } from '@react-native-firebase/auth';
 const client = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_ENDPOINT,
+  baseURL: process.env.EXPO_PUBLIC_WEBRTC_ENDPOINT,
   timeout: 5000,
   headers: {
     Accept: 'application/json',

@@ -46,7 +46,7 @@ export const Button = React.forwardRef<View, ButtonProps>(({
   ...props
 }, ref) => {
   const onPressHandler = useCallback((event: GestureResponderEvent) => {
-    if (loading) return;
+    if (loading || disabled) return;
     onPress?.(event);
   }, [loading, onPress]);
 
@@ -105,28 +105,31 @@ export const Button = React.forwardRef<View, ButtonProps>(({
                   size={icon.size ?? 20}
                   color={getIconColor()}
                 />
-                {/* <View className='absolute top-0 left-0 right-0 bottom-0 bg-red-500' /> */}
               </View>
             )
           }
-          <Text
-            className={cn(
-              'text-center font-medium',
-              sm ? ['text-sm'] : ['text-base'],
-              ghost ? [
-                secondary ? ['text-blue-500', disabled && 'text-blue-200'] : ['text-blue-500', disabled && 'text-blue-200']
-              ] : secondary ? [
-                'text-blue-500',
-                disabled && 'text-blue-200'
-              ] : [
-                'text-white',
-                disabled && 'text-white'
-              ],
-              textClassName,
-            )}
-          >
-            {text}
-          </Text>
+          {
+            text && (
+              <Text
+                className={cn(
+                  'text-center font-medium',
+                  sm ? ['text-sm'] : ['text-base'],
+                  ghost ? [
+                    secondary ? ['text-blue-500', disabled && 'text-blue-200'] : ['text-blue-500', disabled && 'text-blue-200']
+                  ] : secondary ? [
+                    'text-blue-500',
+                    disabled && 'text-blue-200'
+                  ] : [
+                    'text-white',
+                    disabled && 'text-white'
+                  ],
+                  textClassName,
+                )}
+              >
+                {text}
+              </Text>
+            )
+          }
         </>
     }
   </Pressable>
