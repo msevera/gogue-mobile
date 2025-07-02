@@ -125,12 +125,6 @@ export default {
           "enableMicrophone": true,
           "enableScreenShare": false
         }
-      ],
-      [
-        "expo-audio",
-        {
-          "microphonePermission": `Allow ${getAppName()} to access your microphone.`
-        }
       ]
     ],
     "experiments": {

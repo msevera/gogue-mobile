@@ -1,9 +1,8 @@
 import { View, Dimensions } from 'react-native'
-import { Text } from './ui/Text'
-import { AudioStatus } from 'expo-audio';
+import { Text } from './ui/Text';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withDecay, withTiming, useDerivedValue, SharedValue } from 'react-native-reanimated';
-import { useMemo, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, runOnJS, useDerivedValue } from 'react-native-reanimated';
+import { useMemo, forwardRef, useImperativeHandle, useState } from 'react';
 import { Note } from '@/apollo/__generated__/graphql';
 import { formatTime } from '@/lib/utils';
 import { AudioWave } from './AudioWave';

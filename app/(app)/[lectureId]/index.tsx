@@ -4,7 +4,6 @@ import { useMutation, useSubscription } from '@apollo/client';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GET_LECTURE_DETAILS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
 import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
-import { PLAYBACK_STATUS_UPDATE, useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextHighlighter } from '@/components/TextHighlighter';
 import LectureDrawer, { LectureDrawerRef } from '@/components/LectureDrawer';
@@ -16,6 +15,8 @@ import { useGetLecture } from '@/hooks/useGetLecture';
 import { useDebouncedCallback } from 'use-debounce';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 import * as WebBrowser from 'expo-web-browser';
+import TrackPlayer, { State, useProgress, useTrackPlayerEvents, Event, RepeatMode } from 'react-native-track-player';
+
 
 export default function Screen() {
   const { lectureId } = useLocalSearchParams();
@@ -25,21 +26,13 @@ export default function Screen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const lectureDrawerRef = useRef<LectureDrawerRef>(null);
   const [savingPlaybackIsReady, setSavingPlaybackIsReady] = useState(false);
-  const [firstPlaybackStatusUpdateSkipped, setFirstPlaybackStatusUpdateSkipped] = useState(false);
-
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-  const [status, setStatus] = useState<{
-    playing: boolean;
-    didJustFinish: boolean;
-    duration: number;
-    currentTime: number;
-  }>({ playing: false, didJustFinish: false, duration: 0, currentTime: 0 })
+  const [currentTime, setCurrentTime] = useState(0);
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
   const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
-
   const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_DETAILS);
   const { updateRecentlyPlayedLectureCache } = useGetLecturesRecentlyPlayed({ skip: true });
-  const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {    
+  const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {
     update: () => {
       updateRecentlyPlayedLectureCache(lecture as Lecture);
     },
@@ -61,7 +54,7 @@ export default function Screen() {
     alignments,
     notes: notes as Note[],
     content,
-    currentTime: status.currentTime,
+    currentTime,
     onSentenceChange: useCallback((sentenceIndex: number, sentenceStartTime: number) => {
       setNoteId(undefined);
       if (savingPlaybackIsReady) {
@@ -75,7 +68,7 @@ export default function Screen() {
     console.log('onNotes');
   }, []);
 
-  
+
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
     variables: {
       lectureId: lectureId as string,
@@ -86,19 +79,10 @@ export default function Screen() {
     }
   });
 
-
   useEffect(() => {
     if (lecture?.id) {
-      console.log('useEffect', lecture.metadata?.playbackTimestamp);
       lectureDrawerRef.current?.setPlayLineCurrentTime(lecture.metadata?.playbackTimestamp || 0);
-      player.seekTo(lecture.metadata?.playbackTimestamp || 0)
-      setStatus((oldStatus) => {
-        return {
-          ...oldStatus,
-          currentTime: lecture.metadata?.playbackTimestamp || 0
-        }
-      })
-
+      TrackPlayer.seekTo(lecture.metadata?.playbackTimestamp || 0)
       setSavingPlaybackIsReady(true);
     }
   }, [lecture?.id])
@@ -146,150 +130,81 @@ export default function Screen() {
     }
   }, [lecture]);
 
-  const player = useAudioPlayer({
-    uri: lecture?.audio?.stream as string
-  }, 1000);
-
   useEffect(() => {
-   const fetchAudioMode = async () => {
-    await setAudioModeAsync({
-      shouldPlayInBackground: true,
-      playsInSilentMode: true,
-      interruptionMode: 'duckOthers',     
-      shouldRouteThroughEarpiece: false,
-    });
+    const configurePlayer = async () => {
+      await TrackPlayer.add([{
+        url: lecture.audio?.stream as string,
+        title: lecture.title as string,
+        duration: lecture.audio?.duration as number,
+        artwork: lecture.image?.webp as string,
+      }])
 
-    console.log('audioMode set');
-   }
+      await TrackPlayer.setRepeatMode(RepeatMode.Off);
+    }
+    if (lecture?.audio?.stream) {
+      configurePlayer();
+    }
+  }, [lecture?.audio?.stream]);
 
-   fetchAudioMode();
-  }, [player?.id])
 
-  useEffect(() => {
-    if (!player || !savingPlaybackIsReady) return;
-
-    const listener = (status: any) => {
-      setStatus((oldStatus) => {
-        let statusChanged = false;
-        const time = Number(status.currentTime.toFixed(2));
-        console.log('BEFORE onPlaybackStatusUpdate', time, status.currentTime);
-        if (time !== oldStatus.currentTime) {
-          if (!firstPlaybackStatusUpdateSkipped) {
-            setFirstPlaybackStatusUpdateSkipped(true);
-            return oldStatus;
-          }
-          console.log('onPlaybackStatusUpdate', time, status.currentTime);
-          lectureDrawerRef.current?.setPlayLineCurrentTime(time);
-          statusChanged = true;
-        }
-
-        if (status.playing !== oldStatus.playing) {
-          statusChanged = true;
-        }
-
-        if (status.didJustFinish !== oldStatus.didJustFinish) {
-          statusChanged = true;
-        }
-
-        if (status.duration !== oldStatus.duration) {
-          statusChanged = true;
-        }
-
-        if (statusChanged) {
-          return {
-            ...oldStatus,
-            currentTime: time,
-            playing: status.playing,
-            didJustFinish: status.didJustFinish,
-            duration: status.duration
-          };
-        }
-
-        return oldStatus;
-      })
+  useTrackPlayerEvents([Event.PlaybackProgressUpdated, Event.PlaybackPlayWhenReadyChanged, Event.PlaybackQueueEnded], async (event) => {
+    if (event.type === Event.PlaybackPlayWhenReadyChanged) {
+      console.log('PlaybackPlayWhenReadyChanged', event.playWhenReady);
+      setIsPlaying(event.playWhenReady)
     }
 
-    player.addListener(PLAYBACK_STATUS_UPDATE, listener)
-
-    return () => {
-      player.removeAllListeners(PLAYBACK_STATUS_UPDATE)
+    if (event.type === Event.PlaybackProgressUpdated) {
+      const time = Number(event.position.toFixed(2));
+      console.log('PlaybackProgressUpdated', time, lecture.audio?.duration);
+      lectureDrawerRef.current?.setPlayLineCurrentTime(time)
+      setCurrentTime(time)
     }
-  }, [player?.id, savingPlaybackIsReady, firstPlaybackStatusUpdateSkipped])
 
-  useEffect(() => {
-    setIsPlaying(status.playing)
-  }, [status.playing])
-
-  useEffect(() => {
-    if (status.didJustFinish) {
-      setIsPlaying(false)
-      setLectureStatus({
+    if (event.type === Event.PlaybackQueueEnded) {
+      console.log('PlaybackQueueEnded', event.track);
+      await setLectureStatus({
         variables: {
           id: lectureId as string,
           status: 'COMPLETED' as LectureMetadataStatus
         }
       })
-
       updateRecentlyPlayedLectureCache(lecture as Lecture, true);
     }
-  }, [status.didJustFinish])
+  })
 
   const onSeek = useCallback((time: number) => {
-    // console.log('onSeek', time);
-    setStatus((oldStatus) => {
-      return {
-        ...oldStatus,
-        currentTime: time
-      }
-    })
-
-
+    setCurrentTime(time)
   }, []);
 
   const onSeekEnd = useCallback((time: number) => {
-    // console.log('onSeekEnd', time);
-    setStatus((oldStatus) => {
-      return {
-        ...oldStatus,
-        currentTime: time
-      }
-    })
-    player.seekTo(time)
+    TrackPlayer.seekTo(time)
     if (wasPlaying) {
-      player.play()
+      TrackPlayer.play()
     }
-  }, [wasPlaying, player]);
+  }, [wasPlaying]);
 
-  const onSeekStart = useCallback(() => {
-    setWasPlaying(player.playing)
-    player.pause()
-  }, [player]);
+  const onSeekStart = useCallback(async () => {
+    setWasPlaying((await TrackPlayer.getPlaybackState()).state === State.Playing)
+    TrackPlayer.pause()
+  }, []);
 
   const onTextSelect = useCallback((time: number) => {
-    console.log('onTextSelect', time);
     lectureDrawerRef.current?.setPlayLineCurrentTime(time);
-    player.seekTo(time)
-    setStatus((oldStatus) => {
-      return {
-        ...oldStatus,
-        currentTime: time
-      }
-    })
-  }, [player]);
+    TrackPlayer.seekTo(time)
+  }, []);
 
   const onLayoutHandler = useCallback((event: LayoutChangeEvent) => {
     setScrollViewHeight(event.nativeEvent.layout.height - parseInt(lectureDrawerRef.current?.getControlsDrawerClosedSnapPoint() as string))
   }, []);
 
-  const onPlayPause = useCallback(() => {
+
+  const onPlayPause = useCallback(async () => {
     if (isPlaying) {
-      setIsPlaying(false)
-      player.pause()
+      await TrackPlayer.pause()
     } else {
-      setIsPlaying(true)
-      player.play()
+      await TrackPlayer.play()
     }
-  }, [isPlaying, player]);
+  }, [isPlaying]);
 
   const onDeleteNote = useCallback(async (id: string) => {
     await deleteNote({
@@ -300,14 +215,7 @@ export default function Screen() {
   }, [deleteNote]);
 
   const onSelectNote = useCallback((note: Note) => {
-    console.log('onSelectNote', note.timestamp);
-    player.seekTo(note.timestamp)
-    setStatus((oldStatus) => {
-      return {
-        ...oldStatus,
-        currentTime: note.timestamp
-      }
-    })
+    TrackPlayer.seekTo(note.timestamp)
   }, [selectNote]);
 
 
@@ -317,7 +225,7 @@ export default function Screen() {
 
   const memoizedContent = useMemo(() => {
     if (!lecture) return null;
-    
+
     return (
       <View className='flex-1'>
         <View className='flex-1' onLayout={onLayoutHandler}>
