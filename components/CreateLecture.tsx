@@ -69,7 +69,7 @@ export const CreateLecture = ({ visible, onClose }: { visible: boolean, onClose:
             multiline
             staticHeight
             placeholder='Describe your goal and topic'
-            inputClassName="h-[150]"
+            inputClassName="h-[100]"
             containerClassName='mb-8'
             onChangeText={(text) => {
               remove('description');
