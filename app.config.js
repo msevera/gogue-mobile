@@ -66,6 +66,7 @@ export default {
         "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
         "NSPhotoLibraryUsageDescription": "This app requires access to photo library",
         "NSCameraUsageDescription": "This app requires access to camera",
+        "NSLocationWhenInUseUsageDescription": "This app requires access to location",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
