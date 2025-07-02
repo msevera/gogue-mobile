@@ -65,6 +65,7 @@ export default {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
         "NSPhotoLibraryUsageDescription": "This app requires access to photo library",
+        "NSCameraUsageDescription": "This app requires access to camera",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
