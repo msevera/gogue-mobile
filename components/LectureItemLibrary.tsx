@@ -34,19 +34,19 @@ export const LectureItemLibrary = ({ lecture, parentPath }: { lecture: Lecture, 
             >
               <Image
                 source={lecture.image?.webp}
-                contentFit="contain"
+                contentFit="scale-down"
                 transition={1000}
                 style={{
-                  flex: 1,
-                  width: 1024 / 10,
-                  height: 1536 / 10,
+                  // flex: 1,
+                  width: 1024 / 8,
+                  height: 1024 / 8,
                 }}
               />
             </View>
             <View className='flex-1'>
               <View className='flex-1'>
                 <Text className="text-lg text-gray-950">{lecture.title}</Text>
-                <Text className="text-base text-gray-700">{lecture.topic}</Text>
+                <Text className="text-base text-gray-700" numberOfLines={2}>{lecture.topic}</Text>
               </View>
               <View className='mt-6 flex-row items-center justify-between'>
                 <View className='flex-row items-center gap-2'>

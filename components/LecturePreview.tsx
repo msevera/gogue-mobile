@@ -106,15 +106,15 @@ export const LecturePreview = () => {
                 extrapolate: 'clamp',
               })
             }}>
-              <View className='h-[400] pt-24 flex-row items-center justify-center'>
+              <View className='h-[400] pt-11 flex-row items-center justify-center'>
                 <View>
                   <Image
                     source={lecture?.image?.webp}
                     contentFit="scale-down"
                     transition={1000}
                     style={{
-                      width: 1024 / 6,
-                      height: 1536 / 6,
+                      width: 230,
+                      height: 230,
                       borderRadius: 4,
                     }}
                   />

@@ -271,12 +271,13 @@ export class WebRTCTransport extends Transport {
   private createPeerConnection(): RTCPeerConnection {
     const config: RTCConfiguration = {
       iceServers: this._iceServers,
+      iceTransportPolicy: 'relay',
     };
 
     let pc = new RTCPeerConnection(config);
 
     pc.addEventListener("icegatheringstatechange", () => {
-      logger.debug(`iceGatheringState: ${this.pc!.iceGatheringState}`);
+      logger.debug(`ICEGatheringStateChange: ${this.pc!.iceGatheringState}`);
     });
     logger.debug(`iceGatheringState: ${pc.iceGatheringState}`);
 
@@ -304,7 +305,7 @@ export class WebRTCTransport extends Transport {
 
   private handleICEConnectionStateChange(): void {
     if (!this.pc) return;
-    logger.debug(`ICE Connection State: ${this.pc.iceConnectionState}`);
+    logger.debug(`ICEConnectionStateChange: ${this.pc.iceConnectionState}`);
 
     if (this.pc.iceConnectionState === "failed") {
       logger.debug("ICE connection failed, attempting restart.");
@@ -362,7 +363,37 @@ export class WebRTCTransport extends Transport {
       return Promise.reject("Peer connection is not initialized");
     }
 
+    let candidatesQueue: { candidate: any; sdpMid: any; sdpMLineIndex: any; }[] = [];
+
     try {
+      this.pc.onicecandidate = async ({ candidate, sdpMid, sdpMLineIndex }) => {
+        console.log('candidate', candidate);
+        if (!candidate) return;
+
+        if (!this.pc_id) {
+          console.log('this.pc_id', this.pc_id, candidate);
+          candidatesQueue.push({
+            candidate: candidate,
+            sdpMid,
+            sdpMLineIndex
+          });
+        } else {
+          console.log('this.pc_id', this.pc_id, candidate);
+          await fetch(`${this._options.params.baseUrl}/icecandidate`, {
+            body: JSON.stringify({
+              pc_id: this.pc_id,         // so server knows which PC
+              candidate: candidate.toJSON(),
+              sdpMid,
+              sdpMLineIndex
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+          });
+        }
+      };
+
       // Create offer
       const offer = await this.pc.createOffer({});
       await this.pc.setLocalDescription(offer);
@@ -390,7 +421,7 @@ export class WebRTCTransport extends Transport {
       let offerSdp = this.pc!.localDescription!;
       logger.debug(`Will create offer for peerId: ${this.pc_id}`);
 
-      const url = `${this._options.params.baseUrl}${this._options.params.endpoints?.connect || ""}`;     
+      const url = `${this._options.params.baseUrl}${this._options.params.endpoints?.connect || ""}`;
       // Send offer to server
       const response = await fetch(url, {
         body: JSON.stringify({
@@ -409,6 +440,24 @@ export class WebRTCTransport extends Transport {
       const answer: RTCSessionDescriptionInit = await response.json();
       // @ts-ignore
       this.pc_id = answer.pc_id;
+
+      candidatesQueue.forEach(async ({ candidate, sdpMid, sdpMLineIndex }) => {
+        console.log('sending candidate after main offer', this.pc_id);
+        await fetch(`${this._options.params.baseUrl}/icecandidate`, {
+          body: JSON.stringify({
+            pc_id: this.pc_id,         // so server knows which PC
+            candidate: candidate.toJSON(),
+            sdpMid,
+            sdpMLineIndex
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        });
+      });
+
+
       // @ts-ignore
       logger.debug(`Received answer for peer connection id ${answer.pc_id}`);
       await this.pc!.setRemoteDescription(answer);

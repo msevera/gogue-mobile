@@ -40,7 +40,7 @@ export const LectureItemSmall = ({ lecture, parentPath }: { lecture: Lecture, pa
                 style={{
                   flex: 1,
                   width: 1024 / 7,
-                  height: 1536 / 7,
+                  height: 1024 / 7,
                   borderRadius: 12,
                 }}
               />

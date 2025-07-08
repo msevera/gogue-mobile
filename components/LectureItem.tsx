@@ -17,7 +17,7 @@ export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentP
       <View className='flex-row px-4 mb-4'>
         <View className='flex-1'>
           <View
-            className="rounded-xl px-4 pt-10 py-4"
+            className="rounded-xl px-4 pt-7 py-4"
             style={{
               backgroundColor: coverBGHex(lecture.image?.color),
             }}
@@ -29,14 +29,14 @@ export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentP
                 transition={1000}
                 style={{
                   flex: 1,
-                  width: 1024 / 5,
-                  height: 1536 / 5,
-                  borderRadius: 4,
+                  width: 1024 / 3,
+                  height: 1024 / 3,
+                  borderRadius: 12,
                 }}                
               />
             </View>
-            <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text>
-            <Text className="text-base text-gray-800 text-center" numberOfLines={2}>{lecture.topic}</Text>
+            {/* <Text className="text-lg text-gray-950 text-center mt-4">{lecture.title}</Text> */}
+            <Text className="text-lg text-gray-800 text-center mt-4" numberOfLines={2}>{lecture.topic}</Text>
             <View className='mt-6 flex-row items-center justify-between'>
               <View className='flex-row items-center gap-2'>
                 <View className='flex-row items-center px-2 py-1 rounded-full'

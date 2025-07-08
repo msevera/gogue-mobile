@@ -21,7 +21,7 @@ export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: 
     const response = await axios.post('/turn', {});
     const client = new RTVIClient({
       transport: new WebRTCTransport({
-        iceServers: response.data.iceServers,
+        iceServers: [{ ...response.data.iceServers[1] }],       
         waitForICEGathering: false
       }),
       params: {
@@ -31,6 +31,9 @@ export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: 
           lecture_id: lectureId,
           user_id: authUser?.id,
           workspace_id: await AsyncStorage.getItem('workspaceId'),
+          // lecture_id: '68667e9dd9c18789fdc8094a',
+          // user_id: '68667e11d9c18789fdc8093c',
+          // workspace_id: '68667e11d9c18789fdc8093d',
           note_timestamp: noteTimestamp,
           note_id: noteId,
           ice_servers: response.data.iceServers,
