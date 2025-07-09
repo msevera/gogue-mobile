@@ -1,7 +1,7 @@
 const IS_DEV = process.env.APP_VARIANT === 'development';
 const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 const IS_STAGING = process.env.APP_VARIANT === 'staging';
-const id = 'ai.learnbud';
+const id = 'ai.gogue';
 
 export const getUniqueIdentifier = () => {
   if (IS_DEV) {
@@ -29,35 +29,32 @@ const getOneSignalEnv = () => {
 
 const getAppName = () => {
   if (IS_DEV) {
-    return 'Learnbud (Dev)';
+    return 'Gogue (Dev)';
   }
 
   if (IS_PREVIEW) {
-    return 'Learnbud (Preview)';
+    return 'Gogue (Preview)';
   }
 
   if (IS_STAGING) {
-    return 'Learnbud (Preview)'
+    return 'Gogue (Preview)'
   }
 
-  return 'Learnbud';
+  return 'Gogue';
 };
 
 export default {
   "expo": {
     "name": getAppName(),
-    "slug": "learnbud",
+    "slug": "gogue",
     "owner": "msevera",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "learnbud",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff"
-    },
+    "icon": "./assets/images/ios-light.png",
+    "scheme": "gogue",
+    "userInterfaceStyle": "automatic",   
     "ios": {
-      "associatedDomains": ["applinks:learnbud.ai"],
+      "associatedDomains": ["applinks:gogue.ai"],
       "supportsTablet": false,
       "bundleIdentifier": getUniqueIdentifier('ios'),
       "googleServicesFile": process.env.GOOGLE_SERVICE_INFO_PLIST ?? "./GoogleService-Info.plist",
@@ -70,13 +67,18 @@ export default {
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
-              "learnbud"
+              "gogue"
             ]
           }
         ],
         "UIBackgroundModes": ["voip", "audio"],
         "bitcode": false
       },
+      "icon": {
+        "dark": "./assets/images/ios-dark.png",
+        "light": "./assets/images/ios-light.png",
+        "tinted": "./assets/images/ios-tinted.png"
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,
@@ -96,7 +98,7 @@ export default {
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.learnbud"
+          "iosUrlScheme": "com.googleusercontent.apps.gogue"
         }
       ],
       [
@@ -127,6 +129,18 @@ export default {
           "enableMicrophone": true,
           "enableScreenShare": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/splash-icon-blue.png",
+          "dark": {
+            "backgroundColor": "#343434",
+            "image": "./assets/images/splash-icon-white.png"
+          },
+          "imageWidth": 200
+        }
       ]
     ],
     "experiments": {
@@ -134,7 +148,7 @@ export default {
     },
     "extra": {
       "eas": {
-        "projectId": "3a6a9f25-5952-40c7-8336-a01bfc9e845f"
+        "projectId": "5591aa61-bb06-4cc8-a11f-9310446d5652"
       }
     },
     "runtimeVersion": {

@@ -60,7 +60,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   lectureId: string,
   currentNote: Note,
   currentSentence: CurrentSentence,
-  bars: number[]
+  bars: number[],
+  onConnectToAgent: () => void
 }>(({
   notes,
   onPlayPause,
@@ -82,7 +83,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   lectureId,
   currentNote,
   currentSentence,
-  bars
+  bars,
+  onConnectToAgent
 }, ref) => {
   const noteDetailsRef = useRef<NoteDetailsRef>(null);
   const lectureControlsRef = useRef<LectureControlsRef>(null);
@@ -208,12 +210,14 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   }, [sendMessage]);
 
   const handleRecordPress = useCallback(() => {
+    onConnectToAgent();
     setDrawerMode('noteDetails');
     setAgentMode('voice');
     connectToAgent(true);
   }, [connectToAgent]);
 
   const handleInputFocus = useCallback(() => {
+    onConnectToAgent();
     setDrawerMode('noteDetails');
     setAgentMode('text');
     connectToAgent(false);

@@ -218,6 +218,10 @@ export default function Screen() {
     TrackPlayer.seekTo(note.timestamp)
   }, [selectNote]);
 
+  const onConnectToAgent = useCallback(() => {
+    TrackPlayer.pause();
+  }, []);
+
 
   const onAnnotation = useCallback(async (url: string) => {
     await WebBrowser.openBrowserAsync(url);
@@ -292,6 +296,7 @@ export default function Screen() {
         onDeleteNote={onDeleteNote}
         onSelectNote={onSelectNote}
         bars={lecture?.audio?.bars as number[]}
+        onConnectToAgent={onConnectToAgent}
       />
     </ScreenLayout>
   </View>
