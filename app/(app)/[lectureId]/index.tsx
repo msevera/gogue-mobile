@@ -132,6 +132,7 @@ export default function Screen() {
 
   useEffect(() => {
     const configurePlayer = async () => {
+      await TrackPlayer.reset();
       await TrackPlayer.add([{
         url: lecture.audio?.stream as string,
         title: lecture.title as string,
@@ -145,6 +146,12 @@ export default function Screen() {
       configurePlayer();
     }
   }, [lecture?.audio?.stream]);
+
+  useEffect(() => {
+    return () => {
+      TrackPlayer.reset();
+    }
+  }, []);
 
 
   useTrackPlayerEvents([Event.PlaybackProgressUpdated, Event.PlaybackPlayWhenReadyChanged, Event.PlaybackQueueEnded], async (event) => {

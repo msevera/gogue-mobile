@@ -29,7 +29,7 @@ export const useGetLecturesAddedToLibrary = ({ skip }: { skip?: boolean } = {}) 
         const doesLectureExist = lectures?.items?.some((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined);
         items = doesLectureExist ?
           lectures?.items?.map((lecture: Lecture) => lecture.id === newLecture.id || lecture.id === undefined ? newLecture : lecture) :
-          [newLecture, ...lectures?.items];
+          [newLecture, ...(lectures?.items || [])];
       } else {
         items = lectures?.items?.filter((lecture: Lecture) => lecture.id !== newLecture.id);
       }
