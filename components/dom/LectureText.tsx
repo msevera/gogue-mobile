@@ -1,7 +1,6 @@
 "use dom";
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Marked } from 'marked';
 
 export type Chunk = {
   key: string;

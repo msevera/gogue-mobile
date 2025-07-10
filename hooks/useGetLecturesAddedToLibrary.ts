@@ -38,7 +38,10 @@ export const useGetLecturesAddedToLibrary = ({ skip }: { skip?: boolean } = {}) 
         ...data,
         lecturesAddedToLibrary: {
           ...lectures,
-          items: [...items].filter(Boolean)
+          items: [...items].filter(Boolean),
+          pageInfo: data?.lecturesAddedToLibrary?.pageInfo || {
+            next: null
+          }
         }
       }
     }
