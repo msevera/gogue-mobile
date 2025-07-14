@@ -92,7 +92,9 @@ export const Button = React.forwardRef<View, ButtonProps>(({
   >
     {
       loading ?
-        <ActivityIndicator className={loaderClassName} size={'small'} color={getLoaderColor()} style={{ transform: [{ scale: loaderSize || 0.75 }] }} /> :
+        <View className={cn([!sm && 'py-0.5'])}>
+          <ActivityIndicator className={loaderClassName} size={'small'} color={getLoaderColor()} style={{ transform: [{ scale: loaderSize || 0.75 }] }} />
+        </View> :
         <>
           {
             icon && IconComponent && (

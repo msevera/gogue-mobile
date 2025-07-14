@@ -11,6 +11,10 @@ export const AUTH_USER_FRAGMENT = gql`
     workspaces {
       workspaceId
     }
+    topics {
+      id
+      name
+    }
   }
 `;
 

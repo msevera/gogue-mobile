@@ -22,6 +22,16 @@ export default function EmailInputScreen() {
     } finally {
       
     }
+
+
+    // try{
+    //   const response = await fetch(process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL as string);
+    //   const data = await response.json();
+    //   console.log('data', data);
+    // } catch (error) {
+    //   console.log('test error', error);
+    // }
+    
   }
 
   useEffect(() => {

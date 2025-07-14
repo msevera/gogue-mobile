@@ -13,6 +13,7 @@ import { PendingLecture } from '@/components/PendingLecture';
 import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
 import { useGetLecture } from '@/hooks/useGetLecture';
 import { useNewLecture } from '@/hooks/useNewLecture';
+import { SetTopics } from '@/components/SetTopics';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -312,6 +313,7 @@ export default function TabsLayout() {
         tabBar={({ navigation }) => <TabBar onCreatePress={onNewLecturePressHandler} navigation={navigation} />}
       />
       <CreateLecture visible={newLectureVisible} onClose={onNewLecturePressHandler} />
+      <SetTopics />
     </View>
   )
 }

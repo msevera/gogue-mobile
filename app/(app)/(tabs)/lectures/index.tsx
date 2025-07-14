@@ -11,6 +11,7 @@ import { Header } from '@/components/layouts/Header';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 import { useAuth } from '@/hooks/useAuth';
+import { Glimpses } from '@/components/Glimpses';
 
 const keyExtractor = (item: Lecture) => item.id;
 
@@ -35,15 +36,21 @@ export default function Screen() {
     </View>;
   }, []);
 
-  const data = [{
-    title: 'Jump back in',
-    horizontal: true,
-    data: itemsRecentlyPlayed as Lecture[]
-  },
-  {
-    title: 'You might also like',
-    data: items as Lecture[]
-  }]
+  const data = [
+    {
+      title: 'Glimpses',
+      type: 'glimpses',      
+      data: []
+    },
+    {
+      title: 'Jump back in',
+      horizontal: true,
+      data: itemsRecentlyPlayed as Lecture[]
+    },
+    {
+      title: 'You might also like',
+      data: items as Lecture[]
+    }]
 
   return (
     <View className='flex-1'>
@@ -62,12 +69,16 @@ export default function Screen() {
           stickySectionHeadersEnabled={false}
           sections={data}
           renderItem={({ item, section }) => {
-            if (section.horizontal) {
+            if (section.horizontal || section.type === 'glimpses') {
               return null;
             }
             return <LectureItem lecture={item} parentPath='/lectures' />;
           }}
           renderSectionHeader={({ section }) => {
+            if (section.type === 'glimpses') {
+              return <Glimpses />;
+            }
+
             if (section.data.length === 0) {
               return null;
             }

@@ -35,6 +35,10 @@ export default function AppLayout() {
     return <Redirect href="(onboarding)/setProfile" />;
   }
 
+  // if (!authUser?.topics?.length) { 
+  //   return <Redirect href="(onboarding)/setTopics" />;
+  // }
+
   return (
     <Stack
       screenOptions={{

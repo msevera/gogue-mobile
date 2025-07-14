@@ -177,6 +177,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
+      console.log('idToken', idToken);
       setIdToken(idToken);
     } else if (!user) {
       await signOut();
@@ -212,7 +213,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           try {
             await getAuth().signInWithCredential(googleCredential); 
           } catch (error) {
-            console.error('signInWithGoogle error', error);
+            console.error('signInWithGoogle error', JSON.stringify(error));
             throw error;
           }
           
