@@ -27,14 +27,10 @@ export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentP
                 source={lecture.image?.webp}
                 contentFit="contain"
                 transition={1000}
-                style={{
-                  // flex: 1,
+                style={{                
                   width: '100%',
-                  // height: 1024 / 3,
                   aspectRatio: 1,
-                  borderRadius: 12,
-                  // borderWidth: 1,
-                  // borderColor: 'red',
+                  borderRadius: 12
                 }}                
               />
             </View>
