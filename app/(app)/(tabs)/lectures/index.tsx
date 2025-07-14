@@ -3,22 +3,20 @@ import { Text } from '@/components/ui/Text';
 import { useCallback, useState } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Lecture } from '@/apollo/__generated__/graphql';
-import { useGetLectures } from '@/hooks/useGetLectures';
 import { RootSettings } from '@/components/RootSettings';
 import { CreateLecture } from '@/components/CreateLecture';
 import { LectureItem } from '@/components/LectureItem';
 import { Header } from '@/components/layouts/Header';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
-import { useAuth } from '@/hooks/useAuth';
 import { Glimpses } from '@/components/Glimpses';
+import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
 
 const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
   const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
-  const { authUser } = useAuth();
-  const { items, isLoading } = useGetLectures({ input: { skipUserId: authUser?.id } });
+  const { items: itemsRecommended, isLoading: isLoadingRecommended } = useGetLecturesRecommended();
   const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
@@ -36,6 +34,8 @@ export default function Screen() {
     </View>;
   }, []);
 
+  console.log('itemsRecommended', itemsRecommended);
+
   const data = [
     {
       title: 'Glimpses',
@@ -49,7 +49,7 @@ export default function Screen() {
     },
     {
       title: 'You might also like',
-      data: items as Lecture[]
+      data: itemsRecommended as Lecture[]
     }]
 
   return (
@@ -59,7 +59,7 @@ export default function Screen() {
           headerShown: true,
           header: () => <Header showMenu title='Home' onMenuPress={onMenuPressHandler} />,
         }}
-        contentLoading={isLoading}
+        contentLoading={isLoadingRecommended}
         contentEmpty={false}
         contentEmptyText='Create your first lecture'
         bottomPadding={false}

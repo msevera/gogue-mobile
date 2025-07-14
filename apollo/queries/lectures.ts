@@ -51,6 +51,17 @@ export const GET_LECTURES_RECENTLY_PLAYED = gql`
   ${LECTURE_LIST_ITEM_FRAGMENT}
 `;
 
+export const GET_LECTURES_RECOMMENDED = gql`
+  query GetLecturesRecommended($pagination: PaginationInput) {
+    lecturesRecommended(pagination: $pagination) {
+      items {
+        ...LectureListItem       
+      }
+    }    
+  }
+  ${LECTURE_LIST_ITEM_FRAGMENT}
+`;
+
 export const GET_LECTURE_DETAILS = gql`
   query GetLectureDetails($id: ID!) {
     lecture(id: $id) {

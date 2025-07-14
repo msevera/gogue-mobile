@@ -17,15 +17,16 @@ type Documents = {
     "\n  fragment LectureMetadata on LectureMetadata {\n    id\n    notesCount\n    playbackTimestamp\n    status\n    addedToLibrary\n    addedToLibraryAt\n  }\n": typeof types.LectureMetadataFragmentDoc,
     "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n      bars\n    }\n    metadata {\n      ...LectureMetadata\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n  \n": typeof types.LectureListItemFragmentDoc,
     "\n  fragment LecturePreview on Lecture {\n    ...LectureListItem\n    overview     \n    sections {     \n      title\n      overview\n      annotations {\n        title\n        url\n      }\n    }       \n    categories {\n      category {\n        id\n        name\n      }\n    }\n  }\n  \n": typeof types.LecturePreviewFragmentDoc,
-    "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n": typeof types.LectureDetailsFragmentDoc,
+    "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n      annotations {\n        title\n        url\n        startIndex\n        endIndex\n      }\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n": typeof types.LectureDetailsFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    timestamp    \n  }\n": typeof types.NoteFragmentDoc,
     "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": typeof types.NoteMessageFragmentDoc,
-    "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n": typeof types.AuthUserFragmentDoc,
+    "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n": typeof types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": typeof types.UserFragmentDoc,
     "\n  query GetLectures($input: FindLecturesInput, $pagination: PaginationInput) {\n    lectures(input: $input, pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": typeof types.GetLecturesDocument,
     "\n  query GetLecturesSearch($input: SearchLecturesInput) {\n    lecturesSearch(input: $input) {\n      items {\n        ...LectureListItem       \n      }      \n    }    \n  }\n  \n": typeof types.GetLecturesSearchDocument,
     "\n  query GetLecturesAddedToLibrary($pagination: PaginationInput) {\n    lecturesAddedToLibrary(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": typeof types.GetLecturesAddedToLibraryDocument,
     "\n  query GetLecturesRecentlyPlayed($pagination: PaginationInput) {\n    lecturesRecentlyPlayed(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n": typeof types.GetLecturesRecentlyPlayedDocument,
+    "\n  query GetLecturesRecommended($pagination: PaginationInput) {\n    lecturesRecommended(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n": typeof types.GetLecturesRecommendedDocument,
     "\n  query GetLectureDetails($id: ID!) {\n    lecture(id: $id) {\n      ...LectureDetails\n    }\n  }\n  \n": typeof types.GetLectureDetailsDocument,
     "\n  query GetLecturePreview($id: ID!) {\n    lecture(id: $id) {\n      ...LecturePreview\n    }\n  }\n  \n": typeof types.GetLecturePreviewDocument,
     "\n  query GetPendingLecture {\n    pendingLecture {\n      ...LectureListItem\n    }\n  }\n  \n": typeof types.GetPendingLectureDocument,
@@ -50,15 +51,16 @@ const documents: Documents = {
     "\n  fragment LectureMetadata on LectureMetadata {\n    id\n    notesCount\n    playbackTimestamp\n    status\n    addedToLibrary\n    addedToLibraryAt\n  }\n": types.LectureMetadataFragmentDoc,
     "\n  fragment LectureListItem on Lecture {\n    id\n    topic\n    title    \n    userId\n    emoji\n    creationEvent {\n      name\n    }    \n    sections {     \n      title\n      hasContent\n    }\n    audio {\n      stream\n      wav\n      duration      \n      bars\n    }\n    metadata {\n      ...LectureMetadata\n    }\n    image {\n      webp\n      color\n    }\n    audio {\n      duration\n    }\n  }\n  \n": types.LectureListItemFragmentDoc,
     "\n  fragment LecturePreview on Lecture {\n    ...LectureListItem\n    overview     \n    sections {     \n      title\n      overview\n      annotations {\n        title\n        url\n      }\n    }       \n    categories {\n      category {\n        id\n        name\n      }\n    }\n  }\n  \n": types.LecturePreviewFragmentDoc,
-    "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n": types.LectureDetailsFragmentDoc,
+    "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n      annotations {\n        title\n        url\n        startIndex\n        endIndex\n      }\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n": types.LectureDetailsFragmentDoc,
     "\n  fragment Note on Note {\n    id\n    title\n    timestamp    \n  }\n": types.NoteFragmentDoc,
     "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": types.NoteMessageFragmentDoc,
-    "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n": types.AuthUserFragmentDoc,
+    "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n": types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": types.UserFragmentDoc,
     "\n  query GetLectures($input: FindLecturesInput, $pagination: PaginationInput) {\n    lectures(input: $input, pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": types.GetLecturesDocument,
     "\n  query GetLecturesSearch($input: SearchLecturesInput) {\n    lecturesSearch(input: $input) {\n      items {\n        ...LectureListItem       \n      }      \n    }    \n  }\n  \n": types.GetLecturesSearchDocument,
     "\n  query GetLecturesAddedToLibrary($pagination: PaginationInput) {\n    lecturesAddedToLibrary(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": types.GetLecturesAddedToLibraryDocument,
     "\n  query GetLecturesRecentlyPlayed($pagination: PaginationInput) {\n    lecturesRecentlyPlayed(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n": types.GetLecturesRecentlyPlayedDocument,
+    "\n  query GetLecturesRecommended($pagination: PaginationInput) {\n    lecturesRecommended(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n": types.GetLecturesRecommendedDocument,
     "\n  query GetLectureDetails($id: ID!) {\n    lecture(id: $id) {\n      ...LectureDetails\n    }\n  }\n  \n": types.GetLectureDetailsDocument,
     "\n  query GetLecturePreview($id: ID!) {\n    lecture(id: $id) {\n      ...LecturePreview\n    }\n  }\n  \n": types.GetLecturePreviewDocument,
     "\n  query GetPendingLecture {\n    pendingLecture {\n      ...LectureListItem\n    }\n  }\n  \n": types.GetPendingLectureDocument,
@@ -109,7 +111,7 @@ export function gql(source: "\n  fragment LecturePreview on Lecture {\n    ...Le
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n"): (typeof documents)["\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n"];
+export function gql(source: "\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n      annotations {\n        title\n        url\n        startIndex\n        endIndex\n      }\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n"): (typeof documents)["\n  fragment LectureDetails on Lecture {\n    ...LectureListItem\n    sections {\n      title\n      content\n      annotations {\n        title\n        url\n        startIndex\n        endIndex\n      }\n    }\n    aligners {\n      mfa\n    }\n    audio {\n      stream\n      wav\n      duration  \n      bars\n    }\n  }\n  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -121,7 +123,7 @@ export function gql(source: "\n  fragment NoteMessage on NoteMessage {\n    id\n
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n"): (typeof documents)["\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n  }\n"];
+export function gql(source: "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n"): (typeof documents)["\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -142,6 +144,10 @@ export function gql(source: "\n  query GetLecturesAddedToLibrary($pagination: Pa
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  query GetLecturesRecentlyPlayed($pagination: PaginationInput) {\n    lecturesRecentlyPlayed(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n"): (typeof documents)["\n  query GetLecturesRecentlyPlayed($pagination: PaginationInput) {\n    lecturesRecentlyPlayed(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query GetLecturesRecommended($pagination: PaginationInput) {\n    lecturesRecommended(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n"): (typeof documents)["\n  query GetLecturesRecommended($pagination: PaginationInput) {\n    lecturesRecommended(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n    }    \n  }\n  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

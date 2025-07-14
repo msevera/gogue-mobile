@@ -9,6 +9,7 @@ import { useUserTopicsAgent } from '@/hooks/useUserTopicsAgent';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { parse } from 'best-effort-json-parser'
 import React from 'react';
+import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
 
 const gradientStyle = {
   position: 'absolute',
@@ -20,6 +21,7 @@ const gradientStyle = {
 }
 
 export const SetTopics = () => {
+  const { refetch } = useGetLecturesRecommended();
   const [step, setStep] = useState(0);
   const insets = useSafeAreaInsets();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -43,6 +45,7 @@ export const SetTopics = () => {
       setNextLoading(false);
     },
     onTopicsStored: () => {
+      refetch();
       setVisible(false);
     }
   });
