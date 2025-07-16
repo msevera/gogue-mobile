@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import Markdown from 'react-native-markdown-display';
 import * as WebBrowser from 'expo-web-browser';
 
-export const GlimpsesItem = ({ item, backgroundColor, textColor }: { item: Glimpse, backgroundColor: string, textColor: string }) => {
+export const GlimpsesItem = ({ item, backgroundColor, textColor, onPauseStart, onPauseEnd }: { item: Glimpse, backgroundColor: string, textColor: string, onPauseStart: () => void, onPauseEnd: () => void }) => {
   const inset = useSafeAreaInsets();
   const { content, annotations } = item;
 
@@ -34,8 +34,6 @@ export const GlimpsesItem = ({ item, backgroundColor, textColor }: { item: Glimp
   }, [content, annotations]);
 
 
-
-
   const { domain, url } = useMemo(() => {
     const [firstAnnotation] = annotations || [];
     if (!firstAnnotation) {
@@ -46,25 +44,31 @@ export const GlimpsesItem = ({ item, backgroundColor, textColor }: { item: Glimp
   }, [annotations]);
 
 
-  const onLinkPress = useCallback(async (url: string) => {
+  const onLinkPress = useCallback(async () => {
+    onPauseStart();
     await WebBrowser.openBrowserAsync(url);
-  }, []);
+    onPauseEnd();
+  }, [url]);
 
   return (
-    <View
-      key={item.id}
+    <Pressable
+      onTouchStart={onPauseStart}
+      onTouchEnd={onPauseEnd}
       className={cn('absolute top-0 left-0 right-0 bottom-0 w-100 h-100 px-4 py-5 item-center justify-center')}
       style={{
         backgroundColor: backgroundColor,
         paddingTop: inset.top,
         paddingBottom: inset.bottom,
       }}>
-      <View>
+      <View onTouchEnd={(e) => {
+        e.stopPropagation();
+      }}>
         <Markdown
           style={{
             strong: {
               backgroundColor: textColor,
               color: backgroundColor,
+              fontWeight: 'bold',
             },
             body: {
               color: textColor,
@@ -77,17 +81,17 @@ export const GlimpsesItem = ({ item, backgroundColor, textColor }: { item: Glimp
         {
           domain && (
             <View className='flex-row items-center'>
-              <Pressable className='rounded-md'
+              <Pressable className='rounded-md z-40'
                 // style={{
                 //   backgroundColor: textColor,
                 // }}
-                onPress={() => onLinkPress(url)}>
+                onPress={onLinkPress}>
                 <Text className='text-xl underline' key={item.id} style={{ color: textColor }}>{domain}</Text>
               </Pressable>
             </View>
           )
         }
       </View>
-    </View>
+    </Pressable>
   );
 };

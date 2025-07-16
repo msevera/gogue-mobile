@@ -29,6 +29,7 @@ export const GlimpsesProgress = ({
   isPaused = false 
 }: GlimpsesProgressProps) => {
   const progress = useSharedValue(0);
+  const previousIndex = React.useRef(currentIndex);
   const DURATION = 10000; // 10 seconds
 
   useEffect(() => {
@@ -37,24 +38,29 @@ export const GlimpsesProgress = ({
       return;
     }
 
-    // Reset progress when currentIndex changes
-    progress.value = 0;
+    // Check if index changed
+    const isIndexChange = currentIndex !== previousIndex.current;
     
-    // Start animation for current item
-    progress.value = withTiming(1, { duration: DURATION }, (finished) => {
+    // Calculate remaining duration based on current progress BEFORE resetting
+    const currentProgressValue = progress.value;
+    const remainingDuration = isIndexChange 
+      ? DURATION // Full duration for new index
+      : DURATION * (1 - currentProgressValue); // Resume from current progress
+    
+    // Reset progress when index changes
+    if (isIndexChange) {
+      progress.value = 0;
+      previousIndex.current = currentIndex;
+    }
+    
+    // Start animation for current item from current progress
+    progress.value = withTiming(1, { duration: remainingDuration }, (finished) => {
       if (finished) {
         if (currentIndex < items.length - 1) {
           runOnJS(onProgressComplete)(currentIndex);
         } else {
           runOnJS(onAllComplete)();
         }
-        // runOnJS(() => {
-        //   if (currentIndex < items.length - 1) {
-        //     onProgressComplete?.(currentIndex);
-        //   } else {
-        //     onAllComplete?.();
-        //   }
-        // })();
       }
     });
 

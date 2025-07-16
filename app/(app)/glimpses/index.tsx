@@ -31,6 +31,7 @@ export default function Screen() {
   const { items, isLoading } = useGetGlimpsesLatest();
   const inset = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const increaseCurrentIndex = useCallback(() => {
     setCurrentIndex(currentIndex + 1);
@@ -47,7 +48,16 @@ export default function Screen() {
     };
   }, [currentIndex, items]);
 
-  
+  const onPauseStart = useCallback(() => {
+    console.log('onPauseStart');
+    setIsPaused(true);
+  }, []);
+
+  const onPauseEnd = useCallback(() => {
+    console.log('onPauseEnd');
+    setIsPaused(false);
+  }, []);
+
   return (<View className="flex-1">
     <ScreenLayout
       screenOptions={{
@@ -62,11 +72,11 @@ export default function Screen() {
       bottomPadding={false}
     >
       <View className='absolute top-2 left-0 right-0 z-10 px-4' style={{ paddingTop: inset.top }}>
-        <GlimpsesProgress currentIndex={currentIndex} onProgressComplete={increaseCurrentIndex} onAllComplete={() => { }} items={items as Glimpse[]} />
+        <GlimpsesProgress isPaused={isPaused} currentIndex={currentIndex} onProgressComplete={increaseCurrentIndex} onAllComplete={() => { }} items={items as Glimpse[]} />
       </View>
       {
         item && (
-          <GlimpsesItem key={item.id} item={item as Glimpse} backgroundColor={colorPair.backgroundColor} textColor={colorPair.textColor} />
+          <GlimpsesItem onPauseStart={onPauseStart} onPauseEnd={onPauseEnd} key={item.id} item={item as Glimpse} backgroundColor={colorPair.backgroundColor} textColor={colorPair.textColor} />
         )
       }
     </ScreenLayout>
