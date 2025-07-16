@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import { Gesture, GestureDetector, GestureStateChangeEvent, TapGestureHandlerEventPayload } from 'react-native-gesture-handler';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
+import { useNewLecture } from '@/hooks/useNewLecture';
 
 const colorPairs = [
   { "backgroundColor": "#dbeafe", "textColor": "#3b82f6" },
@@ -33,6 +34,7 @@ const colorPairs = [
 ]
 
 export default function Screen() {
+  const { newLectureVisible, setNewLectureVisible, setInitialDescription } = useNewLecture();
   const { items, isLoading } = useGetGlimpsesLatest();
   const { authUser } = useAuth();
   const inset = useSafeAreaInsets();
@@ -53,6 +55,11 @@ export default function Screen() {
   const onClose = useCallback(() => {
     router.back();
   }, []);
+
+
+  useEffect(() => {
+    setIsPaused(newLectureVisible);
+  }, [newLectureVisible]);
 
   useEffect(() => {
     if (isPaused) {
@@ -138,6 +145,8 @@ export default function Screen() {
 
   const linkNative = Gesture.Tap();
   const closeNative = Gesture.Tap();
+  const ctaNative = Gesture.Tap();
+
   const tapGesture = Gesture.Tap()
     .requireExternalGestureToFail(linkNative, closeNative)
     .onStart(() => {
@@ -214,6 +223,14 @@ export default function Screen() {
                 </View>
               )
             }
+            <View className='absolute bottom-0 left-0 right-0 items-center justify-center' style={{ bottom: inset.bottom }}>
+              <GestureDetector gesture={ctaNative}>
+                <Button onPress={() => {
+                  setInitialDescription(item?.query || '');
+                  setNewLectureVisible(true);
+                }} text='Create lecture' />
+              </GestureDetector>
+            </View>
           </View>
         </ScreenLayout>
       </View>

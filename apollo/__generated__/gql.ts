@@ -22,7 +22,7 @@ type Documents = {
     "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": typeof types.NoteMessageFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n": typeof types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": typeof types.UserFragmentDoc,
-    "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n": typeof types.GetGlimpseLatestDocument,
+    "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       query\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n": typeof types.GetGlimpseLatestDocument,
     "\n  query CheckGlimpsesStatus {\n    checkGlimpsesStatus {\n      id\n      status\n    }    \n  }\n": typeof types.CheckGlimpsesStatusDocument,
     "\n  subscription GlimpseStatusUpdated {\n    glimpseStatusUpdated {\n      id\n      status\n    }\n  }\n": typeof types.GlimpseStatusUpdatedDocument,
     "\n  mutation SetGlimpseViewed($id: ID!) {\n    setGlimpseViewed(input: { id: $id }) {\n      id\n      viewed\n    }\n  }\n": typeof types.SetGlimpseViewedDocument,
@@ -61,7 +61,7 @@ const documents: Documents = {
     "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": types.NoteMessageFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n": types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": types.UserFragmentDoc,
-    "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n": types.GetGlimpseLatestDocument,
+    "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       query\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n": types.GetGlimpseLatestDocument,
     "\n  query CheckGlimpsesStatus {\n    checkGlimpsesStatus {\n      id\n      status\n    }    \n  }\n": types.CheckGlimpsesStatusDocument,
     "\n  subscription GlimpseStatusUpdated {\n    glimpseStatusUpdated {\n      id\n      status\n    }\n  }\n": types.GlimpseStatusUpdatedDocument,
     "\n  mutation SetGlimpseViewed($id: ID!) {\n    setGlimpseViewed(input: { id: $id }) {\n      id\n      viewed\n    }\n  }\n": types.SetGlimpseViewedDocument,
@@ -141,7 +141,7 @@ export function gql(source: "\n  fragment User on User {\n    id\n    firstName\
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n"): (typeof documents)["\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n"];
+export function gql(source: "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       query\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n"): (typeof documents)["\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n       id\n       topicId\n       content\n       query\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

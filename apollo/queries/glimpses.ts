@@ -7,6 +7,7 @@ export const GET_GLIMPSES_LATEST = gql`
        id
        topicId
        content
+       query
        viewed      
        annotations {
         title

@@ -92,7 +92,7 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
 
 export default function TabsLayout() {
   const [newLecture, setNewLecture] = useState<Lecture | null>(null);  
-  const { newLectureVisible, setNewLectureVisible } = useNewLecture();
+  const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription } = useNewLecture();
   const [calendar] = useCalendars();  
 
 
@@ -113,6 +113,9 @@ export default function TabsLayout() {
 
   const onNewLecturePressHandler = useCallback(() => {
     setNewLectureVisible(!newLectureVisible);
+    if (newLectureVisible) {
+      setInitialDescription('');
+    }
   }, [newLectureVisible]);
 
   useQuery(GET_PENDING_LECTURE, {
@@ -334,7 +337,7 @@ export default function TabsLayout() {
         }}
         tabBar={({ navigation }) => <TabBar onCreatePress={onNewLecturePressHandler} navigation={navigation} />}
       />
-      <CreateLecture visible={newLectureVisible} onClose={onNewLecturePressHandler} />
+      <CreateLecture visible={newLectureVisible} initialDescription={initialDescription} onClose={onNewLecturePressHandler} />
       <SetTopics />
     </View>
   )

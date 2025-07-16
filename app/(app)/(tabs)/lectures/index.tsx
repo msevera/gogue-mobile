@@ -17,16 +17,11 @@ const keyExtractor = (item: Lecture) => item.id;
 export default function Screen() {
   const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
   const { items: itemsRecommended, isLoading: isLoadingRecommended } = useGetLecturesRecommended();
-  const [newLectureVisible, setNewLectureVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   const onMenuPressHandler = useCallback(() => {
     setSettingsVisible(!settingsVisible);
-  }, [settingsVisible]);
-
-  const onNewLecturePressHandler = useCallback(() => {
-    setNewLectureVisible(!newLectureVisible);
-  }, [newLectureVisible]);
+  }, [settingsVisible]); 
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <View className='mr-5'>
@@ -106,8 +101,7 @@ export default function Screen() {
           keyExtractor={keyExtractor}
         />
       </ScreenLayout>
-      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />
-      <CreateLecture visible={newLectureVisible} onClose={onNewLecturePressHandler} />
+      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />      
     </View>
   );
 }

@@ -12,7 +12,7 @@ import useValidation from '@/hooks/useValidation';
 import { useRecording } from '@/hooks/useRecording';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
 
-export const CreateLecture = ({ visible, onClose }: { visible: boolean, onClose: () => void }) => {
+export const CreateLecture = ({ visible, initialDescription, onClose }: { visible: boolean, initialDescription: string, onClose: () => void }) => {
   const { isRecording, setIsRecording, recognizedText, setRecognizedText, startRecording, stopRecording } = useRecording();
   const { createLectureAsyncMut } = useCreateLecture();
 
@@ -38,6 +38,13 @@ export const CreateLecture = ({ visible, onClose }: { visible: boolean, onClose:
       inputRef.current?.focus();
     }
   }, [visible]);
+
+  useEffect(() => {
+    if (typeof initialDescription === 'string') {
+      setDescription(initialDescription);
+      inputRef?.current?.setNativeProps({ text: initialDescription })
+    }
+  }, [initialDescription]);
 
   useEffect(() => {
     Keyboard.dismiss();
@@ -69,7 +76,7 @@ export const CreateLecture = ({ visible, onClose }: { visible: boolean, onClose:
             multiline
             staticHeight
             placeholder='Describe your goal and topic'
-            inputClassName="h-[100]"
+            inputClassName="h-[130]"
             containerClassName='mb-8'
             onChangeText={(text) => {
               remove('description');
@@ -88,7 +95,7 @@ export const CreateLecture = ({ visible, onClose }: { visible: boolean, onClose:
             {...register('description', description, [required(intl, 'Please enter your goal and topic'), limitCharsTo(500, intl, 'Must be less than 500 characters')])}
           />
           <Text className='text-lg mb-2'>How much time do you have?</Text>
-          <Slider value={duration} values={[5, 10, 15]} labelTemplate='{value} min' onChange={(value) => setDuration(value)} />
+          <Slider value={duration} values={[5, 10]} labelTemplate='{value} min' onChange={(value) => setDuration(value)} />
         </View>
         <Button
           className='mb-4'
