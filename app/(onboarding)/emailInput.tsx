@@ -52,7 +52,7 @@ export default function EmailInputScreen() {
         >
           <View className="flex-1 w-full justify-center items-center">
             <Text className="text-4xl mb-2 text-center font-semibold text-gray-800">Welcome to <Text className="text-4xl text-blue-500 font-semibold">Gogue</Text></Text>
-            <Text className="text-2xl text-center text-blue-500">Personalized AI lecturer</Text>
+            <Text className="text-2xl text-center text-blue-500 px-10">Expand your knowledge with AI tutor</Text>
           </View>
           <View className="w-full items-center">           
             <Button              

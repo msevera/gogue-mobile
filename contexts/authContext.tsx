@@ -185,6 +185,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [setProfileMutation] = useMutation<SetProfileMutation, SetProfileMutationVariables>(SET_PROFILE);
 
   const onAuthStateChanged = async (user: FirebaseAuthTypes.User | null) => {                    
+    signOut();
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
