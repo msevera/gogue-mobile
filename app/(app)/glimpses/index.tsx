@@ -5,8 +5,14 @@ import { useGetGlimpsesLatest } from '@/hooks/useGetGlimpsesLatest';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlimpsesItem } from '@/components/GlimpsesItem';
 import { Glimpse } from '@/apollo/__generated__/graphql';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { GlimpsesProgress } from '@/components/GlimpsesProgress';
+import {
+  useSharedValue,
+  withTiming,
+  runOnJS,
+  cancelAnimation,
+} from 'react-native-reanimated';
 
 const colorPairs = [
   { "backgroundColor": "#dbeafe", "textColor": "#3b82f6" },
@@ -32,6 +38,48 @@ export default function Screen() {
   const inset = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  
+  // Animation logic moved from GlimpsesProgress
+  const progress = useSharedValue(0);
+  const previousIndex = useRef(currentIndex);
+  const DURATION = 10000; // 10 seconds
+
+  useEffect(() => {
+    if (isPaused) {
+      cancelAnimation(progress);
+      return;
+    }
+
+    // Check if index changed
+    const isIndexChange = currentIndex !== previousIndex.current;
+    
+    // Calculate remaining duration based on current progress BEFORE resetting
+    const currentProgressValue = progress.value;
+    const remainingDuration = isIndexChange 
+      ? DURATION // Full duration for new index
+      : DURATION * (1 - currentProgressValue); // Resume from current progress
+    
+    // Reset progress when index changes
+    if (isIndexChange) {
+      progress.value = 0;
+      previousIndex.current = currentIndex;
+    }
+    
+    // Start animation for current item from current progress
+    progress.value = withTiming(1, { duration: remainingDuration }, (finished) => {
+      if (finished) {
+        if (currentIndex < items.length - 1) {
+          runOnJS(increaseCurrentIndex)();
+        } else {
+          // runOnJS(() => {})(); // onAllComplete
+        }
+      }
+    });
+
+    return () => {
+      cancelAnimation(progress);
+    };
+  }, [currentIndex, isPaused, items.length]);
 
   const increaseCurrentIndex = useCallback(() => {
     setCurrentIndex(currentIndex + 1);
@@ -72,11 +120,15 @@ export default function Screen() {
       bottomPadding={false}
     >
       <View className='absolute top-2 left-0 right-0 z-10 px-4' style={{ paddingTop: inset.top }}>
-        <GlimpsesProgress isPaused={isPaused} currentIndex={currentIndex} onProgressComplete={increaseCurrentIndex} onAllComplete={() => { }} items={items as Glimpse[]} />
+        <GlimpsesProgress 
+          progress={progress}
+          currentIndex={currentIndex} 
+          items={items as Glimpse[]} 
+        />
       </View>
       {
         item && (
-          <GlimpsesItem onPauseStart={onPauseStart} onPauseEnd={onPauseEnd} key={item.id} item={item as Glimpse} backgroundColor={colorPair.backgroundColor} textColor={colorPair.textColor} />
+          <GlimpsesItem onDecreaseTap={decreaseCurrentIndex} onIncreaseTap={increaseCurrentIndex} onPauseStart={onPauseStart} onPauseEnd={onPauseEnd} key={item.id} item={item as Glimpse} backgroundColor={colorPair.backgroundColor} textColor={colorPair.textColor} />
         )
       }
     </ScreenLayout>

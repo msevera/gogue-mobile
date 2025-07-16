@@ -1,74 +1,23 @@
-import { Pressable, View } from 'react-native';
-import { Text } from './ui/Text';
-import { Button } from './ui/Button';
-import { router } from 'expo-router';
+import { View } from 'react-native';
 import { Glimpse } from '@/apollo/__generated__/graphql';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  runOnJS,
-  cancelAnimation,
+  SharedValue,
 } from 'react-native-reanimated';
 import { cn } from '@/lib/utils';
 
 interface GlimpsesProgressProps {
   items: Glimpse[];
-  currentIndex?: number;
-  onProgressComplete: (index: number) => void;
-  onAllComplete: () => void;
-  isPaused?: boolean;
+  currentIndex: number;
+  progress: SharedValue<number>;
 }
 
 export const GlimpsesProgress = ({ 
   items, 
-  currentIndex = 0, 
-  onProgressComplete, 
-  onAllComplete,
-  isPaused = false 
+  currentIndex,
+  progress,
 }: GlimpsesProgressProps) => {
-  const progress = useSharedValue(0);
-  const previousIndex = React.useRef(currentIndex);
-  const DURATION = 10000; // 10 seconds
-
-  useEffect(() => {
-    if (isPaused) {
-      cancelAnimation(progress);
-      return;
-    }
-
-    // Check if index changed
-    const isIndexChange = currentIndex !== previousIndex.current;
-    
-    // Calculate remaining duration based on current progress BEFORE resetting
-    const currentProgressValue = progress.value;
-    const remainingDuration = isIndexChange 
-      ? DURATION // Full duration for new index
-      : DURATION * (1 - currentProgressValue); // Resume from current progress
-    
-    // Reset progress when index changes
-    if (isIndexChange) {
-      progress.value = 0;
-      previousIndex.current = currentIndex;
-    }
-    
-    // Start animation for current item from current progress
-    progress.value = withTiming(1, { duration: remainingDuration }, (finished) => {
-      if (finished) {
-        if (currentIndex < items.length - 1) {
-          runOnJS(onProgressComplete)(currentIndex);
-        } else {
-          runOnJS(onAllComplete)();
-        }
-      }
-    });
-
-    return () => {
-      cancelAnimation(progress);
-    };
-  }, [currentIndex, isPaused, items.length]);
-
   const ProgressBar = ({ index }: { index: number }) => {
     const animatedStyle = useAnimatedStyle(() => {
       let width = 0;
