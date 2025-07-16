@@ -189,6 +189,7 @@ export default function Screen() {
             headerLoading: false,
             headerShown: false,
             animation: 'fade',
+            animationDuration: 300, 
             gestureDirection: 'vertical',
           }}
           contentLoading={isLoading}

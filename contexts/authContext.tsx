@@ -84,8 +84,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   });
 
-  console.log('authUser', authUser?.topics);
-
   useEffect(() => {
     const fn = async () => {
       try {

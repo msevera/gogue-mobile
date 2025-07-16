@@ -261,6 +261,7 @@ export default function Screen() {
         headerShown: false,
         animation: 'slide_from_bottom',
         gestureDirection: 'vertical',
+        animationDuration: 300, 
       }}
       contentLoading={loading}
       contentEmpty={false}
