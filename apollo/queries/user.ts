@@ -19,6 +19,15 @@ export const SET_PROFILE = gql`
   ${AUTH_USER_FRAGMENT}
 `;
 
+export const SET_TIMEZONE = gql`
+  mutation SetTimezone($timezone: String!) {
+    setTimezone(input: { timezone: $timezone }) {
+      ...AuthUser
+    }
+  }
+  ${AUTH_USER_FRAGMENT}
+`;
+
 export const GET_USER = gql`
   query GetUser($id: ID!) {
     user(id: $id) {

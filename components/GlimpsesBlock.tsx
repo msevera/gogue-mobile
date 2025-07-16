@@ -1,10 +1,13 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from './ui/Text';
 import { Button } from './ui/Button';
+import { router } from 'expo-router';
 
-export const Glimpses = () => {
+export const GlimpsesBlock = () => {
   return (
-    <View className='px-4 mb-5'>
+    <Pressable className='px-4 mb-5' onPress={() => {
+      router.push('/glimpses');
+    }}>
       <View className='flex-row items-center justify-between bg-blue-200 p-4 px-5 rounded-3xl'>
         <View>
           <Text className='text-blue-500 text-xl font-semibold'>Smarter in 5 minutes</Text>
@@ -25,6 +28,6 @@ export const Glimpses = () => {
           loaderClassName='top-[1]'
         />
       </View>
-    </View>
+    </Pressable>
   );
 };

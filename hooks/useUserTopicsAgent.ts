@@ -1,6 +1,5 @@
 import EventSource, { } from 'react-native-sse';
 import { useState } from 'react';
-
 import { getAuthHeaders } from '@/apollo/settings';
 
 

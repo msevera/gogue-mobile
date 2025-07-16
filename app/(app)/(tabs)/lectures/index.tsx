@@ -9,7 +9,7 @@ import { LectureItem } from '@/components/LectureItem';
 import { Header } from '@/components/layouts/Header';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
-import { Glimpses } from '@/components/Glimpses';
+import { GlimpsesBlock } from '@/components/GlimpsesBlock';
 import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
 
 const keyExtractor = (item: Lecture) => item.id;
@@ -33,8 +33,6 @@ export default function Screen() {
       <LectureItemSmall lecture={item} parentPath='/lectures' />
     </View>;
   }, []);
-
-  console.log('itemsRecommended', itemsRecommended);
 
   const data = [
     {
@@ -76,7 +74,7 @@ export default function Screen() {
           }}
           renderSectionHeader={({ section }) => {
             if (section.type === 'glimpses') {
-              return <Glimpses />;
+              return <GlimpsesBlock />;
             }
 
             if (section.data.length === 0) {

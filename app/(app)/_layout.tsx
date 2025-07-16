@@ -8,6 +8,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function AppLayout() {
   const { authUser, isLoading } = useAuth();
+ 
+
   useEffect(() => {
     const hideSplashScreen = async () => {
       await SplashScreen.hideAsync();

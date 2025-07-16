@@ -22,6 +22,7 @@ type Documents = {
     "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": typeof types.NoteMessageFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n": typeof types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": typeof types.UserFragmentDoc,
+    "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n        id\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n": typeof types.GetGlimpseLatestDocument,
     "\n  query GetLectures($input: FindLecturesInput, $pagination: PaginationInput) {\n    lectures(input: $input, pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": typeof types.GetLecturesDocument,
     "\n  query GetLecturesSearch($input: SearchLecturesInput) {\n    lecturesSearch(input: $input) {\n      items {\n        ...LectureListItem       \n      }      \n    }    \n  }\n  \n": typeof types.GetLecturesSearchDocument,
     "\n  query GetLecturesAddedToLibrary($pagination: PaginationInput) {\n    lecturesAddedToLibrary(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": typeof types.GetLecturesAddedToLibraryDocument,
@@ -45,6 +46,7 @@ type Documents = {
     "\n  mutation DeleteNote($id: ID!) {\n    deleteNote(id: $id) {\n      id\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n": typeof types.DeleteNoteDocument,
     "\n  query SignIn($idToken: String!) {\n    signIn(input: { idToken: $idToken }) {\n      ...AuthUser\n    }\n  }\n  \n": typeof types.SignInDocument,
     "\n  mutation SetProfile($firstName: String!, $lastName: String!) {\n    setProfile(input: { firstName: $firstName, lastName: $lastName }) {\n      ...AuthUser\n    }\n  }\n  \n": typeof types.SetProfileDocument,
+    "\n  mutation SetTimezone($timezone: String!) {\n    setTimezone(input: { timezone: $timezone }) {\n      ...AuthUser\n    }\n  }\n  \n": typeof types.SetTimezoneDocument,
     "\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      ...User\n    }\n  }\n  \n": typeof types.GetUserDocument,
 };
 const documents: Documents = {
@@ -56,6 +58,7 @@ const documents: Documents = {
     "\n  fragment NoteMessage on NoteMessage {\n    id\n    role\n    content\n    timestamp\n  }\n": types.NoteMessageFragmentDoc,
     "\n  fragment AuthUser on User {\n    id\n    firstName\n    lastName\n    email\n    pfp\n    phone\n    workspaces {\n      workspaceId\n    }\n    topics {\n      id\n      name\n    }\n  }\n": types.AuthUserFragmentDoc,
     "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n": types.UserFragmentDoc,
+    "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n        id\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n": types.GetGlimpseLatestDocument,
     "\n  query GetLectures($input: FindLecturesInput, $pagination: PaginationInput) {\n    lectures(input: $input, pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": types.GetLecturesDocument,
     "\n  query GetLecturesSearch($input: SearchLecturesInput) {\n    lecturesSearch(input: $input) {\n      items {\n        ...LectureListItem       \n      }      \n    }    \n  }\n  \n": types.GetLecturesSearchDocument,
     "\n  query GetLecturesAddedToLibrary($pagination: PaginationInput) {\n    lecturesAddedToLibrary(pagination: $pagination) {\n      items {\n        ...LectureListItem       \n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n  \n": types.GetLecturesAddedToLibraryDocument,
@@ -79,6 +82,7 @@ const documents: Documents = {
     "\n  mutation DeleteNote($id: ID!) {\n    deleteNote(id: $id) {\n      id\n      lecture {\n        id\n        metadata {\n          id\n          notesCount\n        }\n      }\n    }\n  }\n": types.DeleteNoteDocument,
     "\n  query SignIn($idToken: String!) {\n    signIn(input: { idToken: $idToken }) {\n      ...AuthUser\n    }\n  }\n  \n": types.SignInDocument,
     "\n  mutation SetProfile($firstName: String!, $lastName: String!) {\n    setProfile(input: { firstName: $firstName, lastName: $lastName }) {\n      ...AuthUser\n    }\n  }\n  \n": types.SetProfileDocument,
+    "\n  mutation SetTimezone($timezone: String!) {\n    setTimezone(input: { timezone: $timezone }) {\n      ...AuthUser\n    }\n  }\n  \n": types.SetTimezoneDocument,
     "\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      ...User\n    }\n  }\n  \n": types.GetUserDocument,
 };
 
@@ -128,6 +132,10 @@ export function gql(source: "\n  fragment AuthUser on User {\n    id\n    firstN
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n"): (typeof documents)["\n  fragment User on User {\n    id\n    firstName\n    lastName    \n    pfp   \n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n        id\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n"): (typeof documents)["\n  query GetGlimpseLatest {\n    glimpsesLatest {\n      items {\n        id\n       content\n       viewed      \n       annotations {\n        title\n        url\n        startIndex\n        endIndex\n       }\n      }\n      pageInfo {\n        next\n      }\n    }    \n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -220,6 +228,10 @@ export function gql(source: "\n  query SignIn($idToken: String!) {\n    signIn(i
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  mutation SetProfile($firstName: String!, $lastName: String!) {\n    setProfile(input: { firstName: $firstName, lastName: $lastName }) {\n      ...AuthUser\n    }\n  }\n  \n"): (typeof documents)["\n  mutation SetProfile($firstName: String!, $lastName: String!) {\n    setProfile(input: { firstName: $firstName, lastName: $lastName }) {\n      ...AuthUser\n    }\n  }\n  \n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation SetTimezone($timezone: String!) {\n    setTimezone(input: { timezone: $timezone }) {\n      ...AuthUser\n    }\n  }\n  \n"): (typeof documents)["\n  mutation SetTimezone($timezone: String!) {\n    setTimezone(input: { timezone: $timezone }) {\n      ...AuthUser\n    }\n  }\n  \n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

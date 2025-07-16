@@ -14,6 +14,10 @@ import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibra
 import { useGetLecture } from '@/hooks/useGetLecture';
 import { useNewLecture } from '@/hooks/useNewLecture';
 import { SetTopics } from '@/components/SetTopics';
+import { useCalendars } from 'expo-localization';
+import { useMutation } from '@apollo/client';
+import { SET_TIMEZONE } from '@/apollo/queries/user';
+import { SetTimezoneMutation, SetTimezoneMutationVariables } from '@/apollo/__generated__/graphql';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -89,6 +93,24 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
 export default function TabsLayout() {
   const [newLecture, setNewLecture] = useState<Lecture | null>(null);  
   const { newLectureVisible, setNewLectureVisible } = useNewLecture();
+  const [calendar] = useCalendars();  
+
+
+  const [setTimezone] = useMutation<SetTimezoneMutation, SetTimezoneMutationVariables>(SET_TIMEZONE, {
+    variables: {
+      timezone: calendar?.timeZone as string
+    },
+    onError: (error) => {
+      console.log('SetTimezone error', error);
+    }
+  })
+
+  useEffect(() => {
+    if (calendar?.timeZone) {
+      setTimezone();
+    }
+  }, [calendar?.timeZone]);
+
   const onNewLecturePressHandler = useCallback(() => {
     setNewLectureVisible(!newLectureVisible);
   }, [newLectureVisible]);
