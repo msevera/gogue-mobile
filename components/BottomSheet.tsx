@@ -36,6 +36,7 @@ type BottomSheetProps = {
   canPanDown?: SharedValue<boolean> | null,
   closeByGestureEnabled?: boolean,
   onSlideAnimationStarted?: () => void,
+  showCloseButton?: boolean,
 }
 
 export const BottomSheet = ({
@@ -57,7 +58,8 @@ export const BottomSheet = ({
   closeByGestureEnabled,
   headerContainerClassName,
   headerContentClassName,
-  backdropClassName
+  backdropClassName,
+  showCloseButton = true
 }: BottomSheetProps) => {
   const { top } = useSafeAreaInsets();
   const animatedScrollableContentOffsetY = useSharedValue(0);
@@ -306,7 +308,12 @@ export const BottomSheet = ({
                       <Text className="text-lg font-medium">
                         {title}
                       </Text>
-                      <Button sm ghost icon={{ component: 'Ionicons', name: 'close' }} onPress={onBackdropPress} className="bg-gray-50" />
+                      {
+                        showCloseButton ? (
+                          <Button sm ghost icon={{ component: 'Ionicons', name: 'close' }} onPress={onBackdropPress} className="bg-gray-50" />
+                        ) : <View className='h-6 w-6' />
+                      }
+
                     </View>
                     {children}
                   </View>

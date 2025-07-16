@@ -21,6 +21,7 @@ const gradientStyle = {
 }
 
 export const SetTopics = () => {
+  const { refetchAuthUser } = useAuth();
   const { refetch } = useGetLecturesRecommended();
   const [step, setStep] = useState(0);
   const insets = useSafeAreaInsets();
@@ -31,9 +32,7 @@ export const SetTopics = () => {
   const [initialLoading, setInitialLoading] = useState(false);
   const [nextLoading, setNextLoading] = useState(false);
   const [visible, setVisible] = useState(false);
-  const onClose = () => {
-    console.log('onClose');
-  }
+
   const { authUser } = useAuth();
   const { conversationItems, stream } = useUserTopicsAgent({
     onStreamStart: () => {
@@ -44,8 +43,9 @@ export const SetTopics = () => {
       console.log('onStreamEnd');
       setNextLoading(false);
     },
-    onTopicsStored: () => {
-      refetch();
+    onTopicsStored: async () => {
+      await refetchAuthUser();  
+      await refetch();
       setVisible(false);
     }
   });
@@ -90,7 +90,7 @@ export const SetTopics = () => {
   }), [visible]);
 
   return (
-    <GlobalDrawer title='Personalization' headerBorder drawerSettings={drawerSettings} onBackdropPress={onClose}>
+    <GlobalDrawer showCloseButton={false} title='Personalization' headerBorder drawerSettings={drawerSettings}>
       {
         loading ? (
           <View className="flex-1 justify-center items-center">

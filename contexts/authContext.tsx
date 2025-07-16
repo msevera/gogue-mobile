@@ -7,9 +7,9 @@ import {
 } from 'react';
 import auth, { getAuth, FirebaseAuthTypes, connectAuthEmulator } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import { SIGN_IN, SET_PROFILE } from '@/apollo/queries/user';
-import { SetProfileMutation, SetProfileMutationVariables, SignInQuery, SignInQueryVariables, User } from '@/apollo/__generated__/graphql';
+import { useApolloClient, useMutation, useQuery, useLazyQuery } from '@apollo/client';
+import { SIGN_IN, SET_PROFILE, GET_USER } from '@/apollo/queries/user';
+import { GetUserQuery, GetUserQueryVariables, SetProfileMutation, SetProfileMutationVariables, SignInQuery, SignInQueryVariables, User } from '@/apollo/__generated__/graphql';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import { router, usePathname } from 'expo-router';
@@ -36,6 +36,7 @@ export const AuthContext = createContext<{
   isLoading: boolean;
   pendingDeepLink: string | null;
   setPendingDeepLink: (pendingDeepLink: string | null) => void;
+  refetchAuthUser: () => Promise<void>;
 }>({
   signInWithGoogle: async () => Promise.resolve(),
   signOut: async () => Promise.resolve(),
@@ -44,6 +45,7 @@ export const AuthContext = createContext<{
   isLoading: true,
   pendingDeepLink: null,
   setPendingDeepLink: () => { },
+  refetchAuthUser: async () => Promise.resolve(),
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -72,6 +74,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
   });
 
   const authUser = signIn as User;
+
+  const [refetchAuthUser] = useLazyQuery<GetUserQuery, GetUserQueryVariables>(GET_USER, {    
+    variables: {
+      id: authUser?.id
+    },
+    onError: (error) => {
+      console.error('refetcAuthUser error', JSON.stringify(error));
+    }
+  });
+
+  console.log('authUser', authUser?.topics);
 
   useEffect(() => {
     const fn = async () => {
@@ -227,7 +240,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         } : null,
         isLoading,
         pendingDeepLink,
-        setPendingDeepLink
+        setPendingDeepLink,
+        refetchAuthUser
       }}>
       {children}
     </AuthContext.Provider>

@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import { USER_FRAGMENT, AUTH_USER_FRAGMENT } from '../fragments/user';
+import { AUTH_USER_FRAGMENT } from '../fragments/user';
 
 export const SIGN_IN = gql`
   query SignIn($idToken: String!) {
@@ -31,8 +31,8 @@ export const SET_TIMEZONE = gql`
 export const GET_USER = gql`
   query GetUser($id: ID!) {
     user(id: $id) {
-      ...User
+      ...AuthUser
     }
   }
-  ${USER_FRAGMENT}
+  ${AUTH_USER_FRAGMENT}
 `;

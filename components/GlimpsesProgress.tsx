@@ -11,17 +11,19 @@ interface GlimpsesProgressProps {
   items: Glimpse[];
   currentIndex: number;
   progress: SharedValue<number>;
+  colorPair: { backgroundColor: string, textColor: string };
 }
 
-export const GlimpsesProgress = ({ 
-  items, 
+export const GlimpsesProgress = ({
+  items,
   currentIndex,
   progress,
+  colorPair,
 }: GlimpsesProgressProps) => {
   const ProgressBar = ({ index }: { index: number }) => {
     const animatedStyle = useAnimatedStyle(() => {
       let width = 0;
-      
+
       if (index < currentIndex) {
         // Completed bars
         width = 1;
@@ -39,13 +41,16 @@ export const GlimpsesProgress = ({
     });
 
     return (
-      <View className={cn(
-        "flex-1 h-1 mx-0.5 rounded-full overflow-hidden",
-        "bg-white/50"
-      )}>
-        <Animated.View 
-          className="h-full bg-white rounded-full"
-          style={animatedStyle}
+      <View
+        className={cn(
+          "flex-1 h-1 mx-0.5 rounded-full overflow-hidden",
+          "bg-white"
+        )}
+        style={{ backgroundColor: `${colorPair.textColor}33` }}
+      >
+        <Animated.View
+          className="h-full rounded-full"
+          style={[animatedStyle, { backgroundColor: colorPair.textColor }]}
         />
       </View>
     );
