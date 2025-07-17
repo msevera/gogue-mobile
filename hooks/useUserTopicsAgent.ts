@@ -19,7 +19,7 @@ export type ConversationItemType = {
   messages: (ModelStreamStartMessage | ModelStreamMessage)[];
 };
 
-export const useUserTopicsAgent = ({ onStreamStart, onStreamEnd, onTopicsStored }: { onStreamStart?: () => void, onStreamEnd?: () => void, onTopicsStored?: () => void }) => {
+export const useUserTopicsAgent = ({ onStreamStart, onStreamEnd, onStream, onTopicsStored, }: { onStreamStart?: () => void, onStream?: () => void, onStreamEnd?: () => void, onTopicsStored?: () => void }) => {
   const [conversationItems, setConversationItems] = useState<ConversationItemType[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
 
@@ -47,6 +47,8 @@ export const useUserTopicsAgent = ({ onStreamStart, onStreamEnd, onTopicsStored 
       if (storeTopics) {
         return;
       }
+
+      onStream?.();
 
       let message = JSON.parse(msg.data!) as ModelStreamMessage;
 

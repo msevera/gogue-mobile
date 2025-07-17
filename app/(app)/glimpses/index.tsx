@@ -150,7 +150,6 @@ export default function Screen() {
   const tapGesture = Gesture.Tap()
     .requireExternalGestureToFail(linkNative, closeNative)
     .onStart(() => {
-      console.log('tapGesture onStart');
       pressStart.value = Date.now();
     })
     .onEnd((event) => {

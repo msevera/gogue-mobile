@@ -1,7 +1,7 @@
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native'
 import { Text } from '@/components/ui/Text';
 import { GlobalDrawer } from './globalDrawer/GlobalDrawer'
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Button } from './ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { parse } from 'best-effort-json-parser'
 import React from 'react';
 import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
+import { Input } from './ui/Input';
 
 const gradientStyle = {
   position: 'absolute',
@@ -25,13 +26,29 @@ export const SetTopics = () => {
   const { refetch } = useGetLecturesRecommended();
   const [step, setStep] = useState(0);
   const insets = useSafeAreaInsets();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedCategoriesInCurrentStep, setSelectedCategoriesInCurrentStep] = useState<string[]>([]);
+  const [selectedCategoriesFirstStep, setSelectedCategoriesFirstStep] = useState<string[]>([]);
+  const [selectedCategoriesSecondStep, setSelectedCategoriesSecondStep] = useState<string[]>([]);
+
+  const [firstStepCategories, setFirstStepCategories] = useState<string[]>([]);
+  const [firstStepText, setFirstStepText] = useState<string>('');
+  const [firstStepInitialized, setFirstStepInitialized] = useState(false);
+
+  const [secondStepCategories, setSecondStepCategories] = useState<string[]>([]);
+  const [secondStepText, setSecondStepText] = useState<string>('');
+  const [secondStepInitialized, setSecondStepInitialized] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(false);
   const [nextLoading, setNextLoading] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [stepChangeIntention, setStepChangeIntention] = useState<boolean>(false);
+  const [dataStreamingStarted, setDataStreamingStarted] = useState<boolean>(false);
+
+  const [customCategoryEditable, setCustomCategoryEditable] = useState<boolean>(false);
+  const [customCategoryName, setCustomCategoryName] = useState<string>('');
+  const customCategoryInputRef = useRef<TextInput>(null);
 
   const { authUser } = useAuth();
   const { conversationItems, stream } = useUserTopicsAgent({
@@ -42,13 +59,25 @@ export const SetTopics = () => {
     onStreamEnd: () => {
       console.log('onStreamEnd');
       setNextLoading(false);
+      setDataStreamingStarted(false);
     },
     onTopicsStored: async () => {
-      await refetchAuthUser();  
+      await refetchAuthUser();
       await refetch();
-      setVisible(false);
+      setVisible(false);     
+    },
+    onStream: () => {
+      setDataStreamingStarted(true);
     }
   });
+
+
+  useEffect(() => {
+    if (stepChangeIntention && dataStreamingStarted && step === 0) {
+      setStepChangeIntention(false);
+      setStep(step + 1);
+    }
+  }, [stepChangeIntention, step, dataStreamingStarted]);
 
   useEffect(() => {
     if (!initialLoading && !authUser?.topics?.length) {
@@ -75,6 +104,25 @@ export const SetTopics = () => {
   }, [conversationItems]);
 
   useEffect(() => {
+    if (!firstStepInitialized && data?.text && !nextLoading && step === 0) {
+      console.log('settings first step', data?.text);
+      setFirstStepCategories(data?.newCategories || []);
+      setFirstStepText(data?.text || '');
+      setFirstStepInitialized(true);
+    }
+  }, [nextLoading, step, data, firstStepInitialized]);
+
+
+  useEffect(() => {
+    if (!secondStepInitialized && data?.text && !nextLoading && step === 1) {
+      console.log('settings second step', data?.text);
+      setSecondStepCategories(data?.newCategories || []);
+      setSecondStepText(data?.text || '');
+      setSecondStepInitialized(true);
+    }
+  }, [nextLoading, step, data, secondStepInitialized]);
+
+  useEffect(() => {
     if (data?.text?.length) {
       setLoading(false);
     }
@@ -89,8 +137,40 @@ export const SetTopics = () => {
     closeByGestureEnabled: false
   }), [visible]);
 
+
+  const levelData = useMemo(() => {
+    if (step === 0) {
+      return {
+        categories: firstStepCategories.length ? firstStepCategories : data?.newCategories,
+        text: firstStepText || data?.text,
+        selectedCategories: selectedCategoriesFirstStep,
+        allSelectedCategories: [...selectedCategoriesFirstStep, ...selectedCategoriesSecondStep]
+      }
+    }
+    if (step === 1) {
+      return {
+        categories: secondStepCategories.length ? secondStepCategories : data?.newCategories,
+        text: secondStepText || data?.text,
+        selectedCategories: selectedCategoriesSecondStep,
+        allSelectedCategories: [...selectedCategoriesFirstStep, ...selectedCategoriesSecondStep]
+      }
+    }
+    return null;
+  }, [step, firstStepCategories, data, selectedCategoriesFirstStep, selectedCategoriesSecondStep]);
+
+
+  useEffect(() => {
+    if (customCategoryEditable) {
+      setTimeout(() => {
+        customCategoryInputRef.current?.focus();
+      }, 100);
+    }
+  }, [customCategoryEditable]);
+
+  console.log('levelData', levelData?.selectedCategories);
+
   return (
-    <GlobalDrawer showCloseButton={false} title='Personalization' headerBorder drawerSettings={drawerSettings}>
+    <GlobalDrawer customKeyboardBehavior={null} showCloseButton={false} title='Personalization' headerBorder drawerSettings={drawerSettings}>
       {
         loading ? (
           <View className="flex-1 justify-center items-center">
@@ -99,30 +179,88 @@ export const SetTopics = () => {
         ) : (
           <>
             <ScrollView
-              className="flex-1 px-4"
+              className="px-4"
             >
               <View className="mt-4 mb-4">
                 {
-                  data?.text && (
-                    <Text className="text-base text-gray-600">{data.text}</Text>
+                  levelData?.text && (
+                    <Text className="text-base text-gray-600">{levelData.text}</Text>
                   )
                 }
               </View>
               <View className="flex-row flex-wrap">
                 {
-                  data?.newCategories?.map((category: any, idx: number) => {
-                    const isSelected = selectedCategories.includes(category.name);
+                  levelData?.categories?.length > 0 && (
+                    <Pressable onPress={() => {
+                      setCustomCategoryEditable(true)
+                    }}>
+                      <View className={`py-1.5 px-4 rounded-full mb-3 mr-3 border-dotted border-blue-300 border-2`}>
+                        {
+                          customCategoryEditable ? (
+                            <Input
+                              ref={customCategoryInputRef}
+                              value={customCategoryName}
+                              onChangeText={setCustomCategoryName}
+                              placeholder='Enter category name'
+                              componentClassName='border-1 p-0.5 flex-none min-w-[160]'
+                              inputClassName='placeholder:text-blue-400'
+                              useWrapper={false}
+                              submitBehavior='submit'
+                              returnKeyType='done'
+                              onSubmitEditing={() => {
+                                if (customCategoryName.length === 0) {
+                                  setCustomCategoryEditable(false);
+                                  setCustomCategoryName('');
+                                  return;
+                                }
+                                if (step === 0) {
+                                  setFirstStepCategories([{ name: customCategoryName, overview: '' }, ...firstStepCategories]);
+                                  setSelectedCategoriesFirstStep([customCategoryName, ...selectedCategoriesFirstStep]);
+                                } else {
+                                  setSecondStepCategories([{ name: customCategoryName, overview: '' }, ...secondStepCategories]);
+                                  setSelectedCategoriesSecondStep([customCategoryName, ...selectedCategoriesSecondStep]);
+                                }
+                                setCustomCategoryEditable(false);
+                                setCustomCategoryName('');
+                              }}
+                            />
+                          ) : (
+                            <Text className={`text-base text-blue-400`}>Add custom category</Text>
+                          )
+                        }
+                      </View>
+                    </Pressable>
+                  )
+                }
+                {
+                  levelData?.categories?.map((category: any) => {
+                    const isSelected = levelData.allSelectedCategories.includes(category.name);
 
                     return (
                       <Pressable key={category.name} onPress={() => {
                         if (isSelected) {
-                          // Remove category if already selected
-                          setSelectedCategories(selectedCategories.filter(cat => cat !== category.name));
-                          setSelectedCategoriesInCurrentStep(selectedCategoriesInCurrentStep.filter(cat => cat !== category.name));
+                          // Remove category if already selected                         
+                          if (step === 0) {
+                            setSelectedCategoriesFirstStep(levelData.selectedCategories.filter(cat => cat !== category.name));
+                            setSecondStepInitialized(false);
+                            setSecondStepCategories([]);
+                            setSecondStepText('');
+                            setSelectedCategoriesSecondStep([]);
+                          } else {
+                            setSelectedCategoriesSecondStep(levelData.selectedCategories.filter(cat => cat !== category.name));
+                          }
+
                         } else {
-                          // Add category if not selected
-                          setSelectedCategories([...selectedCategories, category.name]);
-                          setSelectedCategoriesInCurrentStep([...selectedCategoriesInCurrentStep, category.name]);
+                          // Add category if not selected                      
+                          if (step === 0) {
+                            setSelectedCategoriesFirstStep([...selectedCategoriesFirstStep, category.name]);
+                            setSecondStepInitialized(false);
+                            setSecondStepCategories([]);
+                            setSecondStepText('');
+                            setSelectedCategoriesSecondStep([]);
+                          } else {
+                            setSelectedCategoriesSecondStep([...selectedCategoriesSecondStep, category.name]);
+                          }
                         }
                       }}>
                         <View className={`py-2 px-4 rounded-full mb-3 mr-3 ${isSelected
@@ -147,15 +285,38 @@ export const SetTopics = () => {
                 locations={[0, 0.18, 1]}
                 style={gradientStyle}
               />
-              <Button
-                disabled={selectedCategoriesInCurrentStep.length === 0}
-                text={step === 0 ? 'Continue' : 'Start learning'}
-                loading={nextLoading}
-                onPress={() => {
-                  setStep(step + 1);
-                  stream(selectedCategories, step >= 1);
-                  setSelectedCategoriesInCurrentStep([]);
-                }} />
+              <View className='flex-row gap-2'>
+                {
+                  step > 0 && !nextLoading && !submitting && (
+                    <Button
+                      ghost
+                      text='Back'
+                      onPress={() => {
+                        setStep(step - 1);
+                      }} />
+                  )
+                }
+                <Button
+                  className='flex-1'
+                  disabled={nextLoading || levelData?.selectedCategories?.length === 0 || submitting}
+                  text={step === 0 ? 'Continue' : 'Start learning'}
+                  loading={nextLoading || submitting}
+                  onPress={() => {
+                    if (step === 0) {
+                      if (!secondStepInitialized) {
+                        setStepChangeIntention(true);
+                        stream(selectedCategoriesFirstStep, false);
+                      } else {
+                        setStep(step + 1);
+                      }
+                    }
+
+                    if (step === 1) {
+                      setSubmitting(true);
+                      stream([...selectedCategoriesFirstStep, ...selectedCategoriesSecondStep], true);
+                    }
+                  }} />
+              </View>
             </View>
           </>
         )

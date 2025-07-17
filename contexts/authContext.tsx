@@ -109,44 +109,46 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   }, [authUser?.id]);
 
-  useEffect(() => {
-    const handler = (event: NotificationWillDisplayEvent) => {
-      const url = event.notification.launchURL as string;
-      const { hostname, path } = Linking.parse(url);
-      const eventPathname = `/${hostname}/${path}`;
-      const { show_when_on_url } = event.notification.additionalData as NotificationCustomDataType;
+  // useEffect(() => {
+  //   const handler = (event: NotificationWillDisplayEvent) => {
+  //     const url = event.notification.launchURL as string;
+  //     const { hostname, path } = Linking.parse(url);
+  //     const eventPathname = `/${hostname}/${path}`;
+  //     const { show_when_on_url } = event.notification.additionalData as NotificationCustomDataType;
 
-      // do not display the notification if the user is already on the page, and if event says so
-      if (!show_when_on_url && eventPathname === pathname) {
-        return;
-      }
+  //     // do not display the notification if the user is already on the page, and if event says so
+  //     if (!show_when_on_url && eventPathname === pathname) {
+  //       return;
+  //     }
 
-      try {
-        event.notification.display();
-      } catch (error) {
-        console.error('error displaying notification', error);
-      }
-    }
+  //     try {
+  //       event.notification.display();
+  //     } catch (error) {
+  //       console.error('error displaying notification', error);
+  //     }
+  //   }
 
 
-    OneSignal.Notifications.addEventListener('foregroundWillDisplay', handler);
-    return () => {
-      try {
-        OneSignal.Notifications.removeEventListener('foregroundWillDisplay', handler)
-      } catch (error) {
-        console.error('error removing listener', error);
-      }
-    };
-  }, [pathname]);
+  //   OneSignal.Notifications.addEventListener('foregroundWillDisplay', handler);
+  //   return () => {
+  //     try {
+  //       OneSignal.Notifications.removeEventListener('foregroundWillDisplay', handler)
+  //     } catch (error) {
+  //       console.error('error removing listener', error);
+  //     }
+  //   };
+  // }, [pathname]);
 
   // When the app is opened, check for a deep link
   useEffect(() => {
     if (url) {
+      console.log('url', url);
       const { hostname, path, scheme } = Linking.parse(url);
 
       let link = path
       if (scheme !== 'https') {
-        link = `${hostname}/${path}`;
+        link = `${path}`;
+        console.log('scheme', link);
       }
 
       setPendingDeepLink(link);
@@ -160,6 +162,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setPendingDeepLink(null);
 
       setTimeout(() => {
+        console.log('navigate to', pendingDeepLink);        
+        router.navigate('/lectures');
         router.navigate(pendingDeepLink as any);
       }, 1000);
     }
@@ -174,6 +178,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       await apolloClient.clearStore();
       setIdToken('');
+      OneSignal.logout();
     } catch (error) {
       console.error('signOut error', error);
     } finally {

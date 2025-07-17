@@ -1,6 +1,6 @@
 import { Portal } from '@gorhom/portal';
 import { BottomSheet } from '../BottomSheet';
-import { Keyboard } from 'react-native';
+import { Keyboard, KeyboardAvoidingViewProps } from 'react-native';
 
 type DrawerSettings = {
   snapPoints: (number | string)[],
@@ -10,9 +10,10 @@ type DrawerSettings = {
   closeByGestureEnabled: boolean
 }
 
-export const GlobalDrawer = ({  children, title, headerBorder, drawerSettings, onBackdropPress, headerContainerClassName, headerContentClassName, showCloseButton = true }: { children: React.ReactNode, title: string, headerBorder: boolean, drawerSettings: DrawerSettings, onBackdropPress?: () => void, headerContainerClassName?: string, headerContentClassName?: string, showCloseButton?: boolean }) => {    
+export const GlobalDrawer = ({ customKeyboardBehavior, children, title, headerBorder, drawerSettings, onBackdropPress, headerContainerClassName, headerContentClassName, showCloseButton = true }: { children: React.ReactNode, title: string, headerBorder: boolean, drawerSettings: DrawerSettings, onBackdropPress?: () => void, headerContainerClassName?: string, headerContentClassName?: string, showCloseButton?: boolean, customKeyboardBehavior?: KeyboardAvoidingViewProps['behavior'] | null }) => {    
   return <Portal name={title} hostName="globalDrawer">    
     <BottomSheet
+      customKeyboardBehavior={customKeyboardBehavior}
       title={title}   
       headerBorder={headerBorder}   
       snapPoints={drawerSettings.snapPoints}

@@ -5,9 +5,9 @@ import { Tabs } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { CreateLecture } from '@/components/CreateLecture';
-import { Lecture, LectureCreatingSubscription, LectureCreatingSubscriptionVariables } from '@/apollo/__generated__/graphql';
+import { GetPendingLectureShowNotificationQuery, GetPendingLectureShowNotificationQueryVariables, Lecture, LectureCreatingSubscription, LectureCreatingSubscriptionVariables } from '@/apollo/__generated__/graphql';
 import { useQuery, useSubscription } from '@apollo/client';
-import { GET_LECTURE_DETAILS, GET_PENDING_LECTURE, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
+import { GET_LECTURE_DETAILS, GET_PENDING_LECTURE, GET_PENDING_LECTURE_SHOW_NOTIFICATION, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { useGetLectures } from '@/hooks/useGetLectures';
 import { PendingLecture } from '@/components/PendingLecture';
 import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
@@ -18,6 +18,8 @@ import { useCalendars } from 'expo-localization';
 import { useMutation } from '@apollo/client';
 import { SET_TIMEZONE } from '@/apollo/queries/user';
 import { SetTimezoneMutation, SetTimezoneMutationVariables } from '@/apollo/__generated__/graphql';
+import { useAppState } from '@/hooks/useAppState';
+import { useGetLecturePending } from '@/hooks/useGetLecturePending';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
   return <Button
@@ -91,9 +93,17 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
 }
 
 export default function TabsLayout() {
-  const [newLecture, setNewLecture] = useState<Lecture | null>(null);  
+  // const [newLecture, setNewLecture] = useState<Lecture | null>(null);
   const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription } = useNewLecture();
-  const [calendar] = useCalendars();  
+  const [calendar] = useCalendars();
+  useAppState({
+    onForeground: async () => {
+      console.log('refetching pending lecture');
+      await refetchPendingLectureShowNotification();
+      // setNewLecture(data?.pendingLectureShowNotification as Lecture);
+      // console.log('refetched pending lecture', data?.pendingLectureShowNotification?.id);
+    }
+  });
 
 
   const [setTimezone] = useMutation<SetTimezoneMutation, SetTimezoneMutationVariables>(SET_TIMEZONE, {
@@ -118,31 +128,21 @@ export default function TabsLayout() {
     }
   }, [newLectureVisible]);
 
-  useQuery(GET_PENDING_LECTURE, {
-    fetchPolicy: 'network-only',
-    onError: (error) => {
-      console.log('error', JSON.stringify(error, null, 2))
-    },
-    onCompleted: (data) => {
-      setNewLecture(data?.pendingLecture as Lecture);
-    }
-  });
+  const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending();
 
   const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });
   useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
     onData: ({ data }) => {
       const lecture = data.data?.lectureCreating as Lecture;
       console.log('lecture', lecture.creationEvent?.name)
-      if (lecture.creationEvent?.name === 'DONE') {
-        setNewLecture(lecture);
-        setTimeout(() => {
-          if (lecture.metadata?.addedToLibrary) {
-            updateLectureCache(lecture, true);
-          }
-        }, 2000);
-      } else {
-        setNewLecture(lecture);
-      }
+
+      handleCache(lecture);
+
+      setTimeout(() => {
+        if (lecture.metadata?.addedToLibrary) {
+          updateLectureCache(lecture, true);
+        }
+      }, 2000);
     }
   });
 

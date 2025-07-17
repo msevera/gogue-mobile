@@ -47,9 +47,6 @@ const client = new ApolloClient({
 // );
 
 export default function RootLayout() {
-
-  console.log('RootLayout');
-
   useEffect(() => {
     const fetchPlaybackState = async () => {  
       try {       

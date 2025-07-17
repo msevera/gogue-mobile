@@ -1,4 +1,4 @@
-import { Platform, View, Pressable, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent } from "react-native"
+import { Platform, View, Pressable, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent, KeyboardAvoidingViewProps } from "react-native"
 import { Text } from "./ui/Text"
 import Animated, { scrollTo, Easing, runOnJS, SharedValue, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useDerivedValue, useScrollViewOffset, useSharedValue, withDecay, withDelay, withSpring, withTiming, cancelAnimation } from 'react-native-reanimated';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -37,6 +37,7 @@ type BottomSheetProps = {
   closeByGestureEnabled?: boolean,
   onSlideAnimationStarted?: () => void,
   showCloseButton?: boolean,
+  customKeyboardBehavior?: KeyboardAvoidingViewProps['behavior'] | null
 }
 
 export const BottomSheet = ({
@@ -59,7 +60,8 @@ export const BottomSheet = ({
   headerContainerClassName,
   headerContentClassName,
   backdropClassName,
-  showCloseButton = true
+  showCloseButton = true,
+  customKeyboardBehavior = (Platform.OS === 'ios' ? 'padding' : undefined)
 }: BottomSheetProps) => {
   const { top } = useSafeAreaInsets();
   const animatedScrollableContentOffsetY = useSharedValue(0);
@@ -288,7 +290,7 @@ export const BottomSheet = ({
         className={`absolute bottom-0 w-full z-[1]`}
       >
         <GestureDetector gesture={panGesture}>
-          <KeyboardAvoidingView keyboardVerticalOffset={40} behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+          <KeyboardAvoidingView keyboardVerticalOffset={40} behavior={customKeyboardBehavior} className="flex-1">
             <BottomSheetInternalProvider value={internalContextVariables}>
               {
                 customBackground ? (
