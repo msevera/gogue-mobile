@@ -20,6 +20,7 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
     emoji
     creationEvent {
       name
+      showNotification
     }    
     sections {     
       title

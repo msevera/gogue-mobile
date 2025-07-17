@@ -7,9 +7,9 @@ import {
 } from 'react';
 import auth, { getAuth, FirebaseAuthTypes, connectAuthEmulator } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import { SIGN_IN, SET_PROFILE } from '@/apollo/queries/user';
-import { SetProfileMutation, SetProfileMutationVariables, SignInQuery, SignInQueryVariables, User } from '@/apollo/__generated__/graphql';
+import { useApolloClient, useMutation, useQuery, useLazyQuery } from '@apollo/client';
+import { SIGN_IN, SET_PROFILE, GET_USER } from '@/apollo/queries/user';
+import { GetUserQuery, GetUserQueryVariables, SetProfileMutation, SetProfileMutationVariables, SignInQuery, SignInQueryVariables, User } from '@/apollo/__generated__/graphql';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import { router, usePathname } from 'expo-router';
@@ -36,6 +36,7 @@ export const AuthContext = createContext<{
   isLoading: boolean;
   pendingDeepLink: string | null;
   setPendingDeepLink: (pendingDeepLink: string | null) => void;
+  refetchAuthUser: () => Promise<void>;
 }>({
   signInWithGoogle: async () => Promise.resolve(),
   signOut: async () => Promise.resolve(),
@@ -44,6 +45,7 @@ export const AuthContext = createContext<{
   isLoading: true,
   pendingDeepLink: null,
   setPendingDeepLink: () => { },
+  refetchAuthUser: async () => Promise.resolve(),
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -73,6 +75,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const authUser = signIn as User;
 
+  const [refetchAuthUser] = useLazyQuery<GetUserQuery, GetUserQueryVariables>(GET_USER, {    
+    variables: {
+      id: authUser?.id
+    },
+    onError: (error) => {
+      console.error('refetcAuthUser error', JSON.stringify(error));
+    }
+  });
+
   useEffect(() => {
     const fn = async () => {
       try {
@@ -98,44 +109,46 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   }, [authUser?.id]);
 
-  useEffect(() => {
-    const handler = (event: NotificationWillDisplayEvent) => {
-      const url = event.notification.launchURL as string;
-      const { hostname, path } = Linking.parse(url);
-      const eventPathname = `/${hostname}/${path}`;
-      const { show_when_on_url } = event.notification.additionalData as NotificationCustomDataType;
+  // useEffect(() => {
+  //   const handler = (event: NotificationWillDisplayEvent) => {
+  //     const url = event.notification.launchURL as string;
+  //     const { hostname, path } = Linking.parse(url);
+  //     const eventPathname = `/${hostname}/${path}`;
+  //     const { show_when_on_url } = event.notification.additionalData as NotificationCustomDataType;
 
-      // do not display the notification if the user is already on the page, and if event says so
-      if (!show_when_on_url && eventPathname === pathname) {
-        return;
-      }
+  //     // do not display the notification if the user is already on the page, and if event says so
+  //     if (!show_when_on_url && eventPathname === pathname) {
+  //       return;
+  //     }
 
-      try {
-        event.notification.display();
-      } catch (error) {
-        console.error('error displaying notification', error);
-      }
-    }
+  //     try {
+  //       event.notification.display();
+  //     } catch (error) {
+  //       console.error('error displaying notification', error);
+  //     }
+  //   }
 
 
-    OneSignal.Notifications.addEventListener('foregroundWillDisplay', handler);
-    return () => {
-      try {
-        OneSignal.Notifications.removeEventListener('foregroundWillDisplay', handler)
-      } catch (error) {
-        console.error('error removing listener', error);
-      }
-    };
-  }, [pathname]);
+  //   OneSignal.Notifications.addEventListener('foregroundWillDisplay', handler);
+  //   return () => {
+  //     try {
+  //       OneSignal.Notifications.removeEventListener('foregroundWillDisplay', handler)
+  //     } catch (error) {
+  //       console.error('error removing listener', error);
+  //     }
+  //   };
+  // }, [pathname]);
 
   // When the app is opened, check for a deep link
   useEffect(() => {
     if (url) {
+      console.log('url', url);
       const { hostname, path, scheme } = Linking.parse(url);
 
       let link = path
       if (scheme !== 'https') {
-        link = `${hostname}/${path}`;
+        link = `${path}`;
+        console.log('scheme', link);
       }
 
       setPendingDeepLink(link);
@@ -149,6 +162,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setPendingDeepLink(null);
 
       setTimeout(() => {
+        console.log('navigate to', pendingDeepLink);        
+        router.navigate('/lectures');
         router.navigate(pendingDeepLink as any);
       }, 1000);
     }
@@ -163,6 +178,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       await apolloClient.clearStore();
       setIdToken('');
+      OneSignal.logout();
     } catch (error) {
       console.error('signOut error', error);
     } finally {
@@ -177,6 +193,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
+      // console.log('idToken', idToken);
       setIdToken(idToken);
     } else if (!user) {
       await signOut();
@@ -212,7 +229,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           try {
             await getAuth().signInWithCredential(googleCredential); 
           } catch (error) {
-            console.error('signInWithGoogle error', error);
+            console.error('signInWithGoogle error', JSON.stringify(error));
             throw error;
           }
           
@@ -226,7 +243,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         } : null,
         isLoading,
         pendingDeepLink,
-        setPendingDeepLink
+        setPendingDeepLink,
+        refetchAuthUser
       }}>
       {children}
     </AuthContext.Provider>

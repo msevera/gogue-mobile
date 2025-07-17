@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Platform, ScrollView, SectionList, View, StyleSheet, Animated as RNAnimated, UIManager, findNodeHandle, ActivityIndicator } from 'react-native';
 import { Text } from './ui/Text';
 import { Link, router, useLocalSearchParams } from 'expo-router';
@@ -11,18 +11,23 @@ import { Tabs } from './Tabs';
 import { Topics } from './Topics';
 import { coverBGHex, formatTime } from '@/lib/utils';
 import { Button } from './ui/Button';
-import { GET_LECTURE_PREVIEW } from '@/apollo/queries/lectures';
+import { GET_LECTURE_PREVIEW, SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE } from '@/apollo/queries/lectures';
 import { useAddToLibrary } from '@/hooks/useAddToLibrary';
+import { SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables } from '@/apollo/__generated__/graphql';
+import { useMutation } from '@apollo/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const tabs = [{ text: 'Overview', value: 'overview' }, { text: 'Sections', value: 'sections' }, { text: 'Sources', value: 'sources' }]
 
 export const LecturePreview = () => {
+  const { authUser } = useAuth();
   const insets = useSafeAreaInsets();
   const top = insets.top + 48;
   const rnScrollY = useRef(new RNAnimated.Value(0)).current;
   const [activeTab, setActiveTab] = useState('overview');
   const { lectureId } = useLocalSearchParams();
   const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_PREVIEW);
+  const [setPendingLectureShowNotificationAsDone] = useMutation<SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables>(SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE);
   const stickyRef = useRef<View>(null);
   const [offsetTop, setOffsetTop] = useState(0);
 
@@ -45,6 +50,12 @@ export const LecturePreview = () => {
     outputRange: [0, 1],
     extrapolate: 'clamp',
   })
+
+  useEffect(() => {
+    if (lecture?.creationEvent?.showNotification && lecture?.userId === authUser?.id) {      
+      setPendingLectureShowNotificationAsDone({ variables: { id: lecture.id } });
+    }
+  }, [lecture])
 
 
   const categories = useMemo(() => {
@@ -131,7 +142,7 @@ export const LecturePreview = () => {
               })()}
               scrollEventThrottle={16}
             >
-              <View className='h-[400]'>                
+              <View className='h-[400]'>
                 {
                   (lecture?.metadata?.status === 'IN_PROGRESS' || lecture?.metadata?.status === 'COMPLETED') && (
                     <RNAnimated.View className='absolute right-4 bottom-4 px-2 py-1 rounded-full bg-white/50'
@@ -144,7 +155,7 @@ export const LecturePreview = () => {
                         })
                       }}
                     >
-                      <Text className='text-gray-950 text-xs text-center'>                        
+                      <Text className='text-gray-950 text-xs text-center'>
                         {lecture?.metadata?.status === 'IN_PROGRESS' ? `${leftTime.time}min left` : 'Done'}
                       </Text>
                     </RNAnimated.View>

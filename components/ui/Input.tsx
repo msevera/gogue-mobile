@@ -17,8 +17,9 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, TextInputProp
       value,
       ref,
       className: cn(
-        'text-base font-gray-950 placeholder:text-gray-400 w-full leading-[1.2]',
-        inputClassName
+        'text-base font-gray-950 placeholder:text-gray-400 w-full leading-[1.2]',      
+        multiline ? 'leading-[1.5] p-4 py-3': 'leading-[1.2]',
+        inputClassName,
       ),
       editable: props.editable,
       onChangeText: (text: string) => {
@@ -65,6 +66,7 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, TextInputProp
         className={
           cn(
             'bg-white p-4 rounded-2xl border border-gray-200',
+            multiline && 'p-0',
             'flex-row justify-between items-center',
             (props.editable === false || loading) && 'opacity-50 bg-gray-300',
             componentClassName

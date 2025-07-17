@@ -3,31 +3,25 @@ import { Text } from '@/components/ui/Text';
 import { useCallback, useState } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Lecture } from '@/apollo/__generated__/graphql';
-import { useGetLectures } from '@/hooks/useGetLectures';
 import { RootSettings } from '@/components/RootSettings';
 import { CreateLecture } from '@/components/CreateLecture';
 import { LectureItem } from '@/components/LectureItem';
 import { Header } from '@/components/layouts/Header';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
-import { useAuth } from '@/hooks/useAuth';
+import { GlimpsesBlock } from '@/components/GlimpsesBlock';
+import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
 
 const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
   const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
-  const { authUser } = useAuth();
-  const { items, isLoading } = useGetLectures({ input: { skipUserId: authUser?.id } });
-  const [newLectureVisible, setNewLectureVisible] = useState(false);
+  const { items: itemsRecommended, isLoading: isLoadingRecommended } = useGetLecturesRecommended();
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   const onMenuPressHandler = useCallback(() => {
     setSettingsVisible(!settingsVisible);
-  }, [settingsVisible]);
-
-  const onNewLecturePressHandler = useCallback(() => {
-    setNewLectureVisible(!newLectureVisible);
-  }, [newLectureVisible]);
+  }, [settingsVisible]); 
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <View className='mr-5'>
@@ -35,15 +29,21 @@ export default function Screen() {
     </View>;
   }, []);
 
-  const data = [{
-    title: 'Jump back in',
-    horizontal: true,
-    data: itemsRecentlyPlayed as Lecture[]
-  },
-  {
-    title: 'You might also like',
-    data: items as Lecture[]
-  }]
+  const data = [
+    {
+      title: 'Glimpses',
+      type: 'glimpses',      
+      data: []
+    },
+    {
+      title: 'Jump back in',
+      horizontal: true,
+      data: itemsRecentlyPlayed as Lecture[]
+    },
+    {
+      title: 'You might also like',
+      data: itemsRecommended as Lecture[]
+    }]
 
   return (
     <View className='flex-1'>
@@ -52,7 +52,7 @@ export default function Screen() {
           headerShown: true,
           header: () => <Header showMenu title='Home' onMenuPress={onMenuPressHandler} />,
         }}
-        contentLoading={isLoading}
+        contentLoading={isLoadingRecommended}
         contentEmpty={false}
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
@@ -62,12 +62,16 @@ export default function Screen() {
           stickySectionHeadersEnabled={false}
           sections={data}
           renderItem={({ item, section }) => {
-            if (section.horizontal) {
+            if (section.horizontal || section.type === 'glimpses') {
               return null;
             }
             return <LectureItem lecture={item} parentPath='/lectures' />;
           }}
           renderSectionHeader={({ section }) => {
+            if (section.type === 'glimpses') {
+              return <GlimpsesBlock />;
+            }
+
             if (section.data.length === 0) {
               return null;
             }
@@ -97,8 +101,7 @@ export default function Screen() {
           keyExtractor={keyExtractor}
         />
       </ScreenLayout>
-      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />
-      <CreateLecture visible={newLectureVisible} onClose={onNewLecturePressHandler} />
+      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />      
     </View>
   );
 }

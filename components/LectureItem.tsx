@@ -17,7 +17,7 @@ export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentP
       <View className='flex-row px-4 mb-4'>
         <View className='flex-1'>
           <View
-            className="rounded-xl px-4 pt-7 py-4"
+            className="rounded-xl px-6 pt-6 py-4"
             style={{
               backgroundColor: coverBGHex(lecture.image?.color),
             }}
@@ -27,11 +27,10 @@ export const LectureItem = ({ lecture, parentPath }: { lecture: Lecture, parentP
                 source={lecture.image?.webp}
                 contentFit="contain"
                 transition={1000}
-                style={{
-                  flex: 1,
-                  width: 1024 / 3,
-                  height: 1024 / 3,
-                  borderRadius: 12,
+                style={{                
+                  width: '100%',
+                  aspectRatio: 1,
+                  borderRadius: 12
                 }}                
               />
             </View>

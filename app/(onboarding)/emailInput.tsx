@@ -22,6 +22,16 @@ export default function EmailInputScreen() {
     } finally {
       
     }
+
+
+    // try{
+    //   const response = await fetch(process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_URL as string);
+    //   const data = await response.json();
+    //   console.log('data', data);
+    // } catch (error) {
+    //   console.log('test error', error);
+    // }
+    
   }
 
   useEffect(() => {
@@ -42,7 +52,7 @@ export default function EmailInputScreen() {
         >
           <View className="flex-1 w-full justify-center items-center">
             <Text className="text-4xl mb-2 text-center font-semibold text-gray-800">Welcome to <Text className="text-4xl text-blue-500 font-semibold">Gogue</Text></Text>
-            <Text className="text-2xl text-center text-blue-500">Personalized AI lecturer</Text>
+            <Text className="text-2xl text-center text-blue-500">Expand your knowledge with AI</Text>
           </View>
           <View className="w-full items-center">           
             <Button              

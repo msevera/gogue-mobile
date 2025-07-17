@@ -90,6 +90,7 @@ export default {
       "bundler": "metro", "output": "static", "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-localization",
       "expo-web-browser",
       "expo-font",
       "expo-router",

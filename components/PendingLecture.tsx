@@ -17,13 +17,18 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
   const timeout = 2000;
 
   useEffect(() => {
-    if (lecture && lecture?.creationEvent?.name !== 'DONE') {
+    console.log('lecture?.creationEvent?.showNotification', lecture?.creationEvent?.showNotification);
+    if (lecture && lecture?.creationEvent?.showNotification) {
       setIsCreating(true);
+    } else {
+      setIsCreating(false);
     }
-  }, [lecture]);
+  }, [lecture?.creationEvent?.showNotification]);
 
   const calculateProgress = (state: { event: string, lecture: Lecture }) => {
     switch (state?.event) {
+      case 'INIT':
+        return 0;
       case 'NORMALIZING_TOPIC':
         return 10;
       case 'GENERATING_PLAN':
@@ -60,7 +65,7 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
 
   const handleOpenLecture = () => {
     setIsCreating(false);
-    router.push(`${parentPath}/${lecture?.id}`);
+    router.push(`${parentPath}/${lecture!.id}`);
   }
 
   const getStatusComponent = (state: { event: string, lecture: Lecture }) => {
@@ -121,12 +126,12 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
   const processQueue = () => {
     if (isCreating) {
       const state = queueRef.current.shift();
-      if (state?.event === 'DONE') {
-        setTimeout(() => {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-          // setIsCreating(false);
-        }, 1000);
-      }
+      // if (state?.event === 'DONE') {
+      //   setTimeout(() => {
+      //     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      //     // setIsCreating(false);
+      //   }, 1000);
+      // }
 
       if (state) {
         queueIsProcessing.current = true;
@@ -160,19 +165,16 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
 
   const contentAnimatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: withTiming(isCreating ? -tabHeight : 0, { duration: 500 }) }],
-      opacity: withTiming(isCreating ? 1 : 0, { duration: 250 })
+      transform: [{ translateY: withTiming(isCreating && status ? -tabHeight : 0, { duration: 500 }) }],
+      opacity: withTiming(isCreating && status ? 1 : 0, { duration: 250 })
     };
-  }, [isCreating]);
+  }, [isCreating, status]);
+
 
   return (
     <Animated.View className='flex-row absolute z-10 bottom-0 w-full' style={contentAnimatedStyle}>
-      <Pressable
-        className='flex-1 bg-white px-4 border-t border-gray-100'
-        onPress={() => {
-          if (isCreating) return;
-          router.push(`/lectures/${lecture.id}`);
-        }}
+      <View
+        className='flex-1 bg-white px-4 border-t border-gray-100'     
       >
         <View className='flex-1 flex-row  w-full'>
           <View className='flex-1'>
@@ -200,7 +202,7 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
             </View>
           </View>
         </View>
-      </Pressable>
+      </View>
     </Animated.View>
   )
 }

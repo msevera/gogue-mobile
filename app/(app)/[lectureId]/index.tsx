@@ -15,7 +15,7 @@ import { useGetLecture } from '@/hooks/useGetLecture';
 import { useDebouncedCallback } from 'use-debounce';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 import * as WebBrowser from 'expo-web-browser';
-import TrackPlayer, { State, useProgress, useTrackPlayerEvents, Event, RepeatMode } from 'react-native-track-player';
+import TrackPlayer, { State, useTrackPlayerEvents, Event, RepeatMode } from 'react-native-track-player';
 
 
 export default function Screen() {
@@ -261,6 +261,7 @@ export default function Screen() {
         headerShown: false,
         animation: 'slide_from_bottom',
         gestureDirection: 'vertical',
+        animationDuration: 300, 
       }}
       contentLoading={loading}
       contentEmpty={false}

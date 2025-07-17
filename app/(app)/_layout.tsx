@@ -8,6 +8,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function AppLayout() {
   const { authUser, isLoading } = useAuth();
+ 
+
   useEffect(() => {
     const hideSplashScreen = async () => {
       await SplashScreen.hideAsync();
@@ -34,6 +36,10 @@ export default function AppLayout() {
   if (!authUser.firstName || !authUser.lastName) {
     return <Redirect href="(onboarding)/setProfile" />;
   }
+
+  // if (!authUser?.topics?.length) { 
+  //   return <Redirect href="(onboarding)/setTopics" />;
+  // }
 
   return (
     <Stack
