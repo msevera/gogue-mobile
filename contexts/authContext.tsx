@@ -193,7 +193,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
-      console.log('idToken', idToken);
+      // console.log('idToken', idToken);
       setIdToken(idToken);
     } else if (!user) {
       await signOut();
