@@ -5,9 +5,9 @@ on:
     branches: ['main']
 
 jobs:
-  fingerprint:
-    name: Fingerprint
-    type: fingerprint
+  # fingerprint:
+  #   name: Fingerprint
+  #   type: fingerprint
   # get_ios_build:
   #   name: Check for existing ios build    
   #   needs: [fingerprint]
