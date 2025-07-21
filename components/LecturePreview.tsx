@@ -98,8 +98,8 @@ export const LecturePreview = () => {
       const result = await Share.share({
         title: lecture?.title as string,
         // On iOS the `url` field is preferred; on Android the `message` field is required.
-        url,
-        message: `🎧 Check out the "${lecture?.title}" lecture on Gogue!`,
+        // url,
+        message: `🎧 Check out the "${lecture?.title}" lecture on Gogue! ${url}`,
       });
       if (result.action === Share.sharedAction) {
         if (result.activityType) {

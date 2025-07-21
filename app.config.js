@@ -54,7 +54,7 @@ export default {
     "scheme": "gogue",
     "userInterfaceStyle": "automatic",   
     "ios": {
-      "associatedDomains": ["applinks:gogue.ai"],
+      "associatedDomains": ["applinks:gogue.ai", "applinks:www.gogue.ai"],
       "supportsTablet": false,
       "bundleIdentifier": getUniqueIdentifier('ios'),
       "googleServicesFile": process.env.GOOGLE_SERVICE_INFO_PLIST ?? "./GoogleService-Info.plist",
