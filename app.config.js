@@ -156,7 +156,8 @@ export default {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/5591aa61-bb06-4cc8-a11f-9310446d5652"
+      "url": "https://u.expo.dev/5591aa61-bb06-4cc8-a11f-9310446d5652",
+      "checkAutomatically": "NEVER"
     }
   }
 }
