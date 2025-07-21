@@ -10,9 +10,7 @@ export const useGetLecturesSearch = () => {
     useLazyQuery<GetLecturesSearchQuery, GetLecturesSearchQueryVariables>(GET_LECTURES_SEARCH);
 
   const debouncedSearch = useDebouncedCallback(async (query) => {
-    console.log('debouncedSearch');
-    if (query?.length && query?.length > 2) {
-      console.log('actual search');
+    if (query?.length && query?.length > 2) {      
       await getLecturesSearch({ variables: { input: { query } } })
       setIsLoading(false);
     }

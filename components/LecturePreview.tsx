@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Platform, ScrollView, SectionList, View, StyleSheet, Animated as RNAnimated, UIManager, findNodeHandle, ActivityIndicator } from 'react-native';
+import { Platform, ScrollView, SectionList, View, StyleSheet, Animated as RNAnimated, UIManager, findNodeHandle, ActivityIndicator, Share } from 'react-native';
 import { Text } from './ui/Text';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useGetLecture } from '@/hooks/useGetLecture';
@@ -92,6 +92,29 @@ export const LecturePreview = () => {
     }
   }, [lecture])
 
+  const share = useCallback(async () => {
+    const url = `https://www.gogue.ai/lectures/${lectureId}`;
+    try {
+      const result = await Share.share({
+        title: lecture?.title as string,
+        // On iOS the `url` field is preferred; on Android the `message` field is required.
+        url,
+        message: `🎧 Check out the "${lecture?.title}" lecture on Gogue! ${url}`,
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dialog dismissed');
+      }
+    } catch (error: any) {
+      console.log('error', error);
+    }
+  }, [lecture])
+
   return (
     <View className='flex-1'>
       {
@@ -103,11 +126,19 @@ export const LecturePreview = () => {
           <>
             <Header
               showBack
-              title={lecture?.title}
+              title={lecture?.title as string}
               className='z-10 absolute'
               opacityInterpolation={opacityInterpolation}
               titleYInterpolation={titleInterpolation}
               titleOpacityInterpolation={titleOpacityInterpolation}
+              right={
+                <Button
+                  sm
+                  ghost
+                  icon={{ component: 'Feather', name: 'share', color: '#000' }}
+                  onPress={share}
+                />
+              }
             />
             <RNAnimated.View className='flex-1' style={{
               backgroundColor: coverBGHex(lecture?.image?.color),

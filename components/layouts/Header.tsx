@@ -19,6 +19,7 @@ export type HeaderProps = {
   opacityInterpolation?: any,
   titleYInterpolation?: any,
   titleOpacityInterpolation?: any,
+  right?: React.ReactNode,
 }
 
 export const Header = ({
@@ -32,7 +33,8 @@ export const Header = ({
   className,
   opacityInterpolation,
   titleYInterpolation,
-  titleOpacityInterpolation
+  titleOpacityInterpolation,
+  right
 }: HeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
@@ -64,8 +66,7 @@ export const Header = ({
             />
           )
         }
-        <View className='absolute left-0 right-0'
-        >
+        <View className='absolute left-0 right-0'>
           {
             loading ? (
               <ActivityIndicator size='small' color="#000000" />
@@ -83,6 +84,9 @@ export const Header = ({
             )
           }
         </View>
+        {
+          right
+        }
       </View>
     </View>
   )

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, LayoutChangeEvent } from 'react-native';
+import { View, LayoutChangeEvent, TextLayoutEventData } from 'react-native';
 import {
   GestureHandlerRootView,
   GestureDetector,
@@ -33,6 +33,7 @@ const Slider = ({ values, labels, value, onChange, labelTemplate }: SliderProps)
   const lastValue = useSharedValue(values[0]);
   const startX = useSharedValue(0);
   const currentIndex = useSharedValue(0);
+  const labelWidth = useSharedValue(0);
   const [labelText, setLabelText] = useState(() => {
     const initialValue = labels?.[0] ?? values[0];
     return labelTemplate ? labelTemplate.replace('{value}', String(initialValue)) : String(initialValue);
@@ -57,6 +58,11 @@ const Slider = ({ values, labels, value, onChange, labelTemplate }: SliderProps)
 
   const onLayout = (event: LayoutChangeEvent) => {
     containerWidth.value = event.nativeEvent.layout.width;
+  };
+
+  const onTextLayout = (event: { nativeEvent: TextLayoutEventData }) => {
+    const textWidth = event.nativeEvent.lines[0]?.width || 0;
+    labelWidth.value = textWidth;
   };
 
   const getOffsetFromValue = (val: number) => {
@@ -136,8 +142,18 @@ const Slider = ({ values, labels, value, onChange, labelTemplate }: SliderProps)
   });
 
   const labelStyle = useAnimatedStyle(() => {
+    const maxOffset = containerWidth.value - THUMB_SIZE - PADDING * 2;
+    const progress = maxOffset > 0 ? offset.value / maxOffset : 0;
+    
+    // Calculate positions for left and right alignment
+    const leftAlignedPosition = 0; // Start at container's left edge
+    const rightAlignedPosition = containerWidth.value - labelWidth.value; // End at container's right edge
+    
+    // Interpolate between left and right aligned positions
+    const labelPosition = leftAlignedPosition + progress * (rightAlignedPosition - leftAlignedPosition);
+    
     return {
-      transform: [{ translateX: offset.value + PADDING + THUMB_SIZE / 2 - 20 }],
+      transform: [{ translateX: labelPosition }],
     };
   });
 
@@ -165,7 +181,7 @@ const Slider = ({ values, labels, value, onChange, labelTemplate }: SliderProps)
         </View>
         <View className="h-5 mt-2">
           <Animated.View style={[labelStyle]}>
-            <Text className="text-sm text-gray-600">
+            <Text className="text-sm text-gray-600" onTextLayout={onTextLayout}>
               {labelText}
             </Text>
           </Animated.View>

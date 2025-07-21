@@ -167,8 +167,6 @@ export const SetTopics = () => {
     }
   }, [customCategoryEditable]);
 
-  console.log('levelData', levelData?.selectedCategories);
-
   return (
     <GlobalDrawer customKeyboardBehavior={null} showCloseButton={false} title='Personalization' headerBorder drawerSettings={drawerSettings}>
       {

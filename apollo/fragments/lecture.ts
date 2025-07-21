@@ -39,9 +39,6 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
       webp
       color
     }
-    audio {
-      duration
-    }
   }
   ${LECTURE_METADATA_FRAGMENT}
 `;

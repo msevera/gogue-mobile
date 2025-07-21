@@ -1,6 +1,6 @@
-import { View, FlatList, SectionList } from 'react-native';
+import { View, FlatList, SectionList, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/Text';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { RootSettings } from '@/components/RootSettings';
@@ -11,17 +11,26 @@ import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 import { GlimpsesBlock } from '@/components/GlimpsesBlock';
 import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
+import Animated, { Extrapolation, ExtrapolationType, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, runOnJS } from 'react-native-reanimated';
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
-const keyExtractor = (item: Lecture) => item.id;
+const keyExtractor = (item: Lecture) => {
+  return item.id;
+};
 
 export default function Screen() {
   const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
-  const { items: itemsRecommended, isLoading: isLoadingRecommended } = useGetLecturesRecommended();
+  const { items: itemsRecommended, isLoading: isLoadingRecommended, refetch: refetchRecommended } = useGetLecturesRecommended();
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const pullTriggeredRef = useRef(false);
 
   const onMenuPressHandler = useCallback(() => {
     setSettingsVisible(!settingsVisible);
-  }, [settingsVisible]); 
+  }, [settingsVisible]);
+
+  const refresh = useCallback(() => {
+    refetchRecommended();
+  }, []);
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <View className='mr-5'>
@@ -32,7 +41,7 @@ export default function Screen() {
   const data = [
     {
       title: 'Glimpses',
-      type: 'glimpses',      
+      type: 'glimpses',
       data: []
     },
     {
@@ -44,6 +53,34 @@ export default function Screen() {
       title: 'You might also like',
       data: itemsRecommended as Lecture[]
     }]
+
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+      
+      // Check if user pulled down more than 20px
+      if (scrollY.value < -50 && !pullTriggeredRef.current) {
+        pullTriggeredRef.current = true;
+        runOnJS(refresh)();
+      }
+      
+      // Reset trigger when user scrolls back up
+      if (scrollY.value >= 0) {
+        pullTriggeredRef.current = false;
+      }
+    },
+  });
+
+  const refreshAnimation = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [-100, -20, 0], [1, 0, 0], Extrapolation.CLAMP),
+      transform: [{
+        translateY: scrollY.value + 10
+      }]
+    }
+  })
+
 
   return (
     <View className='flex-1'>
@@ -57,7 +94,13 @@ export default function Screen() {
         contentEmptyText='Create your first lecture'
         bottomPadding={false}
       >
-        <SectionList
+        <AnimatedSectionList
+          onScroll={onScroll}
+          refreshControl={
+            <Animated.View style={[refreshAnimation]} className='mb-0'>
+              <ActivityIndicator size='small' color='#000' />
+            </Animated.View>
+          }
           className='pt-4'
           stickySectionHeadersEnabled={false}
           sections={data}
@@ -101,7 +144,7 @@ export default function Screen() {
           keyExtractor={keyExtractor}
         />
       </ScreenLayout>
-      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />      
+      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />
     </View>
   );
 }

@@ -94,8 +94,8 @@ export const CreateLecture = ({ visible, initialDescription, onClose }: { visibl
             }}
             {...register('description', description, [required(intl, 'Please enter your goal and topic'), limitCharsTo(500, intl, 'Must be less than 500 characters')])}
           />
-          <Text className='text-lg mb-2'>How much time do you have?</Text>
-          <Slider value={duration} values={[5, 10]} labelTemplate='{value} min' onChange={(value) => setDuration(value)} />
+          <Text className='text-lg mb-2'>Duration</Text>
+          <Slider value={duration} values={[5, 10]} labels={['Overview ~5 min', 'Deep dive ~10 min']} labelTemplate='{value}' onChange={(value) => setDuration(value)} />
         </View>
         <Button
           className='mb-4'
