@@ -8,17 +8,17 @@ jobs:
   fingerprint:
     name: Fingerprint
     type: fingerprint
-  get_ios_build:
-    name: Check for existing ios build    
-    needs: [fingerprint]
-    type: get-build
-    params:
-      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
-      profile: production  
+  # get_ios_build:
+  #   name: Check for existing ios build    
+  #   needs: [fingerprint]
+  #   type: get-build
+  #   params:
+  #     fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+  #     profile: production  
   build_ios:
     name: Build iOS
-    needs: [get_ios_build]
-    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    # needs: [get_ios_build]
+    # if: ${{ !needs.get_ios_build.outputs.build_id }}
     type: build
     params:
       platform: ios
@@ -30,12 +30,12 @@ jobs:
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
       profile: production  
-  publish_ios_update:
-    name: Publish iOS update
-    environment: production
-    needs: [get_ios_build]
-    if: ${{ needs.get_ios_build.outputs.build_id }}
-    type: update
-    params:
-      branch: production
-      platform: ios
+  # publish_ios_update:
+  #   name: Publish iOS update
+  #   environment: production
+  #   needs: [get_ios_build]
+  #   if: ${{ needs.get_ios_build.outputs.build_id }}
+  #   type: update
+  #   params:
+  #     branch: production
+  #     platform: ios
