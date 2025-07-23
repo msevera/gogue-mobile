@@ -19,7 +19,7 @@ import TrackPlayer, { State, useTrackPlayerEvents, Event, RepeatMode } from 'rea
 
 
 export default function Screen() {
-  const { lectureId } = useLocalSearchParams();
+  const { lectureId, note: noteIdParam } = useLocalSearchParams();  
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
   const [wasPlaying, setWasPlaying] = useState(false);
@@ -50,6 +50,12 @@ export default function Screen() {
     })
   }, 1000);
 
+  useEffect(() => {
+    if (noteIdParam) {
+      lectureDrawerRef.current?.openNote(notes.find((note) => note.id === noteIdParam) as Note);      
+    }
+  }, [noteIdParam]);
+
   const { sentences, currentNote, currentSentence, selectNote } = useSentence({
     alignments,
     notes: notes as Note[],
@@ -63,6 +69,8 @@ export default function Screen() {
       }
     }, [savingPlaybackIsReady])
   });
+
+  console.log('currentNote AAA', currentNote?.id);
 
   const onNotes = useCallback(() => {
     console.log('onNotes');

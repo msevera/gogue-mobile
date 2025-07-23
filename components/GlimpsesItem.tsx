@@ -4,7 +4,6 @@ import { Glimpse } from '@/apollo/__generated__/graphql';
 import { useCallback, useEffect, useMemo } from 'react';
 import Markdown from 'react-native-markdown-display';
 import * as WebBrowser from 'expo-web-browser';
-import { Gesture } from 'react-native-gesture-handler/lib/typescript/handlers/gestures/gesture';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useMutation } from '@apollo/client';
 import { SET_GLIMPSE_VIEWED } from '@/apollo/queries/glimpses';

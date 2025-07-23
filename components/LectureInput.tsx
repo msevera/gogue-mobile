@@ -70,7 +70,7 @@ export const LectureInput = ({
           loading={loading}          
           loaderColor='#374151'
           loaderSize={0.8}
-          loaderClassName='w-[24] h-[24]'
+          loaderClassName='w-[24] h-[20]'
           disabled={isDisabled}
         />
       </View>}

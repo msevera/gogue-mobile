@@ -1,6 +1,7 @@
 import { FlatList, View, ViewStyle } from 'react-native'
 import { Text } from './ui/Text'
 import { Message } from '@/hooks/useNoteChat'
+import Markdown from 'react-native-markdown-display';
 
 const overrideProps = {
   contentContainerStyle: {
@@ -15,7 +16,15 @@ const keyExtractor = (item: Message, index: number) => {
 
 const MessageText = ({ text }: { text: string }) => {
   return (
-    <Text className='text-lg'>{text}</Text>
+    <Markdown
+      style={{
+        body: {
+          color: '#030712',
+          fontSize: 18,
+          lineHeight: 28,
+        },
+      }}
+    >{text}</Markdown>
   )
 }
 
@@ -30,7 +39,7 @@ const AssistantMessage = ({ message }: { message: Message }) => {
 const UserMessage = ({ message }: { message: Message }) => {
   return (
     <View className='flex-row justify-end'>
-      <View className='bg-gray-100 rounded-full p-2 px-4'>
+      <View className='bg-gray-100 rounded-2xl px-4 max-w-[75%]'>
         <MessageText text={message.content} />
       </View>
     </View>

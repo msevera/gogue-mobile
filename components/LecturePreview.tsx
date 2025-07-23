@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Platform, ScrollView, SectionList, View, StyleSheet, Animated as RNAnimated, UIManager, findNodeHandle, ActivityIndicator, Share } from 'react-native';
+import { Platform, View, Animated as RNAnimated, ActivityIndicator, Share, Keyboard } from 'react-native';
 import { Text } from './ui/Text';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useGetLecture } from '@/hooks/useGetLecture';
@@ -13,11 +13,28 @@ import { coverBGHex, formatTime } from '@/lib/utils';
 import { Button } from './ui/Button';
 import { GET_LECTURE_PREVIEW, SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE } from '@/apollo/queries/lectures';
 import { useAddToLibrary } from '@/hooks/useAddToLibrary';
-import { SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables } from '@/apollo/__generated__/graphql';
+import { DeleteNoteMutation, DeleteNoteMutationVariables, Note, SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables } from '@/apollo/__generated__/graphql';
 import { useMutation } from '@apollo/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useGetNotes } from '@/hooks/useGetNotes';
+import { NotesList } from './NotesList';
+import { GlobalDrawer } from './globalDrawer/GlobalDrawer';
+import { NoteDetails, NoteDetailsRef } from './NoteDetails';
+import { LectureInput } from './LectureInput';
+import { useVoiceAgent } from '@/hooks/useVoiceAgent';
+import { Message } from '@/hooks/useNoteChat';
+import { DELETE_NOTE } from '@/apollo/queries/notes';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const tabs = [{ text: 'Overview', value: 'overview' }, { text: 'Sections', value: 'sections' }, { text: 'Sources', value: 'sources' }]
+const gradientStyle = {
+  position: 'absolute',
+  // top: -20,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  height: 65,
+  zIndex: 0
+}
 
 export const LecturePreview = () => {
   const { authUser } = useAuth();
@@ -30,8 +47,48 @@ export const LecturePreview = () => {
   const [setPendingLectureShowNotificationAsDone] = useMutation<SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables>(SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE);
   const stickyRef = useRef<View>(null);
   const [offsetTop, setOffsetTop] = useState(0);
+  const [agentMode, setAgentMode] = useState<'text' | 'voice' | null>(null);
+  const noteDetailsRef = useRef<NoteDetailsRef>(null);
+  const { connect, connecting, disconnect, inCall, sendMessage } = useVoiceAgent({
+    onTranscript: useCallback((message: Message) => {
+      noteDetailsRef.current?.addMessage(message);
+    }, []),
+  });
+
+  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const initialNotesDrawerSettings = useMemo(() => ({
+    snapPoints: ['0'],
+    backdrop: false,
+    index: 0,
+    gesturesEnabled: false,
+    closeByGestureEnabled: false
+  }), []);
+  const [notesDrawerSettings, setNotesDrawerSettings] = useState(initialNotesDrawerSettings);
 
   const { handleToggleLibrary, loading: toggleLibraryLoading } = useAddToLibrary({ lecture });
+  const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
+  const [deleteNote, { loading: deleteNoteLoading }] = useMutation<DeleteNoteMutation, DeleteNoteMutationVariables>(DELETE_NOTE, {
+    onError: (error) => {
+      console.log('DELETE_NOTE error', JSON.stringify(error, null, 2));
+    },
+    update: (cache, result, { variables }) => {
+      const { id } = variables || {};
+      updateDeleteNoteCache(id as string);
+    }
+  });
+
+  const tabs = useMemo(() => {
+    let initialTabs = [
+      { text: 'Overview', value: 'overview' },
+      { text: 'Sections', value: 'sections' },
+      { text: 'Sources', value: 'sources' },
+    ] as { text: string, value: string, highlighted?: boolean }[];
+
+    if (notes?.length) {
+      initialTabs.push({ text: `Notes (${notes?.length})`, value: 'notes', highlighted: true })
+    }
+    return initialTabs;
+  }, [notes])
 
   const opacityInterpolation = rnScrollY.interpolate({
     inputRange: [200, 300],
@@ -52,7 +109,7 @@ export const LecturePreview = () => {
   })
 
   useEffect(() => {
-    if (lecture?.creationEvent?.showNotification && lecture?.userId === authUser?.id) {      
+    if (lecture?.creationEvent?.showNotification && lecture?.userId === authUser?.id) {
       setPendingLectureShowNotificationAsDone({ variables: { id: lecture.id } });
     }
   }, [lecture])
@@ -113,7 +170,106 @@ export const LecturePreview = () => {
     } catch (error: any) {
       console.log('error', error);
     }
-  }, [lecture])
+  }, [lecture]);
+
+  const memoizedNotesList = useMemo(() => (
+    <NotesList
+      useFlatList={false}
+      notes={notes as Note[]}
+      full
+      onOpenNote={(note) => {
+        setCurrentNote(note);
+        openNoteDrawer();
+      }}
+    />
+  ), [notes]);
+
+  const openNoteDrawer = useCallback(() => {
+    setNotesDrawerSettings(prev => ({
+      ...prev,
+      snapPoints: ['100%'],
+      backdrop: true,
+    }));
+  }, []);
+
+  const closeNoteDrawer = useCallback(() => {
+    setAgentMode(null);
+    disconnect();
+    Keyboard.dismiss();
+    setNotesDrawerSettings(prev => ({
+      ...prev,
+      snapPoints: ['0'],
+      backdrop: false,
+    }));
+  }, [disconnect]);
+
+  const handleDeleteNote = useCallback(async () => {
+    await deleteNote({
+      variables: {
+        id: currentNote?.id as string
+      }
+    });
+    closeNoteDrawer();
+  }, [currentNote, closeNoteDrawer, notes]);
+
+  const memoizedNoteDetails = useMemo(() => {
+    if (!currentNote) return null;
+
+    return <NoteDetails
+      ref={noteDetailsRef}
+      currentNote={currentNote}
+      onDelete={handleDeleteNote}
+      onDeleteNoteLoading={deleteNoteLoading}
+    />
+  }, [currentNote, handleDeleteNote, deleteNoteLoading]);
+
+
+
+  const handleTextSubmit = useCallback((text: string) => {
+    sendMessage(text);
+  }, [sendMessage]);
+
+
+  const connectToAgent = useCallback((enableMic: boolean) => {
+    if (!inCall) {
+      connect({
+        lectureId: lectureId as string,
+        noteId: currentNote?.id,
+        noteTimestamp: currentNote?.timestamp as number,
+        enableMic
+      });
+    }
+  }, [lectureId, currentNote, inCall, connect]);
+
+  const handleRecordPress = useCallback(() => {
+    setAgentMode('voice');
+    connectToAgent(true);
+  }, [connectToAgent]);
+
+  const handleInputFocus = useCallback(() => {
+    setAgentMode('text');
+    connectToAgent(false);
+  }, [connectToAgent]);
+
+  const handleInputBlur = useCallback(() => {
+    Keyboard.dismiss();
+  }, []);
+
+  const handleInputPress = useCallback(() => {
+    Keyboard.dismiss();
+  }, []);
+
+  const memoizedLectureInput = useMemo(() => (
+    <LectureInput
+      agentMode={agentMode}
+      loading={connecting}
+      onTextSubmit={handleTextSubmit}
+      onRecordPress={handleRecordPress}
+      onFocus={handleInputFocus}
+      onBlur={handleInputBlur}
+      onPress={handleInputPress}
+    />
+  ), [agentMode, connecting, handleTextSubmit, handleRecordPress, handleInputFocus, handleInputBlur, handleInputPress]);
 
   return (
     <View className='flex-1'>
@@ -253,7 +409,7 @@ export const LecturePreview = () => {
                         setOffsetTop(pageY - top); // element’s absolute Y minus desired 50px
                       });
                     }}
-                    className='z-10 bg-white mb-4 mt-2 px-4'
+                    className='z-10 bg-white mb-4 mt-2'
                     // style={[stickyContainerStyle]}
                     style={{
                       transform: [{
@@ -321,6 +477,9 @@ export const LecturePreview = () => {
                     </View>
                   )
                 }
+                {
+                  activeTab === 'notes' && memoizedNotesList
+                }
                 {Platform.OS === 'ios' && (
                   <View
                     style={{
@@ -338,87 +497,26 @@ export const LecturePreview = () => {
           </>
         )
       }
-
+      <GlobalDrawer
+        title="Ask AI"
+        headerBorder={false}
+        drawerSettings={notesDrawerSettings}
+        onBackdropPress={closeNoteDrawer}
+      >
+        <View className='flex-1'>
+          {memoizedNoteDetails}
+          <View className="px-4 absolute left-0 right-0 z-10" style={{
+            bottom: insets.bottom
+          }}>
+            {memoizedLectureInput}
+          </View>
+          <LinearGradient
+            colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', 'rgba(255,255,255,1)']}
+            locations={[0, 0.18, 1]}
+            style={gradientStyle}
+          />
+        </View>
+      </GlobalDrawer>
     </View>
   )
 }
-
-
-// return (
-//   <View className='flex-1'>
-//     {/* <View className="h-[120] w-[120] bg-red-500 absolute top-0 left-0 right-0 z-10"></View> */}
-//     <ScrollView
-//       className='flex-1 border'
-//       // onScroll={scrollHandler}
-//       // scrollEventThrottle={16}
-//       stickyHeaderIndices={[1, 3]}
-//     >
-//       {Platform.OS === 'ios' && (
-//         <View
-//           style={{
-//             position: 'absolute',
-//             top: -200,       // same height as spacer
-//             left: 0,
-//             right: 0,
-//             height: 200,
-//             backgroundColor: `${lecture?.image?.color}1A`,  // bounce color at top
-//           }}
-//         />
-//       )}
-//       <View className='flex-1 w-full'
-//       // style={
-//       //   [stickyContainerStyle,
-//       //     {
-//       //       backgroundColor: `${lecture?.image?.color}1A`,
-//       //       // height: 100
-//       //     }
-//       //   ]}
-//       >
-//         <View
-//         // className="flex-1 py-8 pt-24"
-//         >
-//           {/* <View className='items-center justify-center'>
-
-//             <Image
-//               source={lecture?.image?.webp}
-//               contentFit="scale-down"
-//               transition={1000}
-//               style={{
-//                 flex: 1,
-//                 width: 1024 / 6,
-//                 height: 1536 / 6,
-//                 borderRadius: 4,
-//               }}
-//             />
-
-//           </View>*/}
-//         </View>
-//         <Text className="text-base text-gray-500 text-center">
-//           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt.
-//         </Text>
-//       </View>
-//       <View className='flex-1 border bg-white'>
-//         <Text className="text-lg text-gray-950 text-center mt-4">{lecture?.title}</Text>
-//         <Text className="text-base text-gray-500 text-center" numberOfLines={2}>{lecture?.topic}</Text>
-//         <Text className="text-base text-gray-500 text-center">
-//           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt.
-//         </Text>
-//       </View>
-//       <View className='h-20 border bg-white z-10'>
-//         <Text>
-//           Sticky header #2
-//         </Text>
-//       </View>
-//       <View className='flex-1 border bg-white z-10'>
-//         <Text className="text-lg text-gray-950 text-center mt-4">{lecture?.title}</Text>
-//         <Text className="text-base text-gray-500 text-center" numberOfLines={2}>{lecture?.topic}</Text>
-//         <Text className="text-base text-gray-500 text-center">
-//           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et q.
-//           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et q.
-//           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et q.
-//         </Text>
-//       </View>
-
-//     </ScrollView>
-//   </View>
-// )

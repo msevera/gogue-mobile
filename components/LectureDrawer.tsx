@@ -23,6 +23,7 @@ export interface LectureDrawerRef {
   close: () => void;
   getControlsDrawerClosedSnapPoint: () => string;
   setPlayLineCurrentTime: (currentTime: number) => void;
+  openNote: (note: Note) => void;
 }
 
 const controlsDrawerClosedSnapPoint = '200';
@@ -131,6 +132,11 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
     },
     setPlayLineCurrentTime: (currentTime: number) => {
       lectureControlsRef.current?.setPlayLineCurrentTime(currentTime);
+    },
+    openNote: (note: Note) => {
+      onSelectNote(note);
+      setDrawerMode('noteDetails');
+      openDrawer(controlsDrawerOnlyInputSnapPoint);
     }
   }), []);
 

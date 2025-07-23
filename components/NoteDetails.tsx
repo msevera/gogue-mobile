@@ -8,10 +8,11 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } fro
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { Button } from './ui/Button'
 import { LinearGradient } from 'expo-linear-gradient'
+import Markdown from 'react-native-markdown-display';
 
 type NoteDetailsProps = {
   currentNote: Note
-  currentSentence: CurrentSentence
+  currentSentence?: CurrentSentence
   onDelete: () => void
   onDeleteNoteLoading: boolean
 }
@@ -21,6 +22,7 @@ export type NoteDetailsRef = {
 }
 
 export const NoteDetails = forwardRef<NoteDetailsRef, NoteDetailsProps>(({ currentNote, currentSentence, onDelete, onDeleteNoteLoading }, ref) => {
+  console.log('currentNote', currentNote?.id);
   const { messages, loading, addMessage, fetchMore } = useNoteChat({ noteId: currentNote?.id });
   const [localLoading, setLocalLoading] = useState(loading);
   const title = currentNote ? currentNote.title : currentSentence?.text;
@@ -76,10 +78,16 @@ export const NoteDetails = forwardRef<NoteDetailsRef, NoteDetailsProps>(({ curre
               animated: true
             }))}>
               <Animated.View style={[{ overflow: 'hidden' }, animatedStyle]} className='flex-row items-center justify-between bg-yellow-100 rounded-2xl mb-2 mx-4'>
-                <View className='absolute top-0 left-0 right-0 mx-4 my-2' onLayout={onLayout}>
-                  <Text className='text-lg'>
+                <View className='absolute top-0 left-0 right-0 mx-4' onLayout={onLayout}>
+                  <Markdown style={{
+                    body: {
+                      color: '#030712',
+                      fontSize: 18,
+                      lineHeight: 28,                     
+                    },
+                  }}>
                     {title}
-                  </Text>
+                  </Markdown>
                   {
                     currentNote && (
                       <View className='flex-row mt-2 left-[-5]'>

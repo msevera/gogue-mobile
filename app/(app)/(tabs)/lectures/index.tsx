@@ -108,7 +108,7 @@ export default function Screen() {
             if (section.horizontal || section.type === 'glimpses') {
               return null;
             }
-            return <LectureItem lecture={item} parentPath='/lectures' />;
+            return <LectureItem lecture={item as Lecture} parentPath='/lectures' />;
           }}
           renderSectionHeader={({ section }) => {
             if (section.type === 'glimpses') {

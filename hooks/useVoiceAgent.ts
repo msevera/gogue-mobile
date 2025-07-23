@@ -9,7 +9,7 @@ import axios from '@/lib/axios';
 
 const inCallStates = new Set(["authenticating", "connecting", "connected", "ready"])
 
-export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: (noteId: string) => void, onTranscript: (message: Message) => void }) => {
+export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated?: (noteId: string) => void, onTranscript?: (message: Message) => void }) => {
   const { authUser } = useAuth();
   const [client, setClient] = useState<RTVIClient | undefined>();
   const [currentState, setCurrentState] = useState<TransportState>('disconnected');
@@ -143,7 +143,7 @@ export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: 
       client.on('serverMessage', (message: any) => {
         const { payload } = message;
         if (message.type === 'tts-text') {
-          onTranscript({
+          onTranscript?.({
             role: payload.role,
             content: payload.content,
             timestamp: payload.timestamp
@@ -153,7 +153,7 @@ export const useVoiceAgent = ({ onNoteCreated, onTranscript }: { onNoteCreated: 
         }
 
         if (message.type === 'note-created') {
-          onNoteCreated(payload.noteId);
+          onNoteCreated?.(payload.noteId);
         }
       });
     }

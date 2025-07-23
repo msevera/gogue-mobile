@@ -42,7 +42,7 @@ export const useSentence = ({
       if (index === sentences.length - 1) {
         return currentTime >= sentence.start_time;
       }
-      return currentTime >= sentence.start_time && currentTime < sentence.end_time;
+      return currentTime >= sentence.start_time && currentTime <= sentence.end_time;
     });
 
 
