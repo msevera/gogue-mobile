@@ -70,8 +70,6 @@ export default function Screen() {
     }, [savingPlaybackIsReady])
   });
 
-  console.log('currentNote AAA', currentNote?.id);
-
   const onNotes = useCallback(() => {
     console.log('onNotes');
   }, []);

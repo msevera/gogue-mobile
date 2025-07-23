@@ -22,7 +22,6 @@ export type NoteDetailsRef = {
 }
 
 export const NoteDetails = forwardRef<NoteDetailsRef, NoteDetailsProps>(({ currentNote, currentSentence, onDelete, onDeleteNoteLoading }, ref) => {
-  console.log('currentNote', currentNote?.id);
   const { messages, loading, addMessage, fetchMore } = useNoteChat({ noteId: currentNote?.id });
   const [localLoading, setLocalLoading] = useState(loading);
   const title = currentNote ? currentNote.title : currentSentence?.text;
