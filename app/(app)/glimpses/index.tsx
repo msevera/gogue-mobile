@@ -34,7 +34,7 @@ const colorPairs = [
 ]
 
 export default function Screen() {
-  const { newLectureVisible, setNewLectureVisible, setInitialDescription } = useNewLecture();
+  const { newLectureVisible, setNewLectureVisible, setInitialDescription, createPressed, setCreatePressed } = useNewLecture();
   const { items, isLoading } = useGetGlimpsesLatest();
   const { authUser } = useAuth();
   const inset = useSafeAreaInsets();
@@ -58,8 +58,15 @@ export default function Screen() {
 
 
   useEffect(() => {
-    setIsPaused(newLectureVisible);
+    setIsPaused(newLectureVisible);   
   }, [newLectureVisible]);
+
+  useEffect(() => {
+    if (!newLectureVisible && createPressed) {
+      setCreatePressed(false);
+      onClose();
+    }
+  }, [newLectureVisible, createPressed]);
 
   useEffect(() => {
     if (isPaused) {

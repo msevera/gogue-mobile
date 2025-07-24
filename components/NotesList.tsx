@@ -3,13 +3,22 @@ import { Text } from "@/components/ui/Text";
 import { Note } from '@/apollo/__generated__/graphql';
 import { formatTime } from '@/lib/utils';
 import { Button } from "./ui/Button";
+import Markdown from 'react-native-markdown-display';
 
 const extractKey = (item: Note) => item.id;
 
-const NoteItem = ({ note, onOpenNote, full = false }: { note: Note, onOpenNote?: (note: Note) => void, full?: boolean }) => {
+const NoteItem = ({ note, onOpenNote }: { note: Note, onOpenNote?: (note: Note) => void }) => {
   return (
-    <Pressable className='mb-4 mx-4 px-4 py-2 pt-3 bg-gray-50 rounded-2xl' onPress={() => onOpenNote?.(note)}>
-      <Text numberOfLines={full ? undefined : 2} className='text-lg text-gray-800'>{note.title}</Text>
+    <Pressable className='mb-4 mx-4 px-4 py-2 pt-3 bg-gray-50 rounded-2xl' onPress={() => onOpenNote?.(note)}>      
+      <Markdown style={{
+        body: {
+          color: '#030712',
+          fontSize: 18,
+          lineHeight: 28,
+        },
+      }}>
+        {note.title}
+      </Markdown>
       <View className='flex-row items-center justify-between mt-2'>
         <View className='flex-row items-center'>
           <Text className='text-sm text-gray-500'>{formatTime(note.timestamp)}</Text>
@@ -24,18 +33,18 @@ const NoteItem = ({ note, onOpenNote, full = false }: { note: Note, onOpenNote?:
   )
 }
 
-export const NotesList = ({ notes, full = false, onOpenNote, useFlatList = true }: { notes: Note[], full?: boolean, onOpenNote?: (note: Note) => void, useFlatList?: boolean }) => {
+export const NotesList = ({ notes, onOpenNote, useFlatList = true }: { notes: Note[], onOpenNote?: (note: Note) => void, useFlatList?: boolean }) => {
   return (
     <View className='flex-1'>
       {
         useFlatList ? (
           <FlatList
             data={notes}
-            renderItem={({ item }) => <NoteItem note={item} onOpenNote={onOpenNote} full={full} />}
+            renderItem={({ item }) => <NoteItem note={item} onOpenNote={onOpenNote} />}
             keyExtractor={extractKey}
           />
         ) : notes.map((note) => (
-          <NoteItem key={note.id} note={note} onOpenNote={onOpenNote} full={full} />
+          <NoteItem key={note.id} note={note} onOpenNote={onOpenNote} />
         ))
       }
     </View>

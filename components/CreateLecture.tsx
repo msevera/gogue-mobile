@@ -12,7 +12,7 @@ import useValidation from '@/hooks/useValidation';
 import { useRecording } from '@/hooks/useRecording';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
 
-export const CreateLecture = ({ visible, initialDescription, onClose }: { visible: boolean, initialDescription: string, onClose: () => void }) => {
+export const CreateLecture = ({ visible, initialDescription, onClose, onCreate }: { visible: boolean, initialDescription: string, onClose: () => void, onCreate?: () => void }) => {
   const { isRecording, setIsRecording, recognizedText, setRecognizedText, startRecording, stopRecording } = useRecording();
   const { createLectureAsyncMut } = useCreateLecture();
 
@@ -60,8 +60,9 @@ export const CreateLecture = ({ visible, initialDescription, onClose }: { visibl
     createLectureAsyncMut(description, duration);
     setDescription('');
     inputRef?.current?.setNativeProps({ text: '' })
-    setDuration(15);
-    onClose();          
+    setDuration(5);
+    onClose();
+    onCreate?.();
   }
 
   return (

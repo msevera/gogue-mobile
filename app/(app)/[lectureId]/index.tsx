@@ -64,11 +64,16 @@ export default function Screen() {
     onSentenceChange: useCallback((sentenceIndex: number, sentenceStartTime: number) => {
       setNoteId(undefined);
       if (savingPlaybackIsReady) {
-        console.log('savingPlaybackIsReady', savingPlaybackIsReady, sentenceStartTime);
+        // console.log('savingPlaybackIsReady', savingPlaybackIsReady, sentenceStartTime);
         debouncedOnSentenceChange(sentenceStartTime)
       }
     }, [savingPlaybackIsReady])
   });
+
+  // console.log('=======')
+  // console.log('currentTime', currentTime)
+  // console.log('currentSentence', currentSentence?.text, currentSentence?.sentence.start_time, currentSentence?.sentence.end_time)
+  // console.log('currentNote', currentNote?.title, currentNote?.timestamp)
 
   const onNotes = useCallback(() => {
     console.log('onNotes');
@@ -162,19 +167,19 @@ export default function Screen() {
 
   useTrackPlayerEvents([Event.PlaybackProgressUpdated, Event.PlaybackPlayWhenReadyChanged, Event.PlaybackQueueEnded], async (event) => {
     if (event.type === Event.PlaybackPlayWhenReadyChanged) {
-      console.log('PlaybackPlayWhenReadyChanged', event.playWhenReady);
+      // console.log('PlaybackPlayWhenReadyChanged', event.playWhenReady);
       setIsPlaying(event.playWhenReady)
     }
 
     if (event.type === Event.PlaybackProgressUpdated) {
       const time = Number(event.position.toFixed(2));
-      console.log('PlaybackProgressUpdated', time, lecture.audio?.duration);
+      // console.log('PlaybackProgressUpdated', time, lecture.audio?.duration);
       lectureDrawerRef.current?.setPlayLineCurrentTime(time)
       setCurrentTime(time)
     }
 
     if (event.type === Event.PlaybackQueueEnded) {
-      console.log('PlaybackQueueEnded', event.track);
+      // console.log('PlaybackQueueEnded', event.track);
       await setLectureStatus({
         variables: {
           id: lectureId as string,

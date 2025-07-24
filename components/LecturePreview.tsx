@@ -176,7 +176,6 @@ export const LecturePreview = () => {
     <NotesList
       useFlatList={false}
       notes={notes as Note[]}
-      full
       onOpenNote={(note) => {
         setCurrentNote(note);
         openNoteDrawer();

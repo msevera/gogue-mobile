@@ -38,11 +38,13 @@ export const useSentence = ({
     if (!sentences?.length || !content) return;
 
     const sentenceIndex = sentences.findIndex((item, index) => {
+      const startTime = Number(Number(item.sentence.start_time).toFixed(2));
+      const endTime = Number(Number(item.sentence.end_time).toFixed(2));
       const { sentence } = item;
       if (index === sentences.length - 1) {
-        return currentTime >= sentence.start_time;
+        return currentTime >= startTime;
       }
-      return currentTime >= sentence.start_time && currentTime <= sentence.end_time;
+      return currentTime >= startTime && currentTime < endTime;
     });
 
 

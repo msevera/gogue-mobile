@@ -92,16 +92,13 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
   </View>
 }
 
-export default function TabsLayout() {
-  // const [newLecture, setNewLecture] = useState<Lecture | null>(null);
-  const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription } = useNewLecture();
+export default function TabsLayout() {  
+  const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription, setCreatePressed } = useNewLecture();
   const [calendar] = useCalendars();
   useAppState({
     onForeground: async () => {
       console.log('refetching pending lecture');
-      await refetchPendingLectureShowNotification();
-      // setNewLecture(data?.pendingLectureShowNotification as Lecture);
-      // console.log('refetched pending lecture', data?.pendingLectureShowNotification?.id);
+      await refetchPendingLectureShowNotification();      
     }
   });
 
@@ -127,6 +124,10 @@ export default function TabsLayout() {
       setInitialDescription('');
     }
   }, [newLectureVisible]);
+
+  const onCreateLecturePressHandler = useCallback(() => {
+    setCreatePressed(true);
+  }, [setCreatePressed]);
 
   const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending();
 
@@ -337,7 +338,7 @@ export default function TabsLayout() {
         }}
         tabBar={({ navigation }) => <TabBar onCreatePress={onNewLecturePressHandler} navigation={navigation} />}
       />
-      <CreateLecture visible={newLectureVisible} initialDescription={initialDescription} onClose={onNewLecturePressHandler} />
+      <CreateLecture visible={newLectureVisible} initialDescription={initialDescription} onClose={onNewLecturePressHandler} onCreate={onCreateLecturePressHandler} />
       <SetTopics />
     </View>
   )

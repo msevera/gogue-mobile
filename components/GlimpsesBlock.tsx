@@ -8,10 +8,12 @@ import { useGetGlimpsesLatest } from '@/hooks/useGetGlimpsesLatest';
 import { useSubscription } from '@apollo/client';
 import { GLIMPSE_STATUS_UPDATED_SUBSCRIPTION } from '@/apollo/queries/glimpses';
 import { GlimpseStatusUpdatedSubscription, GlimpseStatusUpdatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
+import { useNewLecture } from '@/hooks/useNewLecture';
 
 export const GlimpsesBlock = () => {
   const { items, refetch, isLoading } = useGetGlimpsesLatest();
   const { glimpsesStatus } = useCheckGlimpsesStatus();
+  const { setCreatePressed } = useNewLecture();
 
   useSubscription<GlimpseStatusUpdatedSubscription, GlimpseStatusUpdatedSubscriptionVariables>(GLIMPSE_STATUS_UPDATED_SUBSCRIPTION, {
     onData: ({ data }) => {
@@ -28,6 +30,7 @@ export const GlimpsesBlock = () => {
     <Pressable
       className='px-4 mb-5'
       onPress={() => {
+        setCreatePressed(false);
         if (noGlimpses) {
           return;
         }
