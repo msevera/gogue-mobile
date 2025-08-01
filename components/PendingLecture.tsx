@@ -31,14 +31,14 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
         return 0;
       case 'NORMALIZING_TOPIC':
         return 10;
-      case 'GENERATING_PLAN':
+      case 'RESEARCHING_PLAN':
         return 20;
-      case 'GENERATING_CONTENT': {
-        const totalSections = state.lecture.sections.length;
-        const sectionsWithContent = state.lecture.sections.filter(section => section.hasContent).length;
+      case 'RESEARCHING_CONTENT': {
+        const totalSections = state.lecture.research.length;
+        const sectionsWithContent = state.lecture.research.filter(section => section.hasContent).length;
         return 30 + (sectionsWithContent / totalSections) * 30;
       }
-      case 'GENERATING_OVERVIEW':
+      case 'COMPILING_CONTENT':
         return 60;
       case 'GENERATING_CATEGORIES':
         return 80;
@@ -73,38 +73,38 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
       case 'NORMALIZING_TOPIC': {
         return <Text className='text-gray-500 text-sm'>Normalizing topic...</Text>;
       }
-      case 'GENERATING_PLAN': {
+      case 'RESEARCHING_PLAN': {
         return (
           <View className="flex-row">
             <Text numberOfLines={1}>
-              <Text className="text-gray-500 text-sm">Creating: </Text>
+              <Text className="text-gray-500 text-sm">Researching: </Text>
               <Text className="text-sm">{lecture?.title}</Text>
             </Text>
           </View>
         );
       }
-      case 'GENERATING_CONTENT': {
-        const sectionWithoutContent = state.lecture.sections.find(section => !section.hasContent);
+      case 'RESEARCHING_CONTENT': {
+        const sectionWithoutContent = state.lecture.research.find(section => !section.hasContent);
         return (
           <View className="flex-row">
             <Text numberOfLines={1}>
-              <Text className="text-gray-500 text-sm">Adding section: </Text>
+              <Text className="text-gray-500 text-sm">Researching: </Text>
               <Text className="text-sm">{sectionWithoutContent?.title}</Text>
             </Text>
           </View>
         );
       }
-      case 'GENERATING_OVERVIEW': {
+      case 'COMPILING_CONTENT': {
         return (
           <View className="flex-row">
-            <Text className="text-gray-500 text-sm">Adding overview...</Text>
+            <Text className="text-gray-500 text-sm">Bringing it all together...</Text>
           </View>
         );
       }
       case 'GENERATING_CATEGORIES': {
         return (
           <View className="flex-row">
-            <Text className="text-gray-500 text-sm">Adding categories...</Text>
+            <Text className="text-gray-500 text-sm">Bringing it all together...</Text>
           </View>
         );
       }

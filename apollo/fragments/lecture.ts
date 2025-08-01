@@ -21,7 +21,11 @@ export const LECTURE_LIST_ITEM_FRAGMENT = gql`
     creationEvent {
       name
       showNotification
-    }    
+    }   
+    research {     
+      title
+      hasContent
+    }
     sections {     
       title
       hasContent
@@ -50,6 +54,12 @@ export const LECTURE_PREVIEW_FRAGMENT = gql`
     sections {     
       title
       overview
+      annotations {
+        title
+        url
+      }
+    }   
+    research {     
       annotations {
         title
         url

@@ -126,7 +126,7 @@ export const LecturePreview = () => {
 
 
   const sources = useMemo(() => {
-    const allAnnotations = lecture?.sections?.reduce((acc, section) => {
+    const allAnnotations = lecture?.research?.reduce((acc, section) => {
       return acc.concat(section.annotations || []);
     }, [] as any[]) || [];
 
