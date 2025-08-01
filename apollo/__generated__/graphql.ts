@@ -218,6 +218,7 @@ export type Mutation = {
   deleteNote: Note;
   generateAudio: Scalars['Boolean']['output'];
   generateGlimpses: Scalars['Boolean']['output'];
+  recreateLectureAsync: Scalars['Boolean']['output'];
   removeFromLibrary: LectureMetadata;
   removeTopic?: Maybe<User>;
   setGlimpseViewed: Glimpse;
@@ -256,6 +257,11 @@ export type MutationDeleteNoteArgs = {
 
 
 export type MutationGenerateAudioArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRecreateLectureAsyncArgs = {
   id: Scalars['ID']['input'];
 };
 
