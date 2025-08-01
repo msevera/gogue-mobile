@@ -5,7 +5,6 @@ import { useMemo, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Keyboard } from 'react-native';
-import Slider from './Slider';
 import { limitCharsTo, required } from '@/lib/validationRules';
 import { useIntl } from 'react-intl';
 import useValidation from '@/hooks/useValidation';
@@ -13,12 +12,11 @@ import { useRecording } from '@/hooks/useRecording';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
 
 export const CreateLecture = ({ visible, initialDescription, onClose, onCreate }: { visible: boolean, initialDescription: string, onClose: () => void, onCreate?: () => void }) => {
-  const { isRecording, setIsRecording, recognizedText, setRecognizedText, startRecording, stopRecording } = useRecording();
+  const { isRecording, recognizedText, startRecording, stopRecording } = useRecording();
   const { createLectureAsyncMut } = useCreateLecture();
 
   const intl = useIntl();
   const { register, validate, submit: formSubmit, remove } = useValidation();
-  const [duration, setDuration] = useState(5);
   const [description, setDescription] = useState('');
   const inputRef = useRef<TextInput>(null);
   const drawerSettings = useMemo(() => ({
@@ -47,20 +45,15 @@ export const CreateLecture = ({ visible, initialDescription, onClose, onCreate }
   }, [initialDescription]);
 
   useEffect(() => {
-    Keyboard.dismiss();
-  }, [duration]);
-
-  useEffect(() => {
     inputRef?.current?.setNativeProps({ text: recognizedText })
   }, [recognizedText]);
 
   const handleCreateLecture = async ({ isValid }: { isValid: boolean }) => {
     if (!isValid) return;
     
-    createLectureAsyncMut(description, duration);
+    createLectureAsyncMut(description);
     setDescription('');
     inputRef?.current?.setNativeProps({ text: '' })
-    setDuration(5);
     onClose();
     onCreate?.();
   }
@@ -77,7 +70,7 @@ export const CreateLecture = ({ visible, initialDescription, onClose, onCreate }
             multiline
             staticHeight
             placeholder='Describe your goal and topic'
-            inputClassName="h-[130]"
+            inputClassName="h-[200]"
             containerClassName='mb-8'
             onChangeText={(text) => {
               remove('description');
@@ -94,9 +87,7 @@ export const CreateLecture = ({ visible, initialDescription, onClose, onCreate }
               validate('firstName')
             }}
             {...register('description', description, [required(intl, 'Please enter your goal and topic'), limitCharsTo(500, intl, 'Must be less than 500 characters')])}
-          />
-          <Text className='text-lg mb-2'>Duration</Text>
-          <Slider value={duration} values={[5, 10]} labels={['Overview ~5 min', 'Deep dive ~10 min']} labelTemplate='{value}' onChange={(value) => setDuration(value)} />
+          />         
         </View>
         <Button
           className='mb-4'
