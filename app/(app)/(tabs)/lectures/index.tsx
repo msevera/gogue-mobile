@@ -49,7 +49,7 @@ export default function Screen() {
       data: itemsRecentlyPlayed as Lecture[]
     },
     {
-      title: 'You might also like',
+      title: 'You might like',
       data: itemsRecommended as Lecture[]
     }]
 
