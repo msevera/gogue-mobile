@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { TextInput, View } from "react-native";
 import { Text } from "@/components/ui/Text";
 import { Image } from "expo-image";
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
@@ -9,16 +9,27 @@ import { useCreate } from '@/hooks/useCreate';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '@/lib/utils';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
+import { useCallback, useRef, useState } from 'react';
+import { Input } from '@/components/ui/Input';
 
 export default function Screen() {
+  const inputRef = useRef<TextInput>(null);
   const inset = useSafeAreaInsets();
-  const { input, source, setPreviewSource } = useCreate();
+  const [inputEditable, setInputEditable] = useState(false);
+  const { input, setInput, source, setPreviewSource } = useCreate();
   const { createLectureAsyncMut } = useCreateLecture();
   const width = 120;
   const imageWidth = source?.image?.width;
   const imageHeight = source?.image?.height;
   const aspectRatio = imageHeight! / imageWidth!;
   const calculatedHeight = width * aspectRatio;
+
+  const onEditInputPress = useCallback(() => {
+    setInputEditable(true)
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  }, []);
 
   return <ScreenLayout
     screenOptions={{
@@ -46,8 +57,38 @@ export default function Screen() {
       </View>
       <View className='flex-1'>
         <View className='mb-6'>
-          <Text className="text-base text-gray-700 mb-1">Input</Text>
-          <Text className="text-lg">{input}</Text>
+          <View>
+            <View className='flex-row items-center'>
+              <Text className="text-base text-gray-700 mb-1">Input</Text>
+              {
+                !inputEditable && (
+                  <Button sm text="Edit" ghost className='ml-3 p-0 top-[-1]' onPress={onEditInputPress} />
+                )
+              }
+            </View>
+            <View className={cn(inputEditable ? 'h-[200]' : 'h-auto')}>
+              {
+                inputEditable ? (
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChangeText={setInput}
+                    multiline
+                    staticHeight
+                    inputClassName="h-full"
+                    submitBehavior='submit'
+                    returnKeyType='done'
+                    onSubmitEditing={() => {
+                      setInputEditable(false);
+                    }}
+                  />
+                ) : (
+                  <Text className="text-lg">{input}</Text>
+                )
+              }
+            </View>
+          </View>
+
         </View>
         <View>
           <Text className={cn("text-base text-gray-700", source ? 'mb-2' : 'mb-1')}>Source</Text>
