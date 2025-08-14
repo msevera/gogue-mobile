@@ -71,6 +71,17 @@ export const LECTURE_PREVIEW_FRAGMENT = gql`
         name
       }
     }
+    source {
+      id    
+      title        
+      image {
+        url
+        color
+        width
+        height
+      }      
+      authors      
+    }
   }
   ${LECTURE_LIST_ITEM_FRAGMENT}
 `;

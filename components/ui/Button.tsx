@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ActivityIndicator, GestureResponderEvent, Pressable, PressableProps, View } from 'react-native';
+import { ActivityIndicator, GestureResponderEvent, Pressable, PressableProps, StyleProp, TextStyle, View } from 'react-native';
 import { Text } from './Text';
 import { cn } from '@/lib/utils';
 import { useCallback } from 'react';
@@ -16,6 +16,7 @@ type ButtonProps = PressableProps & {
   className?: string;
   textClassName?: string;
   text?: string;
+  textStyle?: StyleProp<TextStyle>;
   loaderColor?: string;
   loaderSize?: number;
   icon?: {
@@ -43,6 +44,7 @@ export const Button = React.forwardRef<View, ButtonProps>(({
   loaderColor,
   loaderSize,
   onPress,
+  textStyle,
   ...props
 }, ref) => {
   const onPressHandler = useCallback((event: GestureResponderEvent) => {
@@ -113,6 +115,7 @@ export const Button = React.forwardRef<View, ButtonProps>(({
           {
             text && (
               <Text
+                style={textStyle}
                 className={cn(
                   'text-center font-medium',
                   sm ? ['text-sm'] : ['text-base'],

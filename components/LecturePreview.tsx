@@ -25,6 +25,7 @@ import { useVoiceAgent } from '@/hooks/useVoiceAgent';
 import { Message } from '@/hooks/useNoteChat';
 import { DELETE_NOTE } from '@/apollo/queries/notes';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LectureSourcePreview } from './LectureSourcePreview';
 
 const gradientStyle = {
   position: 'absolute',
@@ -303,15 +304,15 @@ export const LecturePreview = () => {
                 extrapolate: 'clamp',
               })
             }}>
-              <View className='h-[400] pt-11 flex-row items-center justify-center'>
+              <View className='h-[370] pt-11 flex-row items-center justify-center'>
                 <View>
                   <Image
                     source={lecture?.image?.webp}
                     contentFit="scale-down"
                     transition={1000}
                     style={{
-                      width: 230,
-                      height: 230,
+                      width: 180,
+                      height: 180,
                       borderRadius: 4,
                     }}
                   />
@@ -328,7 +329,7 @@ export const LecturePreview = () => {
               })()}
               scrollEventThrottle={16}
             >
-              <View className='h-[400]'>
+              <View className='h-[370]'>
                 {
                   (lecture?.metadata?.status === 'IN_PROGRESS' || lecture?.metadata?.status === 'COMPLETED') && (
                     <RNAnimated.View className='absolute right-4 bottom-4 px-2 py-1 rounded-full bg-white/50'
@@ -378,15 +379,6 @@ export const LecturePreview = () => {
                             router.push(`/${lectureId}`);
                           }}
                         />
-                        {/* {
-                          lecture?.metadata?.status === 'IN_PROGRESS' && (
-                            <View className='absolute left-0 right-0 bottom-[-18]'>
-                              <Text className='text-blue-500 text-xs text-center top-[2]'>
-                                99% completed
-                              </Text>
-                            </View>
-                          )
-                        } */}
                       </View>
                     </View>
                   </View>
@@ -401,6 +393,13 @@ export const LecturePreview = () => {
                   <View className='mt-6'>
                     <Topics source={categories} />
                   </View>
+                  {
+                    lecture?.source && (
+                      <View className='px-4 mt-6'>
+                        <LectureSourcePreview source={lecture?.source} />
+                      </View>
+                    )
+                  }
                   <RNAnimated.View
                     ref={stickyRef}
                     onLayout={() => {
@@ -409,7 +408,6 @@ export const LecturePreview = () => {
                       });
                     }}
                     className='z-10 bg-white mb-4 mt-2'
-                    // style={[stickyContainerStyle]}
                     style={{
                       transform: [{
                         translateY: RNAnimated.add(

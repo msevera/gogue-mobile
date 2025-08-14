@@ -21,25 +21,27 @@ import { SetTimezoneMutation, SetTimezoneMutationVariables } from '@/apollo/__ge
 import { useAppState } from '@/hooks/useAppState';
 import { useGetLecturePending } from '@/hooks/useGetLecturePending';
 
-const TabBarButton = ({ text, icon, active, highlight, onPress, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void }) => {
+const TabBarButton = ({ text, icon, active, highlight, onPress, disabled, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void, disabled?: boolean }) => {
   return <Button
     {...props}
     className='flex-1 h-full rounded-none bg-white'
     textClassName={cn(
       'text-xs text-gray-500',
       active && 'text-gray-900',
-      highlight && 'text-blue-500'
+      highlight && 'text-blue-500',
+      disabled && 'text-gray-400'
     )}
     icon={{
       ...icon,
       top: true,
       size: 28,
       className: 'mb-1',
-      color: highlight ? '#3b82f6' : active ? '#111827' : '#6b7280',
+      color: disabled ? '#9ca3af' : highlight ? '#3b82f6' : active ? '#111827' : '#6b7280',
     }}
     sm
     text={text}
     onPress={onPress}
+    disabled={disabled}
   />
 }
 
@@ -53,7 +55,8 @@ const rootPathArray = Object.values(rootPaths);
 
 
 
-const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navigation: any }) => {
+const TabBar = ({ onCreatePress, disableCreation, navigation }: { onCreatePress: () => void, disableCreation: boolean, navigation: any }) => {
+  console.log('disableCreation', disableCreation);
   const pathname = usePathname();
   const isActive = (rootPath: string) => pathname.startsWith(rootPath);
   return <View className='h-[90] z-[11] bg-white border-t border-gray-100'>
@@ -87,18 +90,19 @@ const TabBar = ({ onCreatePress, navigation }: { onCreatePress: () => void, navi
         icon={{ component: 'Entypo', name: 'squared-plus' }}
         highlight
         onPress={onCreatePress}
+        disabled={disableCreation}
       />
     </View>
   </View>
 }
 
-export default function TabsLayout() {  
+export default function TabsLayout() {
   const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription, setCreatePressed } = useNewLecture();
   const [calendar] = useCalendars();
   useAppState({
     onForeground: async () => {
       console.log('refetching pending lecture');
-      await refetchPendingLectureShowNotification();      
+      await refetchPendingLectureShowNotification();
     }
   });
 
@@ -118,18 +122,26 @@ export default function TabsLayout() {
     }
   }, [calendar?.timeZone]);
 
-  const onNewLecturePressHandler = useCallback(() => {
-    setNewLectureVisible(!newLectureVisible);
-    if (newLectureVisible) {
-      setInitialDescription('');
-    }
-  }, [newLectureVisible]);
+
 
   const onCreateLecturePressHandler = useCallback(() => {
     setCreatePressed(true);
   }, [setCreatePressed]);
 
   const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending();
+
+  const onNewLecturePressHandler = useCallback(() => {
+    if (newLecture && newLecture?.creationEvent?.name !== 'DONE') {
+      return;
+    }
+    // setNewLectureVisible(!newLectureVisible);
+    // if (newLectureVisible) {
+    //   setInitialDescription('');
+    // }
+
+    router.push('/create');
+    // router.push('/glimpses');
+  }, [newLectureVisible, newLecture]);
 
   const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });
   useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
@@ -336,10 +348,10 @@ export default function TabsLayout() {
         screenOptions={{
           headerShown: false,
         }}
-        tabBar={({ navigation }) => <TabBar onCreatePress={onNewLecturePressHandler} navigation={navigation} />}
+        tabBar={({ navigation }) => <TabBar disableCreation={!!newLecture && newLecture?.creationEvent?.name !== 'DONE'} onCreatePress={onNewLecturePressHandler} navigation={navigation} />}
       />
-      <CreateLecture visible={newLectureVisible} initialDescription={initialDescription} onClose={onNewLecturePressHandler} onCreate={onCreateLecturePressHandler} />
-      <SetTopics />
+      {/* <CreateLecture visible={newLectureVisible} initialDescription={initialDescription} onClose={onNewLecturePressHandler} onCreate={onCreateLecturePressHandler} /> */}
+      {/* <SetTopics /> */}
     </View>
   )
 }
