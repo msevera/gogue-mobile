@@ -122,25 +122,14 @@ export default function TabsLayout() {
     }
   }, [calendar?.timeZone]);
 
-
-
-  const onCreateLecturePressHandler = useCallback(() => {
-    setCreatePressed(true);
-  }, [setCreatePressed]);
-
   const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending();
 
   const onNewLecturePressHandler = useCallback(() => {
     if (newLecture && newLecture?.creationEvent?.name !== 'DONE') {
       return;
     }
-    // setNewLectureVisible(!newLectureVisible);
-    // if (newLectureVisible) {
-    //   setInitialDescription('');
-    // }
 
     router.push('/create');
-    // router.push('/glimpses');
   }, [newLectureVisible, newLecture]);
 
   const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });

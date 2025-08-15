@@ -50,7 +50,7 @@ export default function Screen() {
         <Text className="text-base text-gray-700">
           {
             source ?
-              'We will personalize your lecture based on your input and the selected source' :
+              'We will personalize your lecture based on your input and the selected book' :
               'We will personalize your lecture based on your input and internet research'
           }
         </Text>
@@ -91,7 +91,7 @@ export default function Screen() {
 
         </View>
         <View>
-          <Text className={cn("text-base text-gray-700", source ? 'mb-2' : 'mb-1')}>Source</Text>
+          <Text className={cn("text-base text-gray-700", source ? 'mb-2' : 'mb-1')}>{source ? 'Book' : 'Source'}</Text>
           <View>
             {
               source ? (
@@ -109,7 +109,7 @@ export default function Screen() {
                   <View className='flex-1 ml-4'>
                     <Text className="text-lg text-gray-950">{source?.title}</Text>
                     <Text className="text-base text-gray-700 mb-4" numberOfLines={3}>{source?.overview}</Text>
-                    <Button text='Preview source' ghost className='p-0 self-start'
+                    <Button text='Preview' ghost className='p-0 self-start'
                       onPress={() => {
                         setPreviewSource({
                           visible: true,

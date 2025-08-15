@@ -79,7 +79,9 @@ export const LECTURE_PREVIEW_FRAGMENT = gql`
         color
         width
         height
-      }      
+      }   
+      overview
+      topic   
       authors      
     }
   }

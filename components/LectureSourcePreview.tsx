@@ -10,14 +10,14 @@ export const LectureSourcePreview = ({ source }: { source: SourceType }) => {
   const aspectRatio = imageWidth! / imageHeight!;
   const calculatedWidth = height * aspectRatio;
 
-  return <View>
-
-    <Text className='text-base text-gray-700 mb-2'>Based on</Text>
-    <View className='rounded-xl justify-center bg-gray-100 p-4'>
+  return <View className='rounded-xl justify-center bg-gray-100 p-4'>
+    <View className='justify-center'>
       <View className='flex-row justify-between'>
-        <View>
-          <Text className='text-xl font-semibold text-gray-800 mb-1' numberOfLines={1}>{source?.title}</Text>
-          <Text className='text-base text-gray-800' numberOfLines={1}>by {source?.authors?.join(', ')}</Text>        
+        <View className='flex-1 mr-4'>
+          <Text className='text-sm text-gray-500 mb-1'>Based on book</Text>
+          <Text className='text-base font-semibold text-gray-900 mb-1' numberOfLines={2}>{source?.title}</Text>
+          <Text className='text-sm text-gray-900 mb-1' numberOfLines={1}>by {source?.authors?.join(', ')}</Text>
+          <Text className='text-sm text-gray-600' numberOfLines={2}>{source?.topic}</Text>
         </View>
         <View className='justify-center items-center'>
           <View>
