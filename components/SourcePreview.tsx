@@ -60,6 +60,9 @@ export const SourcePreview = ({ visible, onClose, source }: { visible: boolean, 
               />
             </View>
           </View>
+          <View className='px-4 mt-4'>
+            <Text className='text-base font-semibold mb-2'>By {source?.authors?.join(', ')}</Text>
+          </View>
           <View className='pt-4 mb-4'>
             <Tabs
               source={tabs}
@@ -70,7 +73,7 @@ export const SourcePreview = ({ visible, onClose, source }: { visible: boolean, 
           {
             activeTab === 'overview' && (
               <View className='bg-white px-4'>
-                <Text className='text-lg text-gray-800 mb-10'>
+                <Text className='text-base text-gray-800 mb-10 leading-[28px]'>
                   {source?.overview}
                 </Text>
               </View>
@@ -81,10 +84,9 @@ export const SourcePreview = ({ visible, onClose, source }: { visible: boolean, 
               <View className='bg-white px-4'>
                 {
                   source?.keyTakeaways?.map((keyTakeaway, index) => (
-                    <View key={index} className={cn('mb-3 border-b border-gray-100 pb-3', {
-                      'border-0': index === source?.keyInsights?.length - 1
-                    })}>
-                      <Text className='text-lg text-gray-800 mb-2'>{keyTakeaway}</Text>
+                    <View key={index} className={cn('mb-4')}>
+                      <Text className='text-base text-gray-800'>
+                        <Text className='font-semibold'>•</Text>  {keyTakeaway}</Text>
                     </View>
                   ))
                 }

@@ -438,7 +438,7 @@ export const LecturePreview = () => {
                 {
                   activeTab === 'overview' && (
                     <View className='bg-white px-4'>
-                      <Text className='text-base text-gray-800'>
+                      <Text className='text-base text-gray-800 leading-[28px]'>
                         {lecture?.overview}
                       </Text>
                     </View>

@@ -1,13 +1,10 @@
-import { Keyboard, Platform, TextInput, View } from "react-native";
-import { Text } from '@/components/ui/Text';
+import { Platform, TextInput, View } from "react-native";
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useIntl } from 'react-intl';
-import { useCreateLecture } from '@/hooks/useCreateLecture';
-import { useRecording } from '@/hooks/useRecording';
 import useValidation from '@/hooks/useValidation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { router } from 'expo-router';
 import { limitCharsTo, required } from '@/lib/validationRules';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +13,6 @@ import { Header } from '@/components/layouts/Header';
 import { useCreate } from '@/hooks/useCreate';
 
 export default function Screen() {
-  const { isRecording, recognizedText, startRecording, stopRecording } = useRecording();
   const { input, setInput } = useCreate();
   const inset = useSafeAreaInsets();
 
@@ -25,7 +21,10 @@ export default function Screen() {
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
-    inputRef?.current?.focus();
+    setTimeout(() => {
+      inputRef?.current?.focus();
+    }, 700)
+    
   }, []);
 
   const handleCreateLecture = async ({ isValid }: { isValid: boolean }) => {
@@ -78,7 +77,7 @@ export default function Screen() {
             // recordingActive={isRecording}
             multiline
             staticHeight
-            placeholder='Describe your goal, topic or problem'
+            placeholder='Describe your problem, interest or goal'
             inputClassName="h-full p-0 pt-4 text-xl"
             containerClassName='mb-8'
             componentClassName='border-1'

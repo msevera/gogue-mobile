@@ -22,7 +22,7 @@ const renderItem = ({ source }: { source: Source }) => {
           <Text className="text-lg text-gray-700  mb-4">
             <Text className="text-lg text-gray-700 font-bold">
               Swipe right
-            </Text> to browse and select from trusted books and frameworks to tailor your lecture to your goal.
+            </Text> to browse and select from trusted books to tailor your lecture to your goal.
           </Text>
           <Text className="text-lg text-gray-700">
             Or tap <Text className="text-lg text-gray-700 font-bold">Skip</Text> to use internet research instead.
@@ -81,7 +81,7 @@ export default function Screen() {
       headerShown: true,
       header: () => <Header
         hideBorder
-        title='Personalize with a source'
+        title='Personalize with a book'
         showBack
         right={<Button sm ghost text='Skip' onPress={() => {
           setSource(null);
