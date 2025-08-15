@@ -20,6 +20,7 @@ import TrackPlayer from 'react-native-track-player';
 import { PlaybackService } from '@/components/player/PlaybackService';
 import { SetupService } from '@/components/player/SetupService';
 import { useEffect } from 'react';
+import { CreateProvider } from '@/contexts/createContext';
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -48,8 +49,8 @@ const client = new ApolloClient({
 
 export default function RootLayout() {
   useEffect(() => {
-    const fetchPlaybackState = async () => {  
-      try {       
+    const fetchPlaybackState = async () => {
+      try {
         await SetupService()
       } catch (error) {
         console.log('fetchPlaybackState error', error);
@@ -71,7 +72,9 @@ export default function RootLayout() {
               <PortalProvider>
                 <GlobalDrawerProvider>
                   <NewLectureProvider>
-                    <Slot />
+                    <CreateProvider>
+                      <Slot />
+                    </CreateProvider>
                   </NewLectureProvider>
                 </GlobalDrawerProvider>
               </PortalProvider>

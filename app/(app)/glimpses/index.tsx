@@ -1,6 +1,5 @@
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Dimensions, View } from 'react-native';
-import { Text } from '@/components/ui/Text';
 import { useGetGlimpsesLatest } from '@/hooks/useGetGlimpsesLatest';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlimpsesItem } from '@/components/GlimpsesItem';

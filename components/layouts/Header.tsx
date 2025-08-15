@@ -20,6 +20,8 @@ export type HeaderProps = {
   titleYInterpolation?: any,
   titleOpacityInterpolation?: any,
   right?: React.ReactNode,
+  hideBorder?: boolean,
+  titleLeft?: boolean
 }
 
 export const Header = ({
@@ -34,7 +36,9 @@ export const Header = ({
   opacityInterpolation,
   titleYInterpolation,
   titleOpacityInterpolation,
-  right
+  right,
+  hideBorder,
+  titleLeft
 }: HeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
@@ -42,7 +46,10 @@ export const Header = ({
       className={cn('w-full overflow-hidden', className)}
       style={{ paddingTop: insets.top }}
     >
-      <Animated.View className="bg-white border-b border-gray-100 absolute top-0 left-0 right-0 bottom-0"
+      <Animated.View className={cn(
+        "bg-white  absolute top-0 left-0 right-0 bottom-0",
+        !hideBorder && 'border-b border-gray-100'
+      )}
         style={{
           opacity: opacityInterpolation || 1
         }}
@@ -66,7 +73,12 @@ export const Header = ({
             />
           )
         }
-        <View className='absolute left-0 right-0'>
+        {
+          !showMenu && !showBack && (
+            <View />
+          )
+        }
+        <View className={cn('absolute', titleLeft ? 'left-4' : 'left-0 right-0')}>
           {
             loading ? (
               <ActivityIndicator size='small' color="#000000" />

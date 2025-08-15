@@ -8,7 +8,7 @@ export const useGetLecture = (lectureId: string, query: DocumentNode) => {
     },
     skip: !lectureId,
     onError: (error) => {
-      console.log('GET_LECTURE error', error);
+      console.log('GET_LECTURE error', JSON.stringify(error, null, 2));
     }
   });
 

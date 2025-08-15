@@ -4,7 +4,6 @@ import { useCallback, useState, useRef } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { RootSettings } from '@/components/RootSettings';
-import { CreateLecture } from '@/components/CreateLecture';
 import { LectureItem } from '@/components/LectureItem';
 import { Header } from '@/components/layouts/Header';
 import { LectureItemSmall } from '@/components/LectureItemSmall';
@@ -39,18 +38,18 @@ export default function Screen() {
   }, []);
 
   const data = [
-    {
-      title: 'Glimpses',
-      type: 'glimpses',
-      data: []
-    },
+    // {
+    //   title: 'Glimpses',
+    //   type: 'glimpses',
+    //   data: []
+    // },
     {
       title: 'Jump back in',
       horizontal: true,
       data: itemsRecentlyPlayed as Lecture[]
     },
     {
-      title: 'You might also like',
+      title: 'You might like',
       data: itemsRecommended as Lecture[]
     }]
 

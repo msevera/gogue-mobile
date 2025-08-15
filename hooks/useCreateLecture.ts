@@ -10,11 +10,12 @@ export const useCreateLecture = () => {
   });
 
   return {
-    createLectureAsyncMut: async (description: string) => {
+    createLectureAsyncMut: async (input: string, sourceId: string) => {
       await createLectureAsyncMut({
         variables: {
           input: {
-            input: description
+            input,
+            sourceId
           }
         },
       });

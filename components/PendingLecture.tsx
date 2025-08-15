@@ -17,7 +17,6 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
   const timeout = 2000;
 
   useEffect(() => {
-    console.log('lecture?.creationEvent?.showNotification', lecture?.creationEvent?.showNotification);
     if (lecture && lecture?.creationEvent?.showNotification) {
       setIsCreating(true);
     } else {
@@ -113,7 +112,7 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
       }
       case 'DONE': {
         return <Pressable className='flex-row justify-between' onPress={handleOpenLecture}>
-          <Text className='text-gray-500 text-sm'>Hurray! Lecture <Text className='text-sm font-bold'>{lecture?.title}</Text> is ready</Text>
+          <Text className='text-gray-500 text-sm flex-1' numberOfLines={1}>Hurray! Lecture <Text className='text-sm font-bold'>{lecture?.title}</Text> is ready</Text>
           <Button onPress={handleOpenLecture} text="Open" sm ghost className='py-0 px-0' />
         </Pressable>;
       }

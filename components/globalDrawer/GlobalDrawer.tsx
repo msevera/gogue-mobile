@@ -7,10 +7,11 @@ type DrawerSettings = {
   backdrop: boolean,
   index: number,
   gesturesEnabled: boolean,
-  closeByGestureEnabled: boolean
+  closeByGestureEnabled: boolean,
+  customBackground?: boolean
 }
 
-export const GlobalDrawer = ({ customKeyboardBehavior, children, title, headerBorder, drawerSettings, onBackdropPress, headerContainerClassName, headerContentClassName, showCloseButton = true }: { children: React.ReactNode, title: string, headerBorder: boolean, drawerSettings: DrawerSettings, onBackdropPress?: () => void, headerContainerClassName?: string, headerContentClassName?: string, showCloseButton?: boolean, customKeyboardBehavior?: KeyboardAvoidingViewProps['behavior'] | null }) => {    
+export const GlobalDrawer = ({ customKeyboardBehavior, children, title, headerBorder, drawerSettings, onBackdropPress, headerContainerClassName, headerContentClassName, showCloseButton = true }: { children: React.ReactNode, title?: string, headerBorder?: boolean, drawerSettings: DrawerSettings, onBackdropPress?: () => void, headerContainerClassName?: string, headerContentClassName?: string, showCloseButton?: boolean, customKeyboardBehavior?: KeyboardAvoidingViewProps['behavior'] | null }) => {    
   return <Portal name={title} hostName="globalDrawer">    
     <BottomSheet
       customKeyboardBehavior={customKeyboardBehavior}
@@ -26,6 +27,7 @@ export const GlobalDrawer = ({ customKeyboardBehavior, children, title, headerBo
       headerContainerClassName={headerContainerClassName}
       headerContentClassName={headerContentClassName}
       showCloseButton={showCloseButton}
+      customBackground={drawerSettings.customBackground}
     >
       {children}
     </BottomSheet>    
