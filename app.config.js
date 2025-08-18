@@ -90,7 +90,7 @@ export default {
       "bundler": "metro", "output": "static", "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      './plugins/deepLinkSubscriber/withDeepLinkSubscriber.ts',
+      "./plugins/deepLinkSubscriber/withDeepLinkSubscriber.js",
       "expo-localization",
       "expo-web-browser",
       "expo-font",

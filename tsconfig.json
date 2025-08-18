@@ -18,5 +18,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "hooks/useValidation.js", "codegen.ts", "index.js"  ]
+, "hooks/useValidation.js", "codegen.ts", "index.js", "plugins/deepLinkSubscriber/withDeepLinkSubscriber.js"  ]
 }
