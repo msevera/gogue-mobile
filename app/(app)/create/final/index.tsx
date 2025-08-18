@@ -113,6 +113,13 @@ export default function Screen() {
                     <Text className="text-base text-gray-700 mb-4" numberOfLines={3}>{source?.overview}</Text>
                     <Button text='Preview' ghost className='p-0 self-start'
                       onPress={() => {
+                        track('create_lecture_final_preview', {
+                          source: {
+                            id: source?.id,
+                            title: source?.title,
+                            authors: source?.authors?.join(', '),
+                          }
+                        });
                         setPreviewSource({
                           visible: true,
                           source
@@ -132,10 +139,10 @@ export default function Screen() {
       </View>
       <View style={{ marginBottom: inset.bottom }}>
         <Button text='Create' onPress={() => {
-          track('create_lecture_final', {
+          track('create_lecture_final_step_completed', {
             input,
             source: {
-              id: source?.id,
+              id: source?.id || 'internet_research',
               title: source?.title,
               authors: source?.authors?.join(', '),
             }

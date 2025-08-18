@@ -28,7 +28,6 @@ export default function Layout() {
           )
         }
       }}>
-        <Stack.Screen name='LecturePreview' />
-      </Stack>
+    </Stack>
   );
 }

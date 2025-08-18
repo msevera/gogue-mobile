@@ -17,6 +17,7 @@ import { CurrentSentence } from '@/hooks/useSentence';
 import { Message } from '@/hooks/useNoteChat';
 import { NotesList } from './NotesList';
 import { cn } from '@/lib/utils';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export interface LectureDrawerRef {
   open: () => void;
@@ -62,7 +63,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   currentNote: Note,
   currentSentence: CurrentSentence,
   bars: number[],
-  onConnectToAgent: () => void
+  onConnectToAgent: () => void,
+  onConnectToAgentUnique: (type: string) => void
 }>(({
   notes,
   onPlayPause,
@@ -85,10 +87,12 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   currentNote,
   currentSentence,
   bars,
-  onConnectToAgent
+  onConnectToAgent,
+  onConnectToAgentUnique
 }, ref) => {
   const noteDetailsRef = useRef<NoteDetailsRef>(null);
   const lectureControlsRef = useRef<LectureControlsRef>(null);
+  const { track } = useAnalytics();
   const { connect, connecting, disconnect, inCall, sendMessage } = useVoiceAgent({
     onNoteCreated: useCallback((noteId: string) => {
       onAgentCreateNote(noteId);
@@ -161,7 +165,8 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   }), [isNotesDrawerOpen]);
 
   const connectToAgent = useCallback((enableMic: boolean) => {
-    if (!inCall) {
+    if (!inCall) {   
+      onConnectToAgentUnique(enableMic ? 'voice' : 'text');  
       connect({
         lectureId,
         noteId: currentNote?.id || noteId,

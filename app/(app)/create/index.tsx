@@ -25,13 +25,14 @@ export default function Screen() {
     setTimeout(() => {
       inputRef?.current?.focus();
     }, 700)
-
+    
+    track('create_lecture_input_step');
   }, []);
 
   const handleCreateLecture = async ({ isValid }: { isValid: boolean }) => {
     if (!isValid) return;
 
-    track('create_lecture_input', {
+    track('create_lecture_input_step_completed', {
       input
     });
     router.push(`/create/source`);

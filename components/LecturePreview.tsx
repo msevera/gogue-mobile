@@ -26,7 +26,9 @@ import { Message } from '@/hooks/useNoteChat';
 import { DELETE_NOTE } from '@/apollo/queries/notes';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LectureSourcePreview } from './LectureSourcePreview';
-import { useAnalytics } from '@segment/analytics-react-native';
+import { useAnalytics } from '@/hooks/useAnalytics';
+
+
 
 const gradientStyle = {
   position: 'absolute',
@@ -154,6 +156,11 @@ export const LecturePreview = () => {
   }, [lecture])
 
   const share = useCallback(async () => {
+    track('lecture_share', {
+      lectureId,
+      slug: lecture?.slug,
+      title: lecture?.title
+    });
     const url = `https://www.gogue.ai/lectures/${lecture?.slug}`;
     try {
       const result = await Share.share({
@@ -235,6 +242,13 @@ export const LecturePreview = () => {
 
   const connectToAgent = useCallback((enableMic: boolean) => {
     if (!inCall) {
+      track('lecture_agent_connect', {
+        lectureId,
+        slug: lecture?.slug,
+        title: lecture?.title,
+        inputType: enableMic ? 'voice' : 'text',
+        screen: 'lecture_preview'
+      });
       connect({
         lectureId: lectureId as string,
         noteId: currentNote?.id,

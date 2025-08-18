@@ -16,6 +16,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 import * as WebBrowser from 'expo-web-browser';
 import TrackPlayer, { State, useTrackPlayerEvents, Event, RepeatMode } from 'react-native-track-player';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 
 export default function Screen() {
@@ -31,6 +32,11 @@ export default function Screen() {
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
   const { lecture, loading } = useGetLecture(slug as string, GET_LECTURE_DETAILS);
   const lectureId = lecture?.id;
+  const { track } = useAnalytics();
+  const listenedTotalRef = useRef(0);
+  const nextProgressThresholdRef = useRef(10);
+  const lastPositionRef = useRef<number | null>(null);
+  const isPlayingRef = useRef(false);
   const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
   const { updateRecentlyPlayedLectureCache } = useGetLecturesRecentlyPlayed({ skip: true });
   const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {
@@ -96,6 +102,10 @@ export default function Screen() {
       lectureDrawerRef.current?.setPlayLineCurrentTime(lecture.metadata?.playbackTimestamp || 0);
       TrackPlayer.seekTo(lecture.metadata?.playbackTimestamp || 0)
       setSavingPlaybackIsReady(true);
+      // Reset playback tracking accumulators when lecture changes
+      listenedTotalRef.current = 0;
+      nextProgressThresholdRef.current = 10;
+      lastPositionRef.current = null;
     }
   }, [lecture?.id])
 
@@ -122,6 +132,12 @@ export default function Screen() {
   });
 
   const onCreateNote = useCallback(() => {
+    track('lecture_note_create', {
+      lectureId,
+      slug: lecture?.slug,
+      title: lecture?.title
+    });
+    
     createNote({
       variables: {
         lectureId: lectureId as string,
@@ -137,8 +153,12 @@ export default function Screen() {
   useEffect(() => {
     if (lecture) {
       setContent(lecture.sections.map(section => `${section.content}`).join('\n'));
-      const alignments = JSON.parse(lecture.aligners?.mfa as string);
-      setAlignments(alignments);
+      const mfa = lecture.aligners?.mfa;
+      try {
+        setAlignments(mfa ? JSON.parse(mfa) : []);
+      } catch {
+        setAlignments([]);
+      }
     }
   }, [lecture]);
 
@@ -160,7 +180,19 @@ export default function Screen() {
   }, [lecture?.audio?.stream]);
 
   useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
     return () => {
+      track('lecture_closed', {
+        lectureId,
+        slug: lecture?.slug,
+        title: lecture?.title,
+        position: Math.floor(currentTime || 0),
+        duration: Math.floor(lecture?.audio?.duration || 0),
+        totalPlayedSeconds: Math.floor(listenedTotalRef.current)
+      });
       TrackPlayer.reset();
     }
   }, []);
@@ -170,13 +202,57 @@ export default function Screen() {
     if (event.type === Event.PlaybackPlayWhenReadyChanged) {
       // console.log('PlaybackPlayWhenReadyChanged', event.playWhenReady);
       setIsPlaying(event.playWhenReady)
+      // Track play/pause events
+      if (event.playWhenReady) {
+        track('lecture_play', {
+          lectureId,
+          slug: lecture?.slug,
+          title: lecture?.title,
+          position: Math.floor(currentTime || 0),
+          duration: Math.floor(lecture?.audio?.duration || 0),
+          totalPlayedSeconds: Math.floor(listenedTotalRef.current)
+        });
+        // Initialize last position to avoid counting a jump on resume
+        lastPositionRef.current = currentTime || 0;
+      } else {
+        track('lecture_pause', {
+          lectureId,
+          slug: lecture?.slug,
+          title: lecture?.title,
+          position: Math.floor(currentTime || 0),
+          duration: Math.floor(lecture?.audio?.duration || 0),
+          totalPlayedSeconds: Math.floor(listenedTotalRef.current)
+        });
+      }
     }
 
     if (event.type === Event.PlaybackProgressUpdated) {
       const time = Number(event.position.toFixed(2));
-      console.log('PlaybackProgressUpdated', time, lecture.audio?.duration, lecture?.id, lecture?.slug);
+      // console.log('PlaybackProgressUpdated', time, lecture.audio?.duration, lecture?.id, lecture?.slug);
       lectureDrawerRef.current?.setPlayLineCurrentTime(time)
       setCurrentTime(time)
+
+      // Aggregate listened time only while playing
+      const last = lastPositionRef.current ?? time;
+      let delta = time - last;
+      if (delta < 0) delta = 0;
+      if (isPlayingRef.current && delta > 0) {
+        listenedTotalRef.current += delta;
+
+        // Emit an in-progress event at every next 10-second milestone of listened time
+        while (listenedTotalRef.current >= nextProgressThresholdRef.current) {
+          track('lecture_in_progress', {
+            lectureId,
+            slug: lecture?.slug,
+            title: lecture?.title,
+            position: Math.floor(time),
+            duration: Math.floor(lecture?.audio?.duration || 0),
+            totalPlayedSeconds: nextProgressThresholdRef.current
+          });
+          nextProgressThresholdRef.current += 10;
+        }
+      }
+      lastPositionRef.current = time;
     }
 
     if (event.type === Event.PlaybackQueueEnded) {
@@ -240,6 +316,16 @@ export default function Screen() {
   const onConnectToAgent = useCallback(() => {
     TrackPlayer.pause();
   }, []);
+
+  const onConnectToAgentUnique = useCallback((inputType: string) => {
+    track('lecture_agent_connect', {
+      lectureId,
+      slug: lecture?.slug,
+      title: lecture?.title,
+      inputType,
+      screen: 'lecture_details'
+    });
+  }, [])
 
 
   const onAnnotation = useCallback(async (url: string) => {
@@ -317,6 +403,7 @@ export default function Screen() {
         onSelectNote={onSelectNote}
         bars={lecture?.audio?.bars as number[]}
         onConnectToAgent={onConnectToAgent}
+        onConnectToAgentUnique={onConnectToAgentUnique}
       />
     </ScreenLayout>
   </View>

@@ -15,6 +15,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 
 const renderItem = ({ source }: { source: Source }) => {
   const { setPreviewSource } = useCreate();
+  const { track } = useAnalytics();
 
   if (source.intro) {
     return (
@@ -54,6 +55,13 @@ const renderItem = ({ source }: { source: Source }) => {
       <SourceItem
         source={source}
         onPreviewPress={() => {
+          track('create_lecture_source_preview', {
+            source: {
+              id: source?.id,
+              title: source?.title,
+              authors: source?.authors?.join(', '),
+            }
+          });
           setPreviewSource({
             visible: true,
             source
@@ -127,7 +135,7 @@ export default function Screen() {
           disabled={selectedIndex === 0}
           onPress={(e) => {
             const source = items[selectedIndex - 1];
-            track('create_lecture_source', {
+            track('create_lecture_source_step_completed', {
               input,
               source: {
                 id: source?.id || 'internet_research',
