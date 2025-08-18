@@ -85,7 +85,7 @@ export const NoteDetails = forwardRef<NoteDetailsRef, NoteDetailsProps>(({ curre
                       lineHeight: 28,                     
                     },
                   }}>
-                    {title}
+                    {title || ''}
                   </Markdown>
                   {
                     currentNote && (

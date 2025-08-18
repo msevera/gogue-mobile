@@ -93,7 +93,7 @@ export const GlimpsesItem = ({
             lineHeight: 28,
           },
         }}
-      >{text}</Markdown>
+      >{text || ''}</Markdown>
       {
         domain && (
           <View className='flex-row items-center'>

@@ -11,11 +11,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { Header } from '@/components/layouts/Header';
 import { useCreate } from '@/hooks/useCreate';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function Screen() {
   const { input, setInput } = useCreate();
   const inset = useSafeAreaInsets();
-
+  const { track } = useAnalytics();
   const intl = useIntl();
   const { register, validate, submit: formSubmit, remove } = useValidation();
   const inputRef = useRef<TextInput>(null);
@@ -25,11 +26,15 @@ export default function Screen() {
       inputRef?.current?.focus();
     }, 700)
     
+    track('create_lecture_input_step');
   }, []);
 
   const handleCreateLecture = async ({ isValid }: { isValid: boolean }) => {
     if (!isValid) return;
 
+    track('create_lecture_input_step_completed', {
+      input
+    });
     router.push(`/create/source`);
   }
 

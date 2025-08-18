@@ -14,6 +14,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import { router, usePathname } from 'expo-router';
 import { NotificationWillDisplayEvent, OneSignal } from 'react-native-onesignal';
+import { useAnalytics } from '@/hooks/useAnalytics';
+
 
 GoogleSignin.configure();
 
@@ -54,6 +56,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [isLoading, setIsLoading] = useState(true);
   const apolloClient = useApolloClient();
   const pathname = usePathname();
+  const { identify, reset } = useAnalytics();
 
   const url = Linking.useURL();
   const [idToken, setIdToken] = useState('');
@@ -93,6 +96,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
           try {
             OneSignal.login(authUser.id);
             OneSignal.User.addAlias('auth_context', `${authUser.workspaces?.[0]?.workspaceId}-${authUser.id}`)
+
+            identify(authUser);
+
           } catch (error) {
             console.error('One signal logging in error', error);
           }
@@ -179,6 +185,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       await apolloClient.clearStore();
       setIdToken('');
       OneSignal.logout();
+      reset();
     } catch (error) {
       console.error('signOut error', error);
     } finally {
@@ -193,7 +200,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (user && !uidRef.current) {
       uidRef.current = user.uid;
       const idToken = await user.getIdToken(true);
-      console.log('idToken', idToken);
+      // console.log('idToken', idToken);
       setIdToken(idToken);
     } else if (!user) {
       await signOut();

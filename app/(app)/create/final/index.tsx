@@ -11,8 +11,10 @@ import { cn } from '@/lib/utils';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
 import { useCallback, useRef, useState } from 'react';
 import { Input } from '@/components/ui/Input';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function Screen() {
+  const { track } = useAnalytics();
   const inputRef = useRef<TextInput>(null);
   const inset = useSafeAreaInsets();
   const [inputEditable, setInputEditable] = useState(false);
@@ -111,6 +113,13 @@ export default function Screen() {
                     <Text className="text-base text-gray-700 mb-4" numberOfLines={3}>{source?.overview}</Text>
                     <Button text='Preview' ghost className='p-0 self-start'
                       onPress={() => {
+                        track('create_lecture_final_preview', {
+                          source: {
+                            id: source?.id,
+                            title: source?.title,
+                            authors: source?.authors?.join(', '),
+                          }
+                        });
                         setPreviewSource({
                           visible: true,
                           source
@@ -130,6 +139,14 @@ export default function Screen() {
       </View>
       <View style={{ marginBottom: inset.bottom }}>
         <Button text='Create' onPress={() => {
+          track('create_lecture_final_step_completed', {
+            input,
+            source: {
+              id: source?.id || 'internet_research',
+              title: source?.title,
+              authors: source?.authors?.join(', '),
+            }
+          });
           createLectureAsyncMut(input, source?.id as string);
           router.dismissTo('/lectures');
         }} />

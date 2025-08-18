@@ -26,6 +26,9 @@ import { Message } from '@/hooks/useNoteChat';
 import { DELETE_NOTE } from '@/apollo/queries/notes';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LectureSourcePreview } from './LectureSourcePreview';
+import { useAnalytics } from '@/hooks/useAnalytics';
+
+
 
 const gradientStyle = {
   position: 'absolute',
@@ -38,13 +41,15 @@ const gradientStyle = {
 }
 
 export const LecturePreview = () => {
+  const { track } = useAnalytics();
   const { authUser } = useAuth();
   const insets = useSafeAreaInsets();
   const top = insets.top + 48;
   const rnScrollY = useRef(new RNAnimated.Value(0)).current;
   const [activeTab, setActiveTab] = useState('overview');
-  const { lectureId } = useLocalSearchParams();
-  const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_PREVIEW);
+  const { slug } = useLocalSearchParams();
+  const { lecture, loading } = useGetLecture(slug as string, GET_LECTURE_PREVIEW);
+  const lectureId = lecture?.id;
   const [setPendingLectureShowNotificationAsDone] = useMutation<SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables>(SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE);
   const stickyRef = useRef<View>(null);
   const [offsetTop, setOffsetTop] = useState(0);
@@ -151,7 +156,12 @@ export const LecturePreview = () => {
   }, [lecture])
 
   const share = useCallback(async () => {
-    const url = `https://www.gogue.ai/lectures/${lectureId}`;
+    track('lecture_share', {
+      lectureId,
+      slug: lecture?.slug,
+      title: lecture?.title
+    });
+    const url = `https://www.gogue.ai/lectures/${lecture?.slug}`;
     try {
       const result = await Share.share({
         title: lecture?.title as string,
@@ -232,6 +242,13 @@ export const LecturePreview = () => {
 
   const connectToAgent = useCallback((enableMic: boolean) => {
     if (!inCall) {
+      track('lecture_agent_connect', {
+        lectureId,
+        slug: lecture?.slug,
+        title: lecture?.title,
+        inputType: enableMic ? 'voice' : 'text',
+        screen: 'lecture_preview'
+      });
       connect({
         lectureId: lectureId as string,
         noteId: currentNote?.id,
@@ -376,7 +393,7 @@ export const LecturePreview = () => {
                           text={lecture?.metadata?.status === 'IN_PROGRESS' ? 'Continue' : 'Start'}
                           icon={{ component: 'Ionicons', name: 'play' }}
                           onPress={() => {
-                            router.push(`/${lectureId}`);
+                            router.push(`/${lecture?.slug}`);
                           }}
                         />
                       </View>

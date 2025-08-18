@@ -28,8 +28,7 @@ const setupPlayer = async (
   }
 };
 
-export const SetupService = async () => {
-  console.log('SetupService SetupService');
+export const SetupService = async () => {  
   await setupPlayer({
     autoHandleInterruptions: true,
   });  

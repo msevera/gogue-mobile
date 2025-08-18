@@ -1,12 +1,12 @@
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { DocumentNode, useQuery } from '@apollo/client';
 
-export const useGetLecture = (lectureId: string, query: DocumentNode) => {
-  const { data: { lecture } = {}, loading } = useQuery(query, {
+export const useGetLecture = (slug: string, query: DocumentNode) => {
+  const { data: { lectureBySlug: lecture } = {}, loading } = useQuery(query, {
     variables: {
-      id: lectureId as string,
+      slug: slug as string,
     },
-    skip: !lectureId,
+    skip: !slug,
     onError: (error) => {
       console.log('GET_LECTURE error', JSON.stringify(error, null, 2));
     }

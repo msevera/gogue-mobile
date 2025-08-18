@@ -56,7 +56,6 @@ const rootPathArray = Object.values(rootPaths);
 
 
 const TabBar = ({ onCreatePress, disableCreation, navigation }: { onCreatePress: () => void, disableCreation: boolean, navigation: any }) => {
-  console.log('disableCreation', disableCreation);
   const pathname = usePathname();
   const isActive = (rootPath: string) => pathname.startsWith(rootPath);
   return <View className='h-[90] z-[11] bg-white border-t border-gray-100'>

@@ -20,7 +20,7 @@ export const LectureItemLibrary = ({ lecture, parentPath }: { lecture: Lecture, 
 
   return (
     <Pressable onPress={() => {
-      router.push(`${parentPath}/${lecture.id}`);
+      router.push(`${parentPath}/${lecture.slug}`);
     }}>
       <View className='flex-row px-4 mb-4'>
         <View className='flex-1'>

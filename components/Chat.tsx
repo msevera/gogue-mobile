@@ -24,7 +24,7 @@ const MessageText = ({ text }: { text: string }) => {
           lineHeight: 28,
         },
       }}
-    >{text}</Markdown>
+    >{text || ''}</Markdown>
   )
 }
 

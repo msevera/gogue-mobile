@@ -63,8 +63,8 @@ export const GET_LECTURES_RECOMMENDED = gql`
 `;
 
 export const GET_LECTURE_DETAILS = gql`
-  query GetLectureDetails($id: ID!) {
-    lecture(id: $id) {
+  query GetLectureDetails($slug: String!) {
+    lectureBySlug(slug: $slug) {
       ...LectureDetails
     }
   }
@@ -72,8 +72,8 @@ export const GET_LECTURE_DETAILS = gql`
 `;
 
 export const GET_LECTURE_PREVIEW = gql`
-  query GetLecturePreview($id: ID!) {
-    lecture(id: $id) {
+  query GetLecturePreview($slug: String!) {
+    lectureBySlug(slug: $slug) {
       ...LecturePreview
     }
   }

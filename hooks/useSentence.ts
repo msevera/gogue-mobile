@@ -52,7 +52,7 @@ export const useSentence = ({
       if (old.index !== sentenceIndex) {
         const currentSentence = sentences[sentenceIndex];
         if (!currentSentence) {
-          console.log('[useSentence]: currentSentence is null', sentenceIndex, currentTime, sentences[sentences.length - 1].sentence.start_time, sentences[sentences.length - 1].sentence.end_time);
+          // console.log('[useSentence]: currentSentence is null', sentenceIndex, currentTime, sentences[sentences.length - 1].sentence.start_time, sentences[sentences.length - 1].sentence.end_time);
           return;
         };
         const currentSentenceText = content.slice(currentSentence.sentence.start_offset, currentSentence.sentence.end_offset);

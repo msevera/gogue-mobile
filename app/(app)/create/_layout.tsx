@@ -12,7 +12,6 @@ export const unstable_settings = {
 
 export default function Layout() {
   const { previewSource, setPreviewSource } = useCreate();
-  console.log('previewSource', previewSource);
   const onCloseHandler = useCallback(() => {
     setPreviewSource({
       visible: false,

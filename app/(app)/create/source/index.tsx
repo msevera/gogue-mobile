@@ -11,9 +11,11 @@ import { router } from "expo-router";
 import Carousel from "react-native-reanimated-carousel";
 import { useMemo, useState } from 'react';
 import { useCreate } from '@/hooks/useCreate';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const renderItem = ({ source }: { source: Source }) => {
   const { setPreviewSource } = useCreate();
+  const { track } = useAnalytics();
 
   if (source.intro) {
     return (
@@ -53,6 +55,13 @@ const renderItem = ({ source }: { source: Source }) => {
       <SourceItem
         source={source}
         onPreviewPress={() => {
+          track('create_lecture_source_preview', {
+            source: {
+              id: source?.id,
+              title: source?.title,
+              authors: source?.authors?.join(', '),
+            }
+          });
           setPreviewSource({
             visible: true,
             source
@@ -70,6 +79,7 @@ export default function Screen() {
   const { input, setSource } = useCreate();
   const inset = useSafeAreaInsets();
   const { items, isLoading, refetch } = useGetSourcesMatched(input as string);
+  const { track } = useAnalytics();
 
 
   const data = useMemo(() => {
@@ -124,7 +134,16 @@ export default function Screen() {
           text='Select'
           disabled={selectedIndex === 0}
           onPress={(e) => {
-            setSource(items[selectedIndex - 1] || null);
+            const source = items[selectedIndex - 1];
+            track('create_lecture_source_step_completed', {
+              input,
+              source: {
+                id: source?.id || 'internet_research',
+                title: source?.title,
+                authors: source?.authors?.join(', '),
+              }
+            });
+            setSource(source || null);
             router.push('/create/final');
           }} />
       </View>

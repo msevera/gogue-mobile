@@ -14,6 +14,7 @@ export const LECTURE_METADATA_FRAGMENT = gql`
 export const LECTURE_LIST_ITEM_FRAGMENT = gql`
   fragment LectureListItem on Lecture {
     id
+    slug
     topic
     title    
     userId

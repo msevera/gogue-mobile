@@ -17,7 +17,7 @@ const NoteItem = ({ note, onOpenNote }: { note: Note, onOpenNote?: (note: Note) 
           lineHeight: 28,
         },
       }}>
-        {note.title}
+        {note.title || ''}
       </Markdown>
       <View className='flex-row items-center justify-between mt-2'>
         <View className='flex-row items-center'>
