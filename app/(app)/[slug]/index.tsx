@@ -19,7 +19,7 @@ import TrackPlayer, { State, useTrackPlayerEvents, Event, RepeatMode } from 'rea
 
 
 export default function Screen() {
-  const { lectureId, note: noteIdParam } = useLocalSearchParams();  
+  const { slug, note: noteIdParam } = useLocalSearchParams();
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
   const [wasPlaying, setWasPlaying] = useState(false);
@@ -29,8 +29,9 @@ export default function Screen() {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
+  const { lecture, loading } = useGetLecture(slug as string, GET_LECTURE_DETAILS);
+  const lectureId = lecture?.id;
   const { items: notes, updateCreateNoteCache, updateDeleteNoteCache } = useGetNotes({ lectureId: lectureId as string });
-  const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_DETAILS);
   const { updateRecentlyPlayedLectureCache } = useGetLecturesRecentlyPlayed({ skip: true });
   const [setPlaybackTimestamp] = useMutation<SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables>(SET_PLAYBACK_TIMESTAMP, {
     update: () => {
@@ -52,7 +53,7 @@ export default function Screen() {
 
   useEffect(() => {
     if (noteIdParam) {
-      lectureDrawerRef.current?.openNote(notes.find((note) => note.id === noteIdParam) as Note);      
+      lectureDrawerRef.current?.openNote(notes.find((note) => note?.id === noteIdParam) as Note);
     }
   }, [noteIdParam]);
 
@@ -272,7 +273,7 @@ export default function Screen() {
         headerShown: false,
         animation: 'slide_from_bottom',
         gestureDirection: 'vertical',
-        animationDuration: 300, 
+        animationDuration: 300,
       }}
       contentLoading={loading}
       contentEmpty={false}

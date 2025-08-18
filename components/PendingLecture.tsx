@@ -64,7 +64,7 @@ export const PendingLecture = ({ lecture, tabHeight, parentPath }: { lecture?: L
 
   const handleOpenLecture = () => {
     setIsCreating(false);
-    router.push(`${parentPath}/${lecture!.id}`);
+    router.push(`${parentPath}/${lecture!.slug}`);
   }
 
   const getStatusComponent = (state: { event: string, lecture: Lecture }) => {

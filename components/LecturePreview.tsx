@@ -43,8 +43,9 @@ export const LecturePreview = () => {
   const top = insets.top + 48;
   const rnScrollY = useRef(new RNAnimated.Value(0)).current;
   const [activeTab, setActiveTab] = useState('overview');
-  const { lectureId } = useLocalSearchParams();
-  const { lecture, loading } = useGetLecture(lectureId as string, GET_LECTURE_PREVIEW);
+  const { slug } = useLocalSearchParams();
+  const { lecture, loading } = useGetLecture(slug as string, GET_LECTURE_PREVIEW);
+  const lectureId = lecture?.id;
   const [setPendingLectureShowNotificationAsDone] = useMutation<SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables>(SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE);
   const stickyRef = useRef<View>(null);
   const [offsetTop, setOffsetTop] = useState(0);
@@ -151,7 +152,7 @@ export const LecturePreview = () => {
   }, [lecture])
 
   const share = useCallback(async () => {
-    const url = `https://www.gogue.ai/lectures/${lectureId}`;
+    const url = `https://www.gogue.ai/lectures/${lecture?.slug}`;
     try {
       const result = await Share.share({
         title: lecture?.title as string,
@@ -376,7 +377,7 @@ export const LecturePreview = () => {
                           text={lecture?.metadata?.status === 'IN_PROGRESS' ? 'Continue' : 'Start'}
                           icon={{ component: 'Ionicons', name: 'play' }}
                           onPress={() => {
-                            router.push(`/${lectureId}`);
+                            router.push(`/${lecture?.slug}`);
                           }}
                         />
                       </View>

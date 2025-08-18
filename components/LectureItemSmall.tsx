@@ -22,7 +22,7 @@ export const LectureItemSmall = ({ lecture, parentPath }: { lecture: Lecture, pa
 
   return (
     <Pressable onPress={() => {
-      router.push(`${parentPath}/${lecture.id}`);
+      router.push(`${parentPath}/${lecture.slug}`);
     }}>
       <View className='flex-row w-[146]'>
         <View className='flex-1'>
