@@ -174,7 +174,7 @@ export default function Screen() {
 
     if (event.type === Event.PlaybackProgressUpdated) {
       const time = Number(event.position.toFixed(2));
-      // console.log('PlaybackProgressUpdated', time, lecture.audio?.duration);
+      console.log('PlaybackProgressUpdated', time, lecture.audio?.duration, lecture?.id, lecture?.slug);
       lectureDrawerRef.current?.setPlayLineCurrentTime(time)
       setCurrentTime(time)
     }

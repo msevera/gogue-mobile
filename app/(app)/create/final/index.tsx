@@ -11,8 +11,10 @@ import { cn } from '@/lib/utils';
 import { useCreateLecture } from '@/hooks/useCreateLecture';
 import { useCallback, useRef, useState } from 'react';
 import { Input } from '@/components/ui/Input';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function Screen() {
+  const { track } = useAnalytics();
   const inputRef = useRef<TextInput>(null);
   const inset = useSafeAreaInsets();
   const [inputEditable, setInputEditable] = useState(false);
@@ -130,6 +132,14 @@ export default function Screen() {
       </View>
       <View style={{ marginBottom: inset.bottom }}>
         <Button text='Create' onPress={() => {
+          track('create_lecture_final', {
+            input,
+            source: {
+              id: source?.id,
+              title: source?.title,
+              authors: source?.authors?.join(', '),
+            }
+          });
           createLectureAsyncMut(input, source?.id as string);
           router.dismissTo('/lectures');
         }} />

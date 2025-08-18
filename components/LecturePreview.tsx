@@ -26,6 +26,7 @@ import { Message } from '@/hooks/useNoteChat';
 import { DELETE_NOTE } from '@/apollo/queries/notes';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LectureSourcePreview } from './LectureSourcePreview';
+import { useAnalytics } from '@segment/analytics-react-native';
 
 const gradientStyle = {
   position: 'absolute',
@@ -38,6 +39,7 @@ const gradientStyle = {
 }
 
 export const LecturePreview = () => {
+  const { track } = useAnalytics();
   const { authUser } = useAuth();
   const insets = useSafeAreaInsets();
   const top = insets.top + 48;

@@ -21,6 +21,17 @@ import { PlaybackService } from '@/components/player/PlaybackService';
 import { SetupService } from '@/components/player/SetupService';
 import { useEffect } from 'react';
 import { CreateProvider } from '@/contexts/createContext';
+import {
+  createClient,
+  AnalyticsProvider,
+} from '@segment/analytics-react-native';
+import { TrackScreensProvider } from '@/contexts/trackScreensContext';
+
+const segmentClient = createClient({
+  writeKey: process.env.EXPO_PUBLIC_SEGMENT_WRITE_KEY as string,
+  trackAppLifecycleEvents: true,
+  trackDeepLinks: true
+});
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -57,31 +68,35 @@ export default function RootLayout() {
       }
     }
     fetchPlaybackState();
-  }, []);
+  }, []); 
 
   return (
-    <ApolloProvider client={client}>
-      <GestureHandlerRootView>
-        <KeyboardProvider>
-          <IntlProvider
-            defaultLocale="en"
-            locale="en"
-            messages={en}
-          >
-            <AuthProvider>
-              <PortalProvider>
-                <GlobalDrawerProvider>
-                  <NewLectureProvider>
-                    <CreateProvider>
-                      <Slot />
-                    </CreateProvider>
-                  </NewLectureProvider>
-                </GlobalDrawerProvider>
-              </PortalProvider>
-            </AuthProvider>
-          </IntlProvider>
-        </KeyboardProvider>
-      </GestureHandlerRootView>
-    </ApolloProvider>
+    <AnalyticsProvider client={segmentClient}>
+      <ApolloProvider client={client}>
+        <GestureHandlerRootView>
+          <KeyboardProvider>
+            <IntlProvider
+              defaultLocale="en"
+              locale="en"
+              messages={en}
+            >
+              <AuthProvider>
+                <TrackScreensProvider>
+                  <PortalProvider>
+                    <GlobalDrawerProvider>
+                      <NewLectureProvider>
+                        <CreateProvider>
+                          <Slot />
+                        </CreateProvider>
+                      </NewLectureProvider>
+                    </GlobalDrawerProvider>
+                  </PortalProvider>
+                </TrackScreensProvider>
+              </AuthProvider>
+            </IntlProvider>
+          </KeyboardProvider>
+        </GestureHandlerRootView>
+      </ApolloProvider>
+    </AnalyticsProvider>
   );
 }
