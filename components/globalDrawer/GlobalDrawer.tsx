@@ -11,9 +11,10 @@ type DrawerSettings = {
   customBackground?: boolean
 }
 
-export const GlobalDrawer = ({ customKeyboardBehavior, children, title, headerBorder, drawerSettings, onBackdropPress, headerContainerClassName, headerContentClassName, showCloseButton = true }: { children: React.ReactNode, title?: string, headerBorder?: boolean, drawerSettings: DrawerSettings, onBackdropPress?: () => void, headerContainerClassName?: string, headerContentClassName?: string, showCloseButton?: boolean, customKeyboardBehavior?: KeyboardAvoidingViewProps['behavior'] | null }) => {    
-  return <Portal name={title} hostName="globalDrawer">    
+export const GlobalDrawer = ({ headerLeft, name, customKeyboardBehavior, children, title, headerBorder, drawerSettings, onBackdropPress, headerContainerClassName, headerContentClassName, showCloseButton = true }: { headerLeft?: React.ReactNode, name?: string, children: React.ReactNode, title?: string, headerBorder?: boolean, drawerSettings: DrawerSettings, onBackdropPress?: () => void, headerContainerClassName?: string, headerContentClassName?: string, showCloseButton?: boolean, customKeyboardBehavior?: KeyboardAvoidingViewProps['behavior'] | null }) => {    
+  return <Portal name={name ||title} hostName="globalDrawer">    
     <BottomSheet
+      headerLeft={headerLeft}
       customKeyboardBehavior={customKeyboardBehavior}
       title={title}   
       headerBorder={headerBorder}   
