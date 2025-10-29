@@ -37,6 +37,7 @@ export const AuthContext = createContext<{
   sendPasswordResetEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   setProfile: (user: Partial<User>) => Promise<void>;
+  deleteAccount: () => Promise<void>;
   authUser?: User | null;
   isLoading: boolean;
   pendingDeepLink: string | null;
@@ -49,6 +50,7 @@ export const AuthContext = createContext<{
   sendPasswordResetEmail: async () => Promise.resolve(),
   signOut: async () => Promise.resolve(),
   setProfile: async (user: Partial<User>) => Promise.resolve(),
+  deleteAccount: async () => Promise.resolve(),
   authUser: null,
   isLoading: true,
   pendingDeepLink: null,
@@ -222,6 +224,27 @@ export function AuthProvider({ children }: PropsWithChildren) {
     });
   }
 
+  const deleteAccount = async () => {
+    try {
+      // Delete the Firebase user (this will trigger backend cleanup via Firebase functions)
+      const currentUser = getAuth().currentUser;
+      if (currentUser) {
+        await currentUser.delete();
+      }
+      
+      // Clear all local data
+      await apolloClient.clearStore();
+      await AsyncStorage.removeItem('workspaceId');
+      setIdToken('');
+      uidRef.current = null;
+      OneSignal.logout();
+      reset();
+    } catch (error) {
+      console.error('deleteAccount error', error);
+      throw error;
+    }
+  }
+
   useEffect(() => {
     return getAuth().onAuthStateChanged(onAuthStateChanged); // unsubscribe on unmount
   }, []);
@@ -277,6 +300,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           await signOut();
         },
         setProfile,
+        deleteAccount,
         authUser: authUser ? {
           ...authUser,
         } : null,

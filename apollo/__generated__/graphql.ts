@@ -531,6 +531,7 @@ export type Source = {
   __typename?: 'Source';
   authors?: Maybe<Array<Scalars['String']['output']>>;
   categories?: Maybe<Array<SourceCategory>>;
+  helpsWith?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   image?: Maybe<SourceImage>;
   internalDescription?: Maybe<Scalars['String']['output']>;
@@ -586,6 +587,7 @@ export type SubscriptionNoteCreatedArgs = {
 export type UpsertSource = {
   authors?: InputMaybe<Array<Scalars['String']['input']>>;
   categories?: InputMaybe<Array<Scalars['String']['input']>>;
+  helpsWith?: InputMaybe<Scalars['String']['input']>;
   imageUrl?: InputMaybe<Scalars['String']['input']>;
   internalDescription?: InputMaybe<Scalars['String']['input']>;
   keyInsights?: InputMaybe<Array<Scalars['String']['input']>>;

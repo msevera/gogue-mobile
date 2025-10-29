@@ -58,12 +58,9 @@ export default {
       "supportsTablet": false,
       "bundleIdentifier": getUniqueIdentifier('ios'),
       "googleServicesFile": process.env.GOOGLE_SERVICE_INFO_PLIST ?? "./GoogleService-Info.plist",
-      "infoPlist": {
+      "infoPlist": {  
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
-        "NSPhotoLibraryUsageDescription": "This app requires access to photo library",
-        "NSCameraUsageDescription": "This app requires access to camera",
-        "NSLocationWhenInUseUsageDescription": "This app requires access to location",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to capture your voice when you speak to the AI voice assistant.",       
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
@@ -71,7 +68,7 @@ export default {
             ]
           }
         ],
-        "UIBackgroundModes": ["voip", "audio"],
+        "UIBackgroundModes": ["audio"],
         "bitcode": false
       },
       "icon": {
@@ -113,9 +110,7 @@ export default {
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": `Allow ${getAppName()} to use the microphone.`,
-          "speechRecognitionPermission": `Allow ${getAppName()} to use speech recognition.`,
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+          "microphonePermission": `This app uses the microphone to capture your voice when you speak to the AI voice assistant.`
         }
       ],
       [
