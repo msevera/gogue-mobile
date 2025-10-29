@@ -32,6 +32,9 @@ export type NotificationCustomDataType = {
 
 export const AuthContext = createContext<{
   signInWithGoogle: () => Promise<void>;
+  signInWithEmailAndPassword: (email: string, password: string) => Promise<void>;
+  createUserWithEmailAndPassword: (email: string, password: string) => Promise<void>;
+  sendPasswordResetEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   setProfile: (user: Partial<User>) => Promise<void>;
   authUser?: User | null;
@@ -41,6 +44,9 @@ export const AuthContext = createContext<{
   refetchAuthUser: () => Promise<void>;
 }>({
   signInWithGoogle: async () => Promise.resolve(),
+  signInWithEmailAndPassword: async () => Promise.resolve(),
+  createUserWithEmailAndPassword: async () => Promise.resolve(),
+  sendPasswordResetEmail: async () => Promise.resolve(),
   signOut: async () => Promise.resolve(),
   setProfile: async (user: Partial<User>) => Promise.resolve(),
   authUser: null,
@@ -222,11 +228,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   return (
     <AuthContext.Provider
-      value={{       
+      value={{
         signInWithGoogle: async () => {
-          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });          
-          const signInResult = await GoogleSignin.signIn();        
-          let idToken = signInResult.data?.idToken;                    
+          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+          const signInResult = await GoogleSignin.signIn();
+          let idToken = signInResult.data?.idToken;
           if (!idToken) {
             console.log('signInResult.data', signInResult)
             throw new Error('No ID token found 2');
@@ -234,12 +240,38 @@ export function AuthProvider({ children }: PropsWithChildren) {
           const googleCredential = auth.GoogleAuthProvider.credential(idToken);
           console.log('googleCredential', googleCredential);
           try {
-            await getAuth().signInWithCredential(googleCredential); 
+            await getAuth().signInWithCredential(googleCredential);
           } catch (error) {
             console.error('signInWithGoogle error', JSON.stringify(error));
             throw error;
           }
           
+        },
+        signInWithEmailAndPassword: async (email: string, password: string) => {
+          try {
+            await auth().signInWithEmailAndPassword(email, password);
+          } catch (error) {
+            console.error('signInWithEmailAndPassword error', JSON.stringify(error));
+            throw error;
+          }
+        },
+        createUserWithEmailAndPassword: async (email: string, password: string) => {
+          try {
+            const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+            // Send email verification
+            await userCredential.user.sendEmailVerification();
+          } catch (error) {
+            console.error('createUserWithEmailAndPassword error', JSON.stringify(error));
+            throw error;
+          }
+        },
+        sendPasswordResetEmail: async (email: string) => {
+          try {
+            await auth().sendPasswordResetEmail(email);
+          } catch (error) {
+            console.error('sendPasswordResetEmail error', JSON.stringify(error));
+            throw error;
+          }
         },
         signOut: async () => {
           await signOut();
@@ -251,7 +283,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
         isLoading,
         pendingDeepLink,
         setPendingDeepLink,
-        refetchAuthUser
+        refetchAuthUser: async () => {
+          if (authUser?.id) {
+            await refetchAuthUser();
+          }
+        }
       }}>
       {children}
     </AuthContext.Provider>

@@ -4,8 +4,7 @@ import React from 'react';
 export default function OnboardingLayout() {
   return (
     <Stack screenOptions={{
-      headerShown: false,
-      headerBackButtonDisplayMode: 'minimal',
+      headerShown: false,      
       title: '',
       headerShadowVisible: false,
       headerTransparent: true,
