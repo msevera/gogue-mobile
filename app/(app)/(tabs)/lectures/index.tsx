@@ -11,6 +11,7 @@ import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlay
 import { GlimpsesBlock } from '@/components/GlimpsesBlock';
 import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
 import Animated, { Extrapolation, ExtrapolationType, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, runOnJS } from 'react-native-reanimated';
+import { useAuth } from '@/hooks/useAuth';
 const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
 const keyExtractor = (item: Lecture) => {
@@ -18,8 +19,10 @@ const keyExtractor = (item: Lecture) => {
 };
 
 export default function Screen() {
-  const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed();
+  const { authUser } = useAuth();
+  const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed({ skip: !authUser?.id });
   const { items: itemsRecommended, isLoading: isLoadingRecommended, refetch: refetchRecommended } = useGetLecturesRecommended();
+
   const [settingsVisible, setSettingsVisible] = useState(false);
   const pullTriggeredRef = useRef(false);
 
@@ -57,13 +60,13 @@ export default function Screen() {
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
-      
+
       // Check if user pulled down more than 20px
       if (scrollY.value < -50 && !pullTriggeredRef.current) {
         pullTriggeredRef.current = true;
         runOnJS(refresh)();
       }
-      
+
       // Reset trigger when user scrolls back up
       if (scrollY.value >= 0) {
         pullTriggeredRef.current = false;

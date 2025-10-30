@@ -38,7 +38,7 @@ export default function Screen() {
   const rnScrollY = useRef(new RNAnimated.Value(0)).current;
   const [search, setSearch] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const { items, isLoading, fetchMore } = useGetLectures();
+  const { items, isLoading, fetchMore } = useGetLectures();  
   const { setNewLectureVisible } = useNewLecture();
   const { items: searchItems, isLoading: isSearchLoading, search: searchLectures } = useGetLecturesSearch();
   const translateYValue = useRef(new RNAnimated.Value(0)).current;

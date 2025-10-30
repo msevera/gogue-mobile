@@ -77,6 +77,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     onCompleted: async (data) => {
       console.log('signIn completed');
       setIsLoading(false);
+      apolloClient.resetStore();
     },
     skip: !idToken,
     variables: {
@@ -190,7 +191,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (auth.currentUser) {
         await auth.signOut();
       }
-      await apolloClient.clearStore();
+      await apolloClient.resetStore();
       setIdToken('');
       OneSignal.logout();
       reset();
@@ -233,7 +234,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       
       // Clear all local data
-      await apolloClient.clearStore();
+      await apolloClient.resetStore();
       await AsyncStorage.removeItem('workspaceId');
       setIdToken('');
       uidRef.current = null;

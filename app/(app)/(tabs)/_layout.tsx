@@ -20,6 +20,7 @@ import { SET_TIMEZONE } from '@/apollo/queries/user';
 import { SetTimezoneMutation, SetTimezoneMutationVariables } from '@/apollo/__generated__/graphql';
 import { useAppState } from '@/hooks/useAppState';
 import { useGetLecturePending } from '@/hooks/useGetLecturePending';
+import { useAuth } from '@/hooks/useAuth';
 
 const TabBarButton = ({ text, icon, active, highlight, onPress, disabled, ...props }: { text: string, icon: any, active?: boolean, highlight?: boolean, onPress: () => void, disabled?: boolean }) => {
   return <Button
@@ -98,6 +99,7 @@ const TabBar = ({ onCreatePress, disableCreation, navigation }: { onCreatePress:
 export default function TabsLayout() {
   const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription, setCreatePressed } = useNewLecture();
   const [calendar] = useCalendars();
+  const { authUser } = useAuth();
   useAppState({
     onForeground: async () => {
       console.log('refetching pending lecture');
@@ -112,16 +114,16 @@ export default function TabsLayout() {
     },
     onError: (error) => {
       console.log('SetTimezone error', error);
-    }
+    },
   })
 
   useEffect(() => {
-    if (calendar?.timeZone) {
+    if (calendar?.timeZone && authUser?.id) {
       setTimezone();
     }
-  }, [calendar?.timeZone]);
+  }, [calendar?.timeZone, authUser?.id]);
 
-  const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending();
+  const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending({ skip: !authUser?.id });
 
   const onNewLecturePressHandler = useCallback(() => {
     if (newLecture && newLecture?.creationEvent?.name !== 'DONE') {
@@ -133,6 +135,7 @@ export default function TabsLayout() {
 
   const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });
   useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {
+    skip: !authUser?.id,
     onData: ({ data }) => {
       const lecture = data.data?.lectureCreating as Lecture;
       console.log('lecture', lecture.creationEvent?.name)
