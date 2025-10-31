@@ -175,7 +175,7 @@ export function RootSettingsAuth({
             <View className="bg-white rounded-4xl mx-4 overflow-hidden">
               <View className="p-6 items-center">
                 <Text className="text-blue-950 text-center text-3xl mb-4">Join Gogue</Text>
-                <Text className="text-gray-950 text-center">To personalize your experience and track your progress</Text>
+                <Text className="text-gray-950 text-center">Log in to create lectures and personalize your experience</Text>
               </View>
             </View>
           </View>

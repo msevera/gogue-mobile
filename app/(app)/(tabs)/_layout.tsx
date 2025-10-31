@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { CreateLecture } from '@/components/CreateLecture';
 import { GetPendingLectureShowNotificationQuery, GetPendingLectureShowNotificationQueryVariables, Lecture, LectureCreatingSubscription, LectureCreatingSubscriptionVariables } from '@/apollo/__generated__/graphql';
-import { useQuery, useSubscription } from '@apollo/client';
+import { useQuery, useSubscription, useMutation } from '@apollo/client/react';
 import { GET_LECTURE_DETAILS, GET_PENDING_LECTURE, GET_PENDING_LECTURE_SHOW_NOTIFICATION, LECTURE_CREATING_SUBSCRIPTION } from '@/apollo/queries/lectures';
 import { useGetLectures } from '@/hooks/useGetLectures';
 import { PendingLecture } from '@/components/PendingLecture';
@@ -15,7 +15,6 @@ import { useGetLecture } from '@/hooks/useGetLecture';
 import { useNewLecture } from '@/hooks/useNewLecture';
 import { SetTopics } from '@/components/SetTopics';
 import { useCalendars } from 'expo-localization';
-import { useMutation } from '@apollo/client';
 import { SET_TIMEZONE } from '@/apollo/queries/user';
 import { SetTimezoneMutation, SetTimezoneMutationVariables } from '@/apollo/__generated__/graphql';
 import { useAppState } from '@/hooks/useAppState';
@@ -99,19 +98,9 @@ const TabBar = ({ onCreatePress, disableCreation, navigation }: { onCreatePress:
 export default function TabsLayout() {
   const { newLectureVisible, setNewLectureVisible, initialDescription, setInitialDescription, setCreatePressed } = useNewLecture();
   const [calendar] = useCalendars();
-  const { authUser } = useAuth();
-  useAppState({
-    onForeground: async () => {
-      console.log('refetching pending lecture');
-      await refetchPendingLectureShowNotification();
-    }
-  });
-
+  const { authUser, setAuthSettingsVisible } = useAuth();
 
   const [setTimezone] = useMutation<SetTimezoneMutation, SetTimezoneMutationVariables>(SET_TIMEZONE, {
-    variables: {
-      timezone: calendar?.timeZone as string
-    },
     onError: (error) => {
       console.log('SetTimezone error', error);
     },
@@ -119,19 +108,39 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (calendar?.timeZone && authUser?.id) {
-      setTimezone();
+      setTimezone({
+        variables: {
+          timezone: calendar?.timeZone as string
+        },
+      });
     }
   }, [calendar?.timeZone, authUser?.id]);
 
   const { lecture: newLecture, refetch: refetchPendingLectureShowNotification, handleCache } = useGetLecturePending({ skip: !authUser?.id });
 
+  useAppState({
+    onForeground: async () => {
+      if (!authUser?.id) {
+        return;
+      }
+
+      console.log('refetching pending lecture');
+      await refetchPendingLectureShowNotification();
+    }
+  }, [authUser?.id]);
+
   const onNewLecturePressHandler = useCallback(() => {
+    if (!authUser?.id) {
+      setAuthSettingsVisible(true);
+      return;
+    }
+
     if (newLecture && newLecture?.creationEvent?.name !== 'DONE') {
       return;
     }
 
     router.push('/create');
-  }, [newLectureVisible, newLecture]);
+  }, [newLectureVisible, newLecture, authUser?.id]);
 
   const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });
   useSubscription<LectureCreatingSubscription, LectureCreatingSubscriptionVariables>(LECTURE_CREATING_SUBSCRIPTION, {

@@ -1,19 +1,13 @@
 import { GetPendingLectureShowNotificationQuery, GetPendingLectureShowNotificationQueryVariables, Lecture } from '@/apollo/__generated__/graphql';
 import { GET_PENDING_LECTURE_SHOW_NOTIFICATION } from '@/apollo/queries/lectures';
-import { useApolloClient, useQuery } from '@apollo/client';
+import { useApolloClient, useQuery } from '@apollo/client/react';
 
 export const useGetLecturePending = ({ skip }: { skip?: boolean } = {}) => {
   const apolloClient = useApolloClient();
   const { data: { pendingLectureShowNotification } = { pendingLectureShowNotification: null }, refetch, loading } =
     useQuery<GetPendingLectureShowNotificationQuery, GetPendingLectureShowNotificationQueryVariables>(GET_PENDING_LECTURE_SHOW_NOTIFICATION, {
       fetchPolicy: 'network-only',
-      skip,
-      onError: (error) => {
-        console.log('error', JSON.stringify(error, null, 2))
-      },
-      onCompleted: (data) => {
-        console.log('pending lecture completed');
-      }
+      skip
     });
 
 

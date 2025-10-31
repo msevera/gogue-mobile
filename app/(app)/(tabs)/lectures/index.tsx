@@ -1,6 +1,6 @@
 import { View, FlatList, SectionList, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/Text';
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Lecture } from '@/apollo/__generated__/graphql';
 import { RootSettings } from '@/components/RootSettings';
@@ -10,7 +10,7 @@ import { LectureItemSmall } from '@/components/LectureItemSmall';
 import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlayed';
 import { GlimpsesBlock } from '@/components/GlimpsesBlock';
 import { useGetLecturesRecommended } from '@/hooks/useGetLecturesRecommended';
-import Animated, { Extrapolation, ExtrapolationType, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, runOnJS } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, runOnJS } from 'react-native-reanimated';
 import { useAuth } from '@/hooks/useAuth';
 const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
@@ -19,20 +19,24 @@ const keyExtractor = (item: Lecture) => {
 };
 
 export default function Screen() {
-  const { authUser } = useAuth();
-  const { items: itemsRecentlyPlayed, isLoading: isLoadingRecentlyPlayed } = useGetLecturesRecentlyPlayed({ skip: !authUser?.id });
+  const { authUser, setAuthSettingsVisible } = useAuth();
+  const { items: itemsRecentlyPlayed } = useGetLecturesRecentlyPlayed({ skip: !authUser?.id });
   const { items: itemsRecommended, isLoading: isLoadingRecommended, refetch: refetchRecommended } = useGetLecturesRecommended();
 
-  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);  
   const pullTriggeredRef = useRef(false);
 
   const onMenuPressHandler = useCallback(() => {
-    setSettingsVisible(!settingsVisible);
-  }, [settingsVisible]);
+    if (!authUser?.id) {
+      setAuthSettingsVisible(true);
+    } else {
+      setSettingsVisible(!settingsVisible);
+    }
+  }, [settingsVisible, authUser?.id]);
 
   const refresh = useCallback(() => {
     refetchRecommended();
-  }, []);
+  }, [authUser?.id]);
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <View className='mr-5'>
@@ -146,7 +150,7 @@ export default function Screen() {
           keyExtractor={keyExtractor}
         />
       </ScreenLayout>
-      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />
+      <RootSettings visible={settingsVisible} onClose={onMenuPressHandler} />      
     </View>
   );
 }

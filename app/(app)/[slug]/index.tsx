@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { useMutation, useSubscription } from '@apollo/client';
+import { useMutation, useSubscription } from '@apollo/client/react';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GET_LECTURE_DETAILS, SET_PLAYBACK_TIMESTAMP, SET_STATUS } from '@/apollo/queries/lectures';
 import { CreateNoteMutation, CreateNoteMutationVariables, DeleteNoteMutation, DeleteNoteMutationVariables, Lecture, LectureMetadataStatus, Note, NoteCreatedSubscription, NoteCreatedSubscriptionVariables, SetPlaybackTimestampMutation, SetPlaybackTimestampMutationVariables, SetStatusMutation, SetStatusMutationVariables } from '@/apollo/__generated__/graphql';
@@ -17,9 +17,11 @@ import { useGetLecturesRecentlyPlayed } from '@/hooks/useGetLecturesRecentlyPlay
 import * as WebBrowser from 'expo-web-browser';
 import TrackPlayer, { State, useTrackPlayerEvents, Event, RepeatMode } from 'react-native-track-player';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 
 
 export default function Screen() {
+  const { authUser, setAuthSettingsVisible } = useAuth();
   const { slug, note: noteIdParam } = useLocalSearchParams();
   const [alignments, setAlignments] = useState([]);
   const [content, setContent] = useState('');
@@ -30,7 +32,7 @@ export default function Screen() {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [noteId, setNoteId] = useState<string | undefined>(undefined);
-  const { lecture, loading } = useGetLecture(slug as string, GET_LECTURE_DETAILS);
+  const { lecture, loading } = useGetLecture(slug as string, GET_LECTURE_DETAILS);  
   const lectureId = lecture?.id;
   const { track } = useAnalytics();
   const listenedTotalRef = useRef(0);
@@ -70,11 +72,11 @@ export default function Screen() {
     currentTime,
     onSentenceChange: useCallback((sentenceIndex: number, sentenceStartTime: number) => {
       setNoteId(undefined);
-      if (savingPlaybackIsReady) {
+      if (savingPlaybackIsReady && authUser?.id) {
         // console.log('savingPlaybackIsReady', savingPlaybackIsReady, sentenceStartTime);
         debouncedOnSentenceChange(sentenceStartTime)
       }
-    }, [savingPlaybackIsReady])
+    }, [savingPlaybackIsReady, authUser?.id])
   });
 
   // console.log('=======')
@@ -88,6 +90,7 @@ export default function Screen() {
 
 
   useSubscription<NoteCreatedSubscription, NoteCreatedSubscriptionVariables>(NOTE_CREATED_SUBSCRIPTION, {
+    skip: !authUser?.id || !lectureId,
     variables: {
       lectureId: lectureId as string,
     },
@@ -132,6 +135,11 @@ export default function Screen() {
   });
 
   const onCreateNote = useCallback(() => {
+    if (!authUser?.id) {
+      setAuthSettingsVisible(true);
+      return;
+    }
+
     track('lecture_note_create', {
       lectureId,
       slug: lecture?.slug,
@@ -144,7 +152,7 @@ export default function Screen() {
         timestamp: currentSentence?.sentence.start_time || 0
       }
     });
-  }, [lectureId, currentSentence, createNote]);
+  }, [lectureId, currentSentence, createNote, authUser?.id]);
 
   const onAgentCreateNote = useCallback((noteId: string) => {
     setNoteId(noteId);

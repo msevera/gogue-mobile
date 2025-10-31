@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { AppState } from 'react-native';
 
-export const useAppState = ({ onForeground }: { onForeground: () => void }) => {
+export const useAppState = ({ onForeground }: { onForeground: () => void }, dependencies: any[]) => {
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
@@ -21,7 +21,7 @@ export const useAppState = ({ onForeground }: { onForeground: () => void }) => {
     return () => {
       subscription.remove();
     };
-  }, []);
+  }, dependencies);
 
   return {
     appStateVisible

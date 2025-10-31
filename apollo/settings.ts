@@ -1,22 +1,48 @@
-import { createHttpLink, split } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+import { HttpLink, ApolloLink } from '@apollo/client';
+import { SetContextLink } from '@apollo/client/link/context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { getAuth } from '@react-native-firebase/auth';
 import { mergeReadObjectByPagination } from '@/apollo/cache';
+import { ErrorLink } from "@apollo/client/link/error";
+import {
+  CombinedGraphQLErrors,
+  CombinedProtocolErrors,
+} from "@apollo/client/errors";
 
-export const authLink = setContext(async (_, { headers }) => {
+export const errorLink = new ErrorLink(({ error, operation }) => {
+  if (CombinedGraphQLErrors.is(error)) {
+    error.errors.forEach(({ message, locations, path }) =>
+      console.error(
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}, Operation: ${operation.operationName}`
+      )
+    );
+  } else if (CombinedProtocolErrors.is(error)) {
+    error.errors.forEach(({ message, extensions }) =>
+      console.error(
+        `[Protocol error]: Message: ${message}, Extensions: ${JSON.stringify(
+          extensions
+        )}`
+      )
+    );
+  } else {
+    console.error(`[Network error]: ${error}`);
+  }
+});
+
+export const authLink = new SetContextLink(async (prevContext, operation) => {
+  const headers = await getAuthHeaders()  
   return {
     headers: {
-      ...headers,
-      ...(await getAuthHeaders())
+      ...prevContext.headers,
+      ...headers
     }
   }
 });
 
-export const httpLink = authLink.concat(createHttpLink({
+export const httpLink = authLink.concat(new HttpLink({
   uri: `${process.env.EXPO_PUBLIC_API_ENDPOINT}/graphql`,
 }));
 
@@ -26,7 +52,6 @@ export const wsLink = new GraphQLWsLink(createClient({
   connectionParams: async () => {
     const token = await getAuth()?.currentUser?.getIdToken(true);
     const workspaceId = await AsyncStorage.getItem('workspaceId');
-
     return {
       authToken: token || "",
       tenantId: workspaceId || ""
@@ -34,7 +59,7 @@ export const wsLink = new GraphQLWsLink(createClient({
   },
 }));
 
-export const splitLink = split(
+export const splitLink = ApolloLink.split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -44,12 +69,12 @@ export const splitLink = split(
   },
   wsLink,
   httpLink,
+  
 );
 
 export const getAuthHeaders = async () => {
   const token = await getAuth()?.currentUser?.getIdToken(true);
-  const workspaceId = await AsyncStorage.getItem('workspaceId');
-
+  const workspaceId = await AsyncStorage.getItem('workspaceId');  
   return {
     authorization: token ? `Bearer ${token}` : "",
     'x-tenant-id': workspaceId || ""

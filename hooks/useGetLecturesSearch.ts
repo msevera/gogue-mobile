@@ -1,6 +1,6 @@
 import { GetLecturesSearchQuery, GetLecturesSearchQueryVariables } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES_SEARCH } from '@/apollo/queries/lectures';
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client/react";
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 

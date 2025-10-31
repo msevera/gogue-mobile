@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { useCheckGlimpsesStatus } from '@/hooks/useCheckGlimpsesStatus';
 import { cn } from '@/lib/utils';
 import { useGetGlimpsesLatest } from '@/hooks/useGetGlimpsesLatest';
-import { useSubscription } from '@apollo/client';
+import { useSubscription } from '@apollo/client/react';
 import { GLIMPSE_STATUS_UPDATED_SUBSCRIPTION } from '@/apollo/queries/glimpses';
 import { GlimpseStatusUpdatedSubscription, GlimpseStatusUpdatedSubscriptionVariables } from '@/apollo/__generated__/graphql';
 import { useNewLecture } from '@/hooks/useNewLecture';

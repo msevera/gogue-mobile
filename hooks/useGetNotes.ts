@@ -1,7 +1,7 @@
 import { GetNotesQuery, GetNotesQueryVariables, Note } from '@/apollo/__generated__/graphql';
 import { SortOrder } from '@/apollo/__generated__/graphql';
 import { GET_NOTES } from '@/apollo/queries/notes';
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { useAuth } from './useAuth';
 
 export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
@@ -21,10 +21,7 @@ export const useGetNotes = ({ lectureId }: { lectureId: string }) => {
       lectureId,
       pagination
     },
-    skip: !lectureId || !authUser?.id,
-    onError: (error) => {
-      console.error('Error fetching notes', error);
-    }
+    skip: !lectureId || !authUser?.id
   });
 
   const handleAddCache = (newNote: Note) => {

@@ -1,6 +1,6 @@
 import { GetNoteMessagesQuery, GetNoteMessagesQueryVariables, NoteMessage, SortOrder } from '@/apollo/__generated__/graphql'
 import { GET_NOTE_MESSAGES } from '@/apollo/queries/noteMessages'
-import { useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 import { useEffect, useMemo, useState } from 'react'
 
 export type Message = {

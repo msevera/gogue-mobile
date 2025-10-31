@@ -7,6 +7,8 @@ import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanim
 import { useCallback } from 'react';
 import { LectureItemLibrary } from '@/components/LectureItemLibrary';
 import { useGetLecturesAddedToLibrary } from '@/hooks/useGetLecturesAddedToLibrary';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/Button';
 
 const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
   return (
@@ -23,11 +25,13 @@ const AnimatedLectureItem = ({ item }: { item: Lecture }) => {
 const keyExtractor = (item: Lecture) => item.id;
 
 export default function Screen() {
-  const { items, isLoading, fetchMore } = useGetLecturesAddedToLibrary();
+  const { authUser, setAuthSettingsVisible } = useAuth();
+  const { items, isLoading, fetchMore } = useGetLecturesAddedToLibrary({ skip: !authUser?.id });
 
   const renderItem = useCallback(({ item }: { item: Lecture, index: number }) => {
     return <AnimatedLectureItem item={item} />;
   }, []);
+
   return (
     <View className='flex-1'>
       <ScreenLayout
@@ -35,10 +39,10 @@ export default function Screen() {
           headerShown: true,
           header: () => <Header title='Your Library' />,
         }}
-        contentLoading={isLoading}
+        contentLoading={isLoading && !!authUser?.id}
         contentEmpty={false}
-        bottomPadding={false}        
-      >        
+        bottomPadding={false}
+      >
         {
           items.length > 0 ? (
             <FlatList
@@ -52,7 +56,19 @@ export default function Screen() {
           ) : (
             <View className='flex-1 justify-center items-center px-4'>
               <View className='flex-1 justify-center items-center'>
-                <Text className='text-gray-500 text-lg top-[-40]'>Your library is empty.</Text>
+                {
+                  !authUser?.id ? (
+                    <>
+                      <Text className='text-gray-950 text-xl font-semibold top-[-40] text-center mb-4'>Sign in to see your library</Text>
+                      <Text className='text-gray-500 text-lg top-[-40] text-center'>Your saved items will appear here once you’re logged in.</Text>
+                      <Button text='Sign in' onPress={() => {
+                        setAuthSettingsVisible(true);
+                      }} />
+                    </>
+                  ) : (
+                    <Text className='text-gray-500 text-lg top-[-40]'>Your library is empty.</Text>
+                  )
+                }
               </View>
             </View>
           )

@@ -18,6 +18,7 @@ import { Message } from '@/hooks/useNoteChat';
 import { NotesList } from './NotesList';
 import { cn } from '@/lib/utils';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface LectureDrawerRef {
   open: () => void;
@@ -90,6 +91,7 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   onConnectToAgent,
   onConnectToAgentUnique
 }, ref) => {
+  const { authUser, setAuthSettingsVisible } = useAuth();
   const noteDetailsRef = useRef<NoteDetailsRef>(null);
   const lectureControlsRef = useRef<LectureControlsRef>(null);
   const { track } = useAnalytics();
@@ -221,19 +223,29 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   }, [sendMessage]);
 
   const handleRecordPress = useCallback(() => {
+    if (!authUser?.id) {
+      setAuthSettingsVisible(true);
+      return;
+    }
+
     onConnectToAgent();
     setDrawerMode('noteDetails');
     setAgentMode('voice');
     connectToAgent(true);
-  }, [connectToAgent]);
+  }, [connectToAgent, authUser?.id]);
 
   const handleInputFocus = useCallback(() => {
+    if (!authUser?.id) {
+      setAuthSettingsVisible(true);
+      return;
+    }
+
     onConnectToAgent();
     setDrawerMode('noteDetails');
     setAgentMode('text');
     connectToAgent(false);
     openDrawer(controlsDrawerActiveInputSnapPoint);
-  }, [connectToAgent, openDrawer]);
+  }, [connectToAgent, openDrawer, authUser?.id]);
 
   const handleInputBlur = useCallback(() => {
     Keyboard.dismiss();
@@ -241,9 +253,13 @@ const LectureDrawer = forwardRef<LectureDrawerRef, {
   }, [showDrawer]);
 
   const handleInputPress = useCallback(() => {
+    if (!authUser?.id) {
+      return;
+    }
+
     openDrawer(controlsDrawerOnlyInputSnapPoint);
     Keyboard.dismiss();
-  }, [openDrawer]);
+  }, [openDrawer, authUser?.id]);
 
   const handleOpenNote = useCallback(() => {
     setDrawerMode('noteDetails');

@@ -1,6 +1,6 @@
 import { GetGlimpseLatestQuery, GetGlimpseLatestQueryVariables } from '@/apollo/__generated__/graphql';
 import { GET_GLIMPSES_LATEST } from '@/apollo/queries/glimpses';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 
 export const useGetGlimpsesLatest = () => {
   const {

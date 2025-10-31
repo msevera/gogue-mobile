@@ -1,7 +1,7 @@
 import { GetLecturesQuery, GetLecturesQueryVariables, Lecture } from '@/apollo/__generated__/graphql';
 import { SortOrder } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES } from '@/apollo/queries/lectures';
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 
 export const useGetLectures = ({ skip, input}: { skip?: boolean, input?: GetLecturesQueryVariables['input'] } = {}) => {
   const apolloClient = useApolloClient();  
@@ -19,10 +19,7 @@ export const useGetLectures = ({ skip, input}: { skip?: boolean, input?: GetLect
   const { data: { lectures: { items = [], pageInfo } = { items: [], pageInfo: { next: null } } } = {}, loading: isLoading, fetchMore } =
     useQuery<GetLecturesQuery, GetLecturesQueryVariables>(GET_LECTURES, {
       variables,
-      skip,
-      onError: (error) => {
-        console.log('error', JSON.stringify(error, null, 2))
-      }
+      skip
     });
 
   const handleCache = (newLecture: Lecture) => {

@@ -14,7 +14,7 @@ import { Button } from './ui/Button';
 import { GET_LECTURE_PREVIEW, SET_PENDING_LECTURE_SHOW_NOTIFICATION_AS_DONE } from '@/apollo/queries/lectures';
 import { useAddToLibrary } from '@/hooks/useAddToLibrary';
 import { DeleteNoteMutation, DeleteNoteMutationVariables, Note, SetPendingLectureShowNotificationAsDoneMutation, SetPendingLectureShowNotificationAsDoneMutationVariables } from '@/apollo/__generated__/graphql';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetNotes } from '@/hooks/useGetNotes';
 import { NotesList } from './NotesList';
@@ -179,7 +179,7 @@ export const LecturePreview = () => {
         console.log('Share dialog dismissed');
       }
     } catch (error: any) {
-      console.log('error', error);
+      console.log('Share error', error);
     }
   }, [lecture]);
 

@@ -1,5 +1,5 @@
 import { CreateLectureAsyncMutation, CreateLectureAsyncMutationVariables } from '@/apollo/__generated__/graphql';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { CREATE_LECTURE_ASYNC } from '@/apollo/queries/lectures';
 
 export const useCreateLecture = () => {

@@ -1,12 +1,14 @@
-import { useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
 
 import { AddToLibraryMutation, AddToLibraryMutationVariables, Lecture, RemoveFromLibraryMutation, RemoveFromLibraryMutationVariables } from "@/apollo/__generated__/graphql";
 import { ADD_TO_LIBRARY, REMOVE_FROM_LIBRARY } from "@/apollo/queries/lectures";
 import { useCallback } from "react";
 import { useGetLecturesAddedToLibrary } from './useGetLecturesAddedToLibrary';
 import { useAnalytics } from "./useAnalytics";
+import { useAuth } from './useAuth';
 
 export const useAddToLibrary = ({ lecture }: { lecture?: Lecture } = {}) => {
+  const { authUser, setAuthSettingsVisible } = useAuth();
   const { updateLectureCache } = useGetLecturesAddedToLibrary({ skip: true });
   const { track } = useAnalytics();
 
@@ -26,6 +28,11 @@ export const useAddToLibrary = ({ lecture }: { lecture?: Lecture } = {}) => {
   });
 
   const handleToggleLibrary = useCallback(async() => {    
+    if (!authUser?.id) {
+      setAuthSettingsVisible(true);
+      return;
+    }
+
     if (!lecture) {
       return;
     }
@@ -45,7 +52,7 @@ export const useAddToLibrary = ({ lecture }: { lecture?: Lecture } = {}) => {
       });
       await addToLibrary({ variables: { id: lecture.id } });
     }
-  }, [lecture]);
+  }, [lecture, authUser?.id]);
 
 
   return {

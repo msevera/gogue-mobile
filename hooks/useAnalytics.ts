@@ -22,7 +22,7 @@ export const useAnalytics = () => {
     track: (name: string, data?: any) => {
       if (!hasSegmentKey) return;
 
-      track(name, {
+      track?.(name, {
         ...data,
         user: {
           ...userData
@@ -40,7 +40,7 @@ export const useAnalytics = () => {
     identify: (user: User) => {
       if (!hasSegmentKey) return;
 
-      identify(user?.id as string, {
+      identify?.(user?.id as string, {
         workspaceId: user?.workspaces?.[0]?.workspaceId,
         userName: `${user?.firstName} ${user?.lastName}`,
         email: user?.email,
@@ -48,7 +48,7 @@ export const useAnalytics = () => {
       })
     },
     reset: () => {
-      reset();
+      reset?.();
     }
   }
 
