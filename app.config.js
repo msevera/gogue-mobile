@@ -60,7 +60,10 @@ export default {
       "googleServicesFile": process.env.GOOGLE_SERVICE_INFO_PLIST ?? "./GoogleService-Info.plist",
       "infoPlist": {  
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "This app uses the microphone to capture your voice when you speak to the AI voice assistant.",       
+        "NSMicrophoneUsageDescription": "This app uses the microphone to capture your voice during AI voice interactions.",       
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide location-based notifications and features.",       
+        "NSCameraUsageDescription": "This app uses the camera for video communication and related features.",
+        "NSPhotoLibraryUsageDescription": "This app uses your photo library to save and access images.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
@@ -107,12 +110,12 @@ export default {
           }
         }
       ],
-      [
-        "expo-speech-recognition",
-        {
-          "microphonePermission": `This app uses the microphone to capture your voice when you speak to the AI voice assistant.`
-        }
-      ],
+      // [
+      //   "expo-speech-recognition",
+      //   {
+      //     "microphonePermission": `This app uses the microphone to capture your voice when you speak to the AI voice assistant.`
+      //   }
+      // ],
       [
         "onesignal-expo-plugin",
         {
