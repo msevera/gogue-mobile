@@ -15,6 +15,8 @@ type ButtonProps = PressableProps & {
   sm?: boolean;
   className?: string;
   textClassName?: string;
+  disabledClassName?: string;
+  disabledTextClassName?: string;
   text?: string;
   textStyle?: StyleProp<TextStyle>;
   loaderColor?: string;
@@ -35,6 +37,8 @@ export const Button = React.forwardRef<View, ButtonProps>(({
   icon,
   text,
   textClassName,
+  disabledClassName,
+  disabledTextClassName,
   className,
   disabled,
   loading,
@@ -88,8 +92,9 @@ export const Button = React.forwardRef<View, ButtonProps>(({
         'bg-blue-500 text-white',
         loading && 'bg-blue-400',
         disabled && 'bg-blue-200'
-      ],
-      className
+      ],      
+      className,
+      disabled ? disabledClassName : '',
     )}
   >
     {
@@ -129,6 +134,7 @@ export const Button = React.forwardRef<View, ButtonProps>(({
                     disabled && 'text-white'
                   ],
                   textClassName,
+                  disabled ? disabledTextClassName : '',
                 )}
               >
                 {text}

@@ -1,7 +1,7 @@
 import { GetLecturesRecommendedQuery, GetLecturesRecommendedQueryVariables, GetMatchedSourcesQuery, GetMatchedSourcesQueryVariables, Source } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES_RECOMMENDED } from '@/apollo/queries/lectures';
 import { GET_MATCHED_SOURCES } from '@/apollo/queries/sources';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 
 type MatchedSourcesType = {
   items: Source[];
@@ -17,9 +17,6 @@ export const useGetSourcesMatched = (input: string): MatchedSourcesType => {
         input: {
           input
         }
-      },
-      onError: (error) => {
-        console.log('error', error);
       }
     });
 

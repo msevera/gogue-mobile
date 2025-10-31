@@ -1,30 +1,88 @@
-import { View } from 'react-native'
+import { View, Alert, TouchableOpacity } from 'react-native'
 import { Text } from '@/components/ui/Text';
 import { GlobalDrawer } from './globalDrawer/GlobalDrawer'
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from './ui/Button';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const RootSettings = ({ visible, onClose }: { visible: boolean, onClose: () => void }) => {
-  const { signOut, authUser } = useAuth();
+  const { signOut, authUser, deleteAccount } = useAuth();
+
+  const inset = useSafeAreaInsets();
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [authMeta, setAuthMeta] = useState({ title: '', showBack: false, allowClose: true, gesturesEnabled: true });
+  const [resetAuthKey, setResetAuthKey] = useState(0);
+
+  // Auth validation and flow moved into RootSettingsAuth
+
+  const resetRootSettingsState = () => {
+    setAuthMeta({ title: '', showBack: false, allowClose: true, gesturesEnabled: true });
+    setIsSigningIn(false);
+    setIsDeleting(false);
+    setResetAuthKey(prev => prev + 1); // Force reset of child component
+  };
+
+  // Reset state when modal is closed
+  useEffect(() => {
+    if (!visible) {
+      resetRootSettingsState();
+    }
+  }, [visible]);
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data, lectures, and notes.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteAccount();
+              // The user will be automatically signed out and redirected
+            } catch (error: any) {
+              console.error('Delete account error:', error);
+              Alert.alert(
+                'Error',
+                error.message || 'Failed to delete account. Please try again.'
+              );
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const drawerSettings = useMemo(() => ({
     snapPoints: visible ? ['100%'] : [0],
     backdrop: visible,
     index: 0,
     gesturesEnabled: true,
     closeByGestureEnabled: true
-  }), [visible]);
+  }), [visible, authMeta.gesturesEnabled]);
 
   return (
-    <GlobalDrawer 
-      title='Settings' 
-      headerBorder 
-      drawerSettings={drawerSettings} 
+    <GlobalDrawer
+      title='Settings'
+      headerBorder
+      showCloseButton
+      drawerSettings={drawerSettings}
       onBackdropPress={onClose}
       headerContainerClassName='bg-gray-100'
-      headerContentClassName='pb-0'
+      headerContentClassName='pb-0'      
     >
-      <View className='flex-1 bg-gray-100'>
+      <View className={`flex-1 bg-gray-100`}>
         {/* Profile Section */}
         <View className="mt-4 flex-1">
           <View className="bg-white rounded-4xl mx-4 overflow-hidden">
@@ -42,9 +100,29 @@ export const RootSettings = ({ visible, onClose }: { visible: boolean, onClose: 
           </View>
         </View>
         {/* Sign Out Button */}
-        <View className="mt-6 mb-6 px-4">         
-          <Button text='Sign Out' onPress={signOut} />
+        <View className="mt-6 px-4">
+          <Button text='Sign Out' onPress={() => {
+            signOut();
+            resetRootSettingsState();
+            onClose();
+          }} />
         </View>
+
+        {/* Delete Account Button */}
+        <View className="mt-4 mb-6 px-4">
+          <Button
+            text='Delete Account'
+            onPress={handleDeleteAccount}
+            loading={isDeleting}
+            disabled={isDeleting}
+            ghost
+            className="border border-red-500"
+            textClassName="text-red-500"
+            disabledClassName="border-red-200"
+            disabledTextClassName="text-red-200"
+          />
+        </View>
+
       </View>
     </GlobalDrawer>
   )

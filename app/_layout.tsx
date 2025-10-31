@@ -9,8 +9,9 @@ import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
-import { splitLink } from '@/apollo/settings';
+import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client';
+import { ApolloProvider } from "@apollo/client/react";
+import { errorLink, splitLink } from '@/apollo/settings';
 import { LogLevel, OneSignal } from 'react-native-onesignal';
 import { PortalProvider } from '@gorhom/portal';
 import { GlobalDrawerProvider } from '@/contexts/globalDrawerContext';
@@ -23,14 +24,14 @@ import { useEffect } from 'react';
 import { CreateProvider } from '@/contexts/createContext';
 import { createClient, AnalyticsProvider } from '@segment/analytics-react-native';
 import { TrackScreensProvider } from '@/contexts/trackScreensContext';
-console.log('process.env.EXPO_PUBLIC_SEGMENT_WRITE_KEY', process.env.EXPO_PUBLIC_SEGMENT_WRITE_KEY)
+
 const hasSegmentKey = Boolean(process.env.EXPO_PUBLIC_SEGMENT_WRITE_KEY);
 const segmentClient = hasSegmentKey
   ? createClient({
-      writeKey: process.env.EXPO_PUBLIC_SEGMENT_WRITE_KEY as string,
-      trackAppLifecycleEvents: true,
-      trackDeepLinks: true,
-    })
+    writeKey: process.env.EXPO_PUBLIC_SEGMENT_WRITE_KEY as string,
+    trackAppLifecycleEvents: true,
+    trackDeepLinks: true,
+  })
   : undefined;
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
@@ -46,10 +47,15 @@ configureReanimatedLogger({
 });
 
 const client = new ApolloClient({
-  link: splitLink,
+  link: ApolloLink.from([errorLink, splitLink]),
   cache: new InMemoryCache({
     typePolicies,
   }),
+  defaultOptions: {
+    watchQuery: {
+      notifyOnNetworkStatusChange: false,
+    },
+  },
 });
 
 // connectApolloClientToVSCodeDevTools(
@@ -68,7 +74,7 @@ export default function RootLayout() {
       }
     }
     fetchPlaybackState();
-  }, []); 
+  }, []);
 
   const appTree = (
     <ApolloProvider client={client}>

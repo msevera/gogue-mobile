@@ -1,6 +1,6 @@
 import { GetLecturesAddedToLibraryQuery, GetLecturesAddedToLibraryQueryVariables, Lecture } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES_ADDED_TO_LIBRARY } from '@/apollo/queries/lectures';
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from '@apollo/client/react';
 
 export const useGetLecturesAddedToLibrary = ({ skip }: { skip?: boolean } = {}) => {
   const apolloClient = useApolloClient();
@@ -14,10 +14,7 @@ export const useGetLecturesAddedToLibrary = ({ skip }: { skip?: boolean } = {}) 
   const { data: { lecturesAddedToLibrary: { items = [], pageInfo } = { items: [], pageInfo: { next: null } } } = {}, loading: isLoading, fetchMore } =
     useQuery<GetLecturesAddedToLibraryQuery, GetLecturesAddedToLibraryQueryVariables>(GET_LECTURES_ADDED_TO_LIBRARY, {
       variables,
-      skip,
-      onError: (error) => {
-        console.log('error', error)
-      }
+      skip
     });
 
 

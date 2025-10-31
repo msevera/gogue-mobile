@@ -1,14 +1,16 @@
 import { Redirect, Stack } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
+import { View } from 'react-native';
+import { AuthSettings } from '@/components/AuthSettings';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function AppLayout() {
-  const { authUser, isLoading } = useAuth();
- 
+  const { authUser, isLoading, authSettingsVisible, setAuthSettingsVisible } = useAuth();
+
 
   useEffect(() => {
     const hideSplashScreen = async () => {
@@ -27,27 +29,30 @@ export default function AppLayout() {
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again. 
-  if (!authUser) {
-    // On web, static rendering will stop here as the user is not authenticated
-    // in the headless Node process that the pages are rendered in.
-    return <Redirect href="(onboarding)/emailInput" />;
-  }
+  // if (!authUser) {
+  //   // On web, static rendering will stop here as the user is not authenticated
+  //   // in the headless Node process that the pages are rendered in.
+  //   return <Redirect href="(onboarding)/emailInput" />;
+  // }
 
-  if (!authUser.firstName || !authUser.lastName) {
-    return <Redirect href="(onboarding)/setProfile" />;
-  }
+  // if (!authUser.firstName || !authUser.lastName) {
+  //   return <Redirect href="(onboarding)/setProfile" />;
+  // }
 
   // if (!authUser?.topics?.length) { 
   //   return <Redirect href="(onboarding)/setTopics" />;
   // }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: {
-          backgroundColor: 'white',
-        },
-      }} />
+    <View className='flex-1'>
+      <AuthSettings visible={authSettingsVisible} onClose={() => setAuthSettingsVisible(false)} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: 'white',
+          },
+        }} />
+    </View>
   );
 }

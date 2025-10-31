@@ -20,7 +20,7 @@ export default function EmailInputScreen() {
       console.log('HandleGoogleSignin error', error);
       setLoading(false);
     } finally {
-      
+
     }
 
 
@@ -31,7 +31,7 @@ export default function EmailInputScreen() {
     // } catch (error) {
     //   console.log('test error', error);
     // }
-    
+
   }
 
   useEffect(() => {
@@ -54,11 +54,31 @@ export default function EmailInputScreen() {
             <Text className="text-4xl mb-2 text-center font-semibold text-gray-800">Welcome to <Text className="text-4xl text-blue-500 font-semibold">Gogue</Text></Text>
             <Text className="text-2xl text-center text-blue-500">Expand your knowledge with AI</Text>
           </View>
-          <View className="w-full items-center">           
-            <Button              
-              loading={loading}                            
-              text="Sign in with Google"
+          <View className="w-full items-center">
+            <Button
+              loading={loading}
+              text="Continue with Google"
               onPress={handleGoogleSignin}
+              className="w-full mb-2 bg-transparent border border-blue-500"
+              textClassName="text-blue-500"
+              icon={{ component: 'Ionicons', name: 'logo-google', color: '#3b82f6' }}
+              loaderClassName='text-blue-500'
+            />
+            <Button
+              disabled={loading}
+              disabledClassName='opacity-40'
+              text="Create an account"
+              onPress={() => router.push('/signUp')}
+              className="w-full mb-2 bg-transparent border border-blue-500"
+              textClassName="text-blue-500"
+              icon={{ component: 'Ionicons', name: 'mail', color: '#3b82f6' }}
+              loaderClassName='text-blue-500'
+            />
+            <Button
+              secondary              
+              disabled={loading}
+              text="Sign in"
+              onPress={() => router.push('/signIn')}
               className="w-full"
             />
           </View>

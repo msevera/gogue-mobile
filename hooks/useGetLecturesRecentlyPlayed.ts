@@ -1,6 +1,6 @@
 import { GetLecturesRecentlyPlayedQuery, GetLecturesRecentlyPlayedQueryVariables, Lecture } from '@/apollo/__generated__/graphql';
 import { GET_LECTURES_RECENTLY_PLAYED } from '@/apollo/queries/lectures';
-import { useApolloClient, useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from '@apollo/client/react';
 
 export const useGetLecturesRecentlyPlayed = ({ skip }: { skip?: boolean } = {}) => {
   const apolloClient = useApolloClient();
@@ -11,19 +11,19 @@ export const useGetLecturesRecentlyPlayed = ({ skip }: { skip?: boolean } = {}) 
     }
   }
 
-  const { data: { lecturesRecentlyPlayed: { items = [] } = { items: [] } } = {}, loading: isLoading } =
+  const { data, loading: isLoading } =
     useQuery<GetLecturesRecentlyPlayedQuery, GetLecturesRecentlyPlayedQueryVariables>(
-      GET_LECTURES_RECENTLY_PLAYED, {
-      variables,
-      skip,
-      onError: (error) => {
-        console.log('error', error)
-      }
-    });
+      GET_LECTURES_RECENTLY_PLAYED,
+      {
+        variables,
+        skip,
+      });
 
+
+  const items = data?.lecturesRecentlyPlayed?.items || [];
 
   const handleCache = (lecture: Lecture, isCompleted?: boolean) => {
-    const updateFn = (data: any) => {    
+    const updateFn = (data: any) => {
       const lectures = data?.lecturesRecentlyPlayed;
       let items: Lecture[] = [];
 

@@ -1,6 +1,6 @@
 import { CheckGlimpsesStatusQuery, CheckGlimpsesStatusQueryVariables } from '@/apollo/__generated__/graphql';
 import { CHECK_GLIMPSES_STATUS } from '@/apollo/queries/glimpses';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 
 export const useCheckGlimpsesStatus = () => {
   const {

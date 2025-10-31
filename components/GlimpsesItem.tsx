@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import Markdown from 'react-native-markdown-display';
 import * as WebBrowser from 'expo-web-browser';
 import { GestureDetector } from 'react-native-gesture-handler';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { SET_GLIMPSE_VIEWED } from '@/apollo/queries/glimpses';
 
 export const GlimpsesItem = ({
